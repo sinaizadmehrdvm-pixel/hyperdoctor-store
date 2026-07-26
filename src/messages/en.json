@@ -1,0 +1,112 @@
+{
+  "brand": {
+    "holding": "Vetrix Holding",
+    "subBrand": "Hyper Doctor",
+    "tagline": "Smart Technology, Better Care"
+  },
+  "nav": {
+    "home": "Home",
+    "shop": "Shop",
+    "services": "Respiratory Services",
+    "about": "About Us",
+    "contact": "Contact",
+    "cart": "Cart",
+    "search": "Search products or services..."
+  },
+  "home": {
+    "heroEyebrow": "Authorized medical equipment distributor",
+    "heroTitle": "Medical equipment and respiratory services, backed by Hyper Doctor quality",
+    "heroSubtitle": "From CPAP devices and oxygen concentrators to at-home sleep testing — everything from one trusted source under Vetrix Holding.",
+    "heroCtaShop": "Browse Products",
+    "heroCtaServices": "Book a Sleep Test",
+    "trustBarTitle": "Trusted by hospitals and clinics nationwide",
+    "categoriesTitle": "Products & Service Categories",
+    "featuredTitle": "Featured Products",
+    "featuredSubtitle": "Our best-selling and recommended respiratory & medical equipment",
+    "serviceSpotlightEyebrow": "At-Home Respiratory Care",
+    "serviceSpotlightTitle": "Sleep Test in the comfort of your own home",
+    "serviceSpotlightBody": "Hyper Doctor's specialist team evaluates your sleep quality at home with standardized equipment and delivers results with medical guidance.",
+    "serviceSpotlightCta": "Details & Booking",
+    "roadmapEyebrow": "Vetrix Holding Vision",
+    "roadmapTitle": "Coming soon alongside Hyper Doctor",
+    "roadmapBody": "Vetrix Holding is expanding into other areas of healthcare.",
+    "roadmapDental": "Dental",
+    "roadmapVeterinary": "Veterinary",
+    "roadmapPharmacy": "Pharmacy",
+    "roadmapNursing": "Nursing Care",
+    "roadmapComingSoon": "Coming Soon",
+    "ctaTitle": "Talk to our specialists about medical equipment purchasing",
+    "ctaButton": "Contact Our Experts"
+  },
+  "shop": {
+    "title": "Medical Equipment Shop",
+    "filterCategory": "Category",
+    "filterAll": "All Categories",
+    "sortLabel": "Sort by",
+    "sortNewest": "Newest",
+    "sortPriceAsc": "Price: Low to High",
+    "sortPriceDesc": "Price: High to Low",
+    "empty": "No products found.",
+    "addToCart": "Add to Cart",
+    "outOfStock": "Out of Stock",
+    "inStock": "In Stock",
+    "priceLabel": "Price",
+    "specsTitle": "Specifications",
+    "relatedTitle": "Related Products"
+  },
+  "services": {
+    "title": "Respiratory Services",
+    "bookNow": "Book Now",
+    "priceFrom": "Starting from",
+    "durationLabel": "Duration",
+    "minutes": "minutes",
+    "preferredDate": "Preferred Date",
+    "requiresBooking": "This service requires an appointment"
+  },
+  "cart": {
+    "title": "Shopping Cart",
+    "empty": "Your cart is empty.",
+    "product": "Product / Service",
+    "quantity": "Qty",
+    "price": "Price",
+    "total": "Total",
+    "remove": "Remove",
+    "continueShopping": "Continue Shopping",
+    "checkout": "Proceed to Checkout",
+    "subtotal": "Subtotal",
+    "shipping": "Shipping",
+    "grandTotal": "Total Due"
+  },
+  "checkout": {
+    "title": "Checkout",
+    "customerInfo": "Customer Information",
+    "fullName": "Full Name",
+    "phone": "Phone Number",
+    "email": "Email (optional)",
+    "address": "Full Address",
+    "city": "City",
+    "postalCode": "Postal Code",
+    "notes": "Order Notes (optional)",
+    "submit": "Pay & Place Order",
+    "gatewayNote": "You'll be redirected to Zarinpal's secure payment gateway after submitting."
+  },
+  "orderResult": {
+    "successTitle": "Payment Successful",
+    "successBody": "Your order has been placed with the tracking number below. Our team will contact you shortly.",
+    "failTitle": "Payment Failed",
+    "failBody": "Unfortunately your payment could not be completed. You can try again or contact support.",
+    "orderNumber": "Order Number",
+    "backHome": "Back to Home"
+  },
+  "footer": {
+    "about": "Hyper Doctor, the medical equipment distribution arm of Vetrix Holding, providing genuine equipment and respiratory services.",
+    "quickLinks": "Quick Links",
+    "contactTitle": "Contact Info",
+    "rights": "All rights reserved."
+  },
+  "common": {
+    "currency": "IRT",
+    "loading": "Loading...",
+    "readMore": "Read More"
+  }
+}

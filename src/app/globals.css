@@ -1,26 +1,74 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Brand */
+  --color-primary: #2563eb;
+  --color-primary-glow: #38bdf8;
+  --color-accent: #dc2626;
+
+  /* Neutral surfaces (light — default for most storefront content) */
+  --color-background: #f8fafc;
+  --color-foreground: #0f172a;
+  --color-card: #ffffff;
+  --color-muted: #64748b;
+  --color-muted-bg: #f1f5f9;
+  --color-border: #e2e8f0;
+
+  /* Deep navy — reserved for header / hero / footer sections */
+  --color-navy: #0b1220;
+  --color-navy-elevated: #131b2e;
+  --color-navy-foreground: #f8fafc;
+  --color-navy-border: rgb(255 255 255 / 8%);
+  --color-navy-muted: #94a3b8;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-background: var(--color-background);
+  --color-foreground: var(--color-foreground);
+  --color-card: var(--color-card);
+  --color-muted: var(--color-muted);
+  --color-muted-bg: var(--color-muted-bg);
+  --color-border: var(--color-border);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-primary: var(--color-primary);
+  --color-primary-glow: var(--color-primary-glow);
+  --color-accent: var(--color-accent);
+
+  --color-navy: var(--color-navy);
+  --color-navy-elevated: var(--color-navy-elevated);
+  --color-navy-foreground: var(--color-navy-foreground);
+  --color-navy-border: var(--color-navy-border);
+  --color-navy-muted: var(--color-navy-muted);
+
+  --font-fa: var(--font-vazirmatn);
+  --font-en: var(--font-inter);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-background);
+  color: var(--color-foreground);
+}
+
+[dir="rtl"] body {
+  font-family: var(--font-vazirmatn), system-ui, sans-serif;
+}
+
+[dir="ltr"] body {
+  font-family: var(--font-inter), system-ui, sans-serif;
+}
+
+/* Tabular figures for prices/specs so columns stay aligned */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }

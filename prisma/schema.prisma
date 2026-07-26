@@ -1,0 +1,201 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum Vertical {
+  MEDICAL_EQUIPMENT
+  RESPIRATORY_SERVICES
+  DENTAL
+  VETERINARY
+  PHARMACY
+  NURSING
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAID
+  FAILED
+  PROCESSING
+  SHIPPED
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentGateway {
+  ZARINPAL
+  IDPAY
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  EDITOR
+}
+
+model Category {
+  id            String     @id @default(cuid())
+  vertical      Vertical
+  slug          String     @unique
+  nameFa        String
+  nameEn        String
+  descriptionFa String     @default("")
+  descriptionEn String     @default("")
+  image         String?
+  order         Int        @default(0)
+  parentId      String?
+  parent        Category?  @relation("CategoryToCategory", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children      Category[] @relation("CategoryToCategory")
+  products      Product[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([vertical])
+}
+
+model Product {
+  id               String      @id @default(cuid())
+  vertical         Vertical
+  categoryId       String
+  category         Category    @relation(fields: [categoryId], references: [id])
+  slug             String      @unique
+  nameFa           String
+  nameEn           String
+  descriptionFa    String      @default("")
+  descriptionEn    String      @default("")
+  brand            String      @default("")
+  sku              String      @unique
+  price            Int
+  compareAtPrice   Int?
+  stock            Int         @default(0)
+  specs            String      @default("{}") // JSON string: {key: {fa, en}}
+  images           Media[]
+  isPublished      Boolean     @default(false)
+  isFeatured       Boolean     @default(false)
+  seoTitleFa       String      @default("")
+  seoTitleEn       String      @default("")
+  seoDescriptionFa String      @default("")
+  seoDescriptionEn String      @default("")
+  orderItems       OrderItem[]
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  @@index([vertical])
+  @@index([categoryId])
+}
+
+model Service {
+  id              String      @id @default(cuid())
+  vertical        Vertical
+  slug            String      @unique
+  nameFa          String
+  nameEn          String
+  descriptionFa   String      @default("")
+  descriptionEn   String      @default("")
+  image           String?
+  price           Int?
+  priceIsFrom     Boolean     @default(true)
+  durationMinutes Int?
+  requiresBooking Boolean     @default(true)
+  isPublished     Boolean     @default(false)
+  orderItems      OrderItem[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([vertical])
+}
+
+model Page {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  titleFa     String
+  titleEn     String
+  contentFa   String   @default("")
+  contentEn   String   @default("")
+  template    String   @default("default")
+  isPublished Boolean  @default(false)
+  showInNav   Boolean  @default(false)
+  navOrder    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Media {
+  id        String   @id @default(cuid())
+  url       String
+  altFa     String   @default("")
+  altEn     String   @default("")
+  width     Int?
+  height    Int?
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+}
+
+model Order {
+  id               String         @id @default(cuid())
+  orderNumber      String         @unique
+  customerName     String
+  phone            String
+  email            String?
+  address          String
+  city             String
+  postalCode       String?
+  notes            String         @default("")
+  locale           String         @default("fa")
+  items            OrderItem[]
+  subtotal         Int
+  shippingFee      Int            @default(0)
+  total            Int
+  status           OrderStatus    @default(PENDING_PAYMENT)
+  gateway          PaymentGateway @default(ZARINPAL)
+  paymentAuthority String?        @unique
+  paymentRefId     String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+}
+
+model OrderItem {
+  id            String    @id @default(cuid())
+  orderId       String
+  order         Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId     String?
+  product       Product?  @relation(fields: [productId], references: [id])
+  serviceId     String?
+  service       Service?  @relation(fields: [serviceId], references: [id])
+  nameSnapshot  String
+  priceSnapshot Int
+  quantity      Int       @default(1)
+  preferredDate DateTime?
+}
+
+model AdminUser {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  role         AdminRole @default(EDITOR)
+  createdAt    DateTime  @default(now())
+}
+
+model SiteSetting {
+  id              Int      @id @default(1)
+  holdingName     String   @default("Vetrix")
+  holdingLogoUrl  String   @default("")
+  subBrandName    String   @default("Hyper Doctor")
+  subBrandLogoUrl String   @default("")
+  contactPhone    String   @default("")
+  contactEmail    String   @default("")
+  address         String   @default("")
+  instagramUrl    String   @default("")
+  telegramUrl     String   @default("")
+  whatsappUrl     String   @default("")
+  defaultLocale   String   @default("fa")
+  updatedAt       DateTime @updatedAt
+}
