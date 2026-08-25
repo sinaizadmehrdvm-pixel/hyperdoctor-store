@@ -52,7 +52,7 @@ export default async function LocaleLayout({
     notFound();
   }
   setRequestLocale(locale);
-  const dir = locale === "fa" ? "rtl" : "ltr";
+  const dir = locale === "fa" || locale === "ar" ? "rtl" : "ltr";
 
   return (
     <html
