@@ -2,25 +2,41 @@
 @plugin "@tailwindcss/typography";
 
 :root {
-  /* Brand */
-  --color-primary: #2563eb;
-  --color-primary-glow: #38bdf8;
-  --color-accent: #dc2626;
-
-  /* Neutral surfaces (light — default for most storefront content) */
-  --color-background: #f8fafc;
-  --color-foreground: #0f172a;
+  /* VITALIS MedTech design tokens — extracted from the final Stitch system */
+  --color-background: #f7fafd;
+  --color-foreground: #181c1e;
   --color-card: #ffffff;
-  --color-muted: #64748b;
-  --color-muted-bg: #f1f5f9;
-  --color-border: #e2e8f0;
+  --color-muted: #43474f;
+  --color-muted-bg: #f1f4f7;
+  --color-border: #c4c6d0;
 
-  /* Deep navy — reserved for header / hero / footer sections */
-  --color-navy: #0b1220;
-  --color-navy-elevated: #131b2e;
-  --color-navy-foreground: #f8fafc;
-  --color-navy-border: rgb(255 255 255 / 8%);
-  --color-navy-muted: #94a3b8;
+  --color-primary: #001736;
+  --color-primary-container: #002b5b;
+  --color-primary-glow: #009dd8;
+  --color-accent: #ba0036;
+  --color-accent-container: #e80346;
+  --color-oxygen: #009dd8;
+
+  --color-surface: #f7fafd;
+  --color-surface-low: #f1f4f7;
+  --color-surface-container: #ebeef1;
+  --color-surface-high: #e5e8eb;
+  --color-surface-highest: #e0e3e6;
+  --color-outline: #747780;
+  --color-outline-variant: #c4c6d0;
+
+  --color-navy: #001736;
+  --color-navy-elevated: #002b5b;
+  --color-navy-foreground: #ffffff;
+  --color-navy-border: rgb(255 255 255 / 12%);
+  --color-navy-muted: #a9c7ff;
+
+  --radius-sm: 0.25rem;
+  --radius-base: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --content-max: 1280px;
 }
 
 @theme inline {
@@ -30,24 +46,31 @@
   --color-muted: var(--color-muted);
   --color-muted-bg: var(--color-muted-bg);
   --color-border: var(--color-border);
-
   --color-primary: var(--color-primary);
   --color-primary-glow: var(--color-primary-glow);
   --color-accent: var(--color-accent);
-
   --color-navy: var(--color-navy);
   --color-navy-elevated: var(--color-navy-elevated);
   --color-navy-foreground: var(--color-navy-foreground);
   --color-navy-border: var(--color-navy-border);
   --color-navy-muted: var(--color-navy-muted);
-
   --font-fa: var(--font-vazirmatn);
   --font-en: var(--font-inter);
 }
 
-body {
+html {
+  scroll-behavior: smooth;
   background: var(--color-background);
+}
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 12% 0%, rgb(0 157 216 / 8%), transparent 30rem),
+    radial-gradient(circle at 88% 8%, rgb(186 0 54 / 5%), transparent 26rem),
+    var(--color-background);
   color: var(--color-foreground);
+  text-rendering: optimizeLegibility;
 }
 
 [dir="rtl"] body {
@@ -58,12 +81,72 @@ body {
   font-family: var(--font-inter), system-ui, sans-serif;
 }
 
+/* Shared Stitch-inspired high-fidelity surfaces */
+.vitalis-container {
+  width: min(calc(100% - 2rem), var(--content-max));
+  margin-inline: auto;
+}
+
+.vitalis-glass {
+  background: rgb(255 255 255 / 76%);
+  border: 1px solid rgb(196 198 208 / 70%);
+  box-shadow: 0 18px 55px rgb(0 23 54 / 8%);
+  backdrop-filter: blur(18px) saturate(135%);
+}
+
+.vitalis-panel {
+  background: linear-gradient(145deg, rgb(255 255 255 / 98%), rgb(241 244 247 / 92%));
+  border: 1px solid rgb(196 198 208 / 65%);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 16px 44px rgb(0 23 54 / 7%);
+}
+
+.vitalis-dark-panel {
+  background:
+    radial-gradient(circle at 75% 15%, rgb(0 157 216 / 18%), transparent 24rem),
+    linear-gradient(135deg, #001736, #002b5b 62%, #001927);
+  color: #fff;
+  border: 1px solid rgb(255 255 255 / 10%);
+  box-shadow: 0 24px 70px rgb(0 23 54 / 18%);
+}
+
+.vitalis-focus {
+  outline: none;
+  transition: box-shadow 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.vitalis-focus:focus-visible {
+  box-shadow: 0 0 0 4px rgb(0 157 216 / 20%);
+  border-color: var(--color-oxygen);
+}
+
+.vitalis-interactive {
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.vitalis-interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 50px rgb(0 23 54 / 11%);
+}
+
 /* Tabular figures for prices/specs so columns stay aligned */
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
 
+::selection {
+  background: rgb(0 157 216 / 22%);
+  color: #001736;
+}
+
+@media (max-width: 640px) {
+  .vitalis-container {
+    width: min(calc(100% - 1.25rem), var(--content-max));
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
   *,
   *::before,
   *::after {
