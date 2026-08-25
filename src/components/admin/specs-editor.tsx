@@ -3,16 +3,23 @@
 import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 
-type SpecRow = { key: string; fa: string; en: string };
+type SpecRow = { key: string; fa: string; tr: string; en: string; ar: string };
 
 function parseInitial(json: string): SpecRow[] {
   try {
-    const parsed = JSON.parse(json) as Record<string, { fa: string; en: string }>;
-    return Object.entries(parsed).map(([key, value]) => ({
-      key,
-      fa: value.fa ?? "",
-      en: value.en ?? "",
-    }));
+    const parsed = JSON.parse(json) as Record<string, string | Partial<Omit<SpecRow, "key">>>;
+    return Object.entries(parsed).map(([key, value]) => {
+      if (typeof value === "string") {
+        return { key, fa: value, tr: value, en: value, ar: value };
+      }
+      return {
+        key,
+        fa: value.fa ?? "",
+        tr: value.tr ?? "",
+        en: value.en ?? "",
+        ar: value.ar ?? "",
+      };
+    });
   } catch {
     return [];
   }
@@ -23,69 +30,78 @@ export function SpecsEditor({ name, defaultValue }: { name: string; defaultValue
 
   const serialized = JSON.stringify(
     Object.fromEntries(
-      rows.filter((r) => r.key.trim()).map((r) => [r.key.trim(), { fa: r.fa, en: r.en }])
-    )
+      rows
+        .filter((row) => row.key.trim())
+        .map((row) => [row.key.trim(), { fa: row.fa, tr: row.tr, en: row.en, ar: row.ar }]),
+    ),
   );
 
+  function update(index: number, patch: Partial<SpecRow>) {
+    setRows((previous) => previous.map((row, i) => (i === index ? { ...row, ...patch } : row)));
+  }
+
   return (
-    <div className="flex flex-col gap-3">
-      <span className="text-xs font-medium text-muted">مشخصات فنی</span>
+    <fieldset className="rounded-2xl border border-border bg-white p-4 sm:p-5">
+      <legend className="px-2 text-xs font-bold text-muted">مشخصات فنی چندزبانه</legend>
       <input type="hidden" name={name} value={serialized} />
 
-      <div className="space-y-2">
-        {rows.map((row, i) => (
-          <div key={i} className="grid grid-cols-[1fr_1fr_1fr_auto] gap-2">
-            <input
-              placeholder="ویژگی (مثلاً وزن)"
-              value={row.key}
-              onChange={(e) =>
-                setRows((prev) =>
-                  prev.map((r, idx) => (idx === i ? { ...r, key: e.target.value } : r))
-                )
-              }
-              className="h-10 rounded-lg border border-border bg-background px-2.5 text-xs"
-            />
-            <input
-              placeholder="مقدار (فارسی)"
-              value={row.fa}
-              onChange={(e) =>
-                setRows((prev) =>
-                  prev.map((r, idx) => (idx === i ? { ...r, fa: e.target.value } : r))
-                )
-              }
-              className="h-10 rounded-lg border border-border bg-background px-2.5 text-xs"
-            />
-            <input
-              placeholder="Value (English)"
-              dir="ltr"
-              value={row.en}
-              onChange={(e) =>
-                setRows((prev) =>
-                  prev.map((r, idx) => (idx === i ? { ...r, en: e.target.value } : r))
-                )
-              }
-              className="h-10 rounded-lg border border-border bg-background px-2.5 text-xs"
-            />
-            <button
-              type="button"
-              onClick={() => setRows((prev) => prev.filter((_, idx) => idx !== i))}
-              className="flex h-10 w-10 items-center justify-center rounded-lg text-muted hover:bg-accent/10 hover:text-accent cursor-pointer"
-              aria-label="حذف"
-            >
-              <Trash2 className="h-4 w-4" />
-            </button>
+      <div className="space-y-3">
+        {rows.map((row, index) => (
+          <div key={index} className="rounded-xl border border-border bg-muted-bg/50 p-3">
+            <div className="grid gap-2 lg:grid-cols-[1.1fr_1fr_1fr_1fr_1fr_auto]">
+              <input
+                placeholder="ویژگی / کلید"
+                value={row.key}
+                onChange={(event) => update(index, { key: event.target.value })}
+                className="vitalis-focus h-10 rounded-lg border border-border bg-white px-2.5 text-xs"
+              />
+              <input
+                placeholder="مقدار فارسی"
+                value={row.fa}
+                onChange={(event) => update(index, { fa: event.target.value })}
+                className="vitalis-focus h-10 rounded-lg border border-border bg-white px-2.5 text-xs"
+              />
+              <input
+                placeholder="Türkçe değer"
+                dir="ltr"
+                value={row.tr}
+                onChange={(event) => update(index, { tr: event.target.value })}
+                className="vitalis-focus h-10 rounded-lg border border-border bg-white px-2.5 text-xs"
+              />
+              <input
+                placeholder="English value"
+                dir="ltr"
+                value={row.en}
+                onChange={(event) => update(index, { en: event.target.value })}
+                className="vitalis-focus h-10 rounded-lg border border-border bg-white px-2.5 text-xs"
+              />
+              <input
+                placeholder="القيمة العربية"
+                value={row.ar}
+                onChange={(event) => update(index, { ar: event.target.value })}
+                className="vitalis-focus h-10 rounded-lg border border-border bg-white px-2.5 text-xs"
+              />
+              <button
+                type="button"
+                onClick={() => setRows((previous) => previous.filter((_, i) => i !== index))}
+                className="vitalis-focus flex h-10 w-10 items-center justify-center rounded-lg text-muted transition hover:bg-accent/10 hover:text-accent"
+                aria-label="حذف مشخصه"
+              >
+                <Trash2 className="h-4 w-4" aria-hidden="true" />
+              </button>
+            </div>
           </div>
         ))}
       </div>
 
       <button
         type="button"
-        onClick={() => setRows((prev) => [...prev, { key: "", fa: "", en: "" }])}
-        className="flex w-fit min-h-9 items-center gap-1.5 rounded-lg border border-dashed border-border px-3 text-xs font-medium text-foreground hover:bg-muted-bg cursor-pointer"
+        onClick={() => setRows((previous) => [...previous, { key: "", fa: "", tr: "", en: "", ar: "" }])}
+        className="vitalis-focus mt-3 flex min-h-10 w-fit items-center gap-1.5 rounded-xl border border-dashed border-border px-4 text-xs font-bold text-foreground transition hover:border-primary/40 hover:bg-muted-bg"
       >
         <Plus className="h-3.5 w-3.5" aria-hidden="true" />
         افزودن مشخصه
       </button>
-    </div>
+    </fieldset>
   );
 }
