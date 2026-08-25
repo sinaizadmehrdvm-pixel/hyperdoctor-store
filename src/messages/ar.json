@@ -1,0 +1,112 @@
+{
+  "brand": {
+    "holding": "VITALIS Group",
+    "subBrand": "Hyper Doctor",
+    "tagline": "تقنية ذكية، رعاية أفضل"
+  },
+  "nav": {
+    "home": "الرئيسية",
+    "shop": "المتجر",
+    "services": "خدمات التنفس",
+    "about": "من نحن",
+    "contact": "اتصل بنا",
+    "cart": "السلة",
+    "search": "ابحث عن منتج أو خدمة..."
+  },
+  "home": {
+    "heroEyebrow": "حلول احترافية للمعدات الطبية",
+    "heroTitle": "معدات طبية وخدمات تنفسية بجودة Hyper Doctor",
+    "heroSubtitle": "من أجهزة CPAP ومكثفات الأكسجين إلى اختبارات النوم المنزلية — حلول موثوقة ضمن منظومة VITALIS Group.",
+    "heroCtaShop": "تصفح المنتجات",
+    "heroCtaServices": "حجز اختبار نوم",
+    "trustBarTitle": "شريك موثوق للمستشفيات والعيادات والمتخصصين الصحيين",
+    "categoriesTitle": "فئات المنتجات والخدمات",
+    "featuredTitle": "منتجات مختارة",
+    "featuredSubtitle": "أكثر معدات التنفس والأجهزة الطبية طلباً",
+    "serviceSpotlightEyebrow": "رعاية تنفسية منزلية",
+    "serviceSpotlightTitle": "اختبار النوم في راحة منزلك",
+    "serviceSpotlightBody": "يقوم فريق Hyper Doctor المتخصص بتقييم جودة نومك في المنزل باستخدام معدات معيارية وتقديم النتائج مع إرشاد مهني.",
+    "serviceSpotlightCta": "التفاصيل والحجز",
+    "roadmapEyebrow": "رؤية VITALIS Group",
+    "roadmapTitle": "منظومة صحية تتوسع مع Hyper Doctor",
+    "roadmapBody": "تعمل VITALIS Group على التوسع في مجالات جديدة من تقنيات وخدمات الرعاية الصحية.",
+    "roadmapDental": "طب الأسنان",
+    "roadmapVeterinary": "الطب البيطري",
+    "roadmapPharmacy": "الصيدلة",
+    "roadmapNursing": "التمريض",
+    "roadmapComingSoon": "قريباً",
+    "ctaTitle": "تحدث مع خبرائنا لاختيار المعدات الطبية المناسبة",
+    "ctaButton": "تواصل مع خبرائنا"
+  },
+  "shop": {
+    "title": "متجر المعدات الطبية",
+    "filterCategory": "الفئة",
+    "filterAll": "كل الفئات",
+    "sortLabel": "ترتيب حسب",
+    "sortNewest": "الأحدث",
+    "sortPriceAsc": "السعر: من الأقل للأعلى",
+    "sortPriceDesc": "السعر: من الأعلى للأقل",
+    "empty": "لم يتم العثور على منتجات.",
+    "addToCart": "أضف إلى السلة",
+    "outOfStock": "غير متوفر",
+    "inStock": "متوفر",
+    "priceLabel": "السعر",
+    "specsTitle": "المواصفات الفنية",
+    "relatedTitle": "منتجات ذات صلة"
+  },
+  "services": {
+    "title": "خدمات التنفس",
+    "bookNow": "احجز الآن",
+    "priceFrom": "ابتداءً من",
+    "durationLabel": "المدة",
+    "minutes": "دقيقة",
+    "preferredDate": "التاريخ المفضل",
+    "requiresBooking": "هذه الخدمة تتطلب حجز موعد"
+  },
+  "cart": {
+    "title": "سلة التسوق",
+    "empty": "سلة التسوق فارغة.",
+    "product": "المنتج / الخدمة",
+    "quantity": "الكمية",
+    "price": "السعر",
+    "total": "الإجمالي",
+    "remove": "حذف",
+    "continueShopping": "متابعة التسوق",
+    "checkout": "متابعة الدفع",
+    "subtotal": "المجموع الفرعي",
+    "shipping": "الشحن",
+    "grandTotal": "المبلغ المستحق"
+  },
+  "checkout": {
+    "title": "إتمام الطلب",
+    "customerInfo": "بيانات العميل",
+    "fullName": "الاسم الكامل",
+    "phone": "رقم الهاتف",
+    "email": "البريد الإلكتروني (اختياري)",
+    "address": "العنوان الكامل",
+    "city": "المدينة",
+    "postalCode": "الرمز البريدي",
+    "notes": "ملاحظات الطلب (اختياري)",
+    "submit": "الدفع وإرسال الطلب",
+    "gatewayNote": "بعد إرسال المعلومات سيتم توجيهك إلى خطوة الدفع الآمنة."
+  },
+  "orderResult": {
+    "successTitle": "تم الدفع بنجاح",
+    "successBody": "تم تسجيل طلبك برقم التتبع أدناه. سيتواصل فريقنا معك قريباً.",
+    "failTitle": "فشل الدفع",
+    "failBody": "لم تكتمل عملية الدفع. يمكنك المحاولة مرة أخرى أو التواصل مع الدعم.",
+    "orderNumber": "رقم الطلب",
+    "backHome": "العودة للرئيسية"
+  },
+  "footer": {
+    "about": "Hyper Doctor علامة ضمن VITALIS Group تقدم المعدات الطبية وخدمات الرعاية التنفسية بحلول موثوقة.",
+    "quickLinks": "روابط سريعة",
+    "contactTitle": "معلومات التواصل",
+    "rights": "جميع الحقوق محفوظة."
+  },
+  "common": {
+    "currency": "TRY",
+    "loading": "جارٍ التحميل...",
+    "readMore": "اقرأ المزيد"
+  }
+}
