@@ -11,11 +11,43 @@ async function requireAdmin() {
   if (!session) redirect("/admin/login");
 }
 
+function optionalNumber(value: FormDataEntryValue | null) {
+  if (value === null || String(value).trim() === "") return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? Math.trunc(number) : null;
+}
+
+function parseImages(value: FormDataEntryValue | null) {
+  if (!value) return [] as string[];
+  try {
+    const parsed = JSON.parse(String(value));
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map(String).map((url) => url.trim()).filter(Boolean).slice(0, 12);
+  } catch {
+    return [] as string[];
+  }
+}
+
 export async function upsertProduct(formData: FormData) {
   await requireAdmin();
 
   const id = String(formData.get("id") || "");
-  const imageUrl = String(formData.get("imageUrl") || "");
+  const nameFa = String(formData.get("nameFa") || "").trim();
+  const nameTr = String(formData.get("nameTr") || "").trim();
+  const nameEn = String(formData.get("nameEn") || "").trim();
+  const nameAr = String(formData.get("nameAr") || "").trim();
+  const sku = String(formData.get("sku") || "").trim();
+  const categoryId = String(formData.get("categoryId") || "").trim();
+
+  if (!nameFa || !nameEn || !sku || !categoryId) {
+    throw new Error("نام فارسی، نام انگلیسی، SKU و دسته‌بندی الزامی هستند.");
+  }
+
+  const price = Number(formData.get("price") || 0);
+  const stock = Number(formData.get("stock") || 0);
+  if (!Number.isFinite(price) || price < 0 || !Number.isFinite(stock) || stock < 0) {
+    throw new Error("قیمت و موجودی باید عدد معتبر و غیرمنفی باشند.");
+  }
 
   const data = {
     vertical: String(formData.get("vertical")) as
@@ -25,35 +57,64 @@ export async function upsertProduct(formData: FormData) {
       | "VETERINARY"
       | "PHARMACY"
       | "NURSING",
-    categoryId: String(formData.get("categoryId")),
-    slug: slugify(String(formData.get("slug") || formData.get("nameEn"))),
-    nameFa: String(formData.get("nameFa") || ""),
-    nameEn: String(formData.get("nameEn") || ""),
+    categoryId,
+    slug: slugify(String(formData.get("slug") || nameEn || nameFa)),
+    nameFa,
+    nameTr,
+    nameEn,
+    nameAr,
     descriptionFa: String(formData.get("descriptionFa") || ""),
+    descriptionTr: String(formData.get("descriptionTr") || ""),
     descriptionEn: String(formData.get("descriptionEn") || ""),
-    brand: String(formData.get("brand") || ""),
-    sku: String(formData.get("sku") || ""),
-    price: Number(formData.get("price") || 0),
-    compareAtPrice: formData.get("compareAtPrice")
-      ? Number(formData.get("compareAtPrice"))
-      : null,
-    stock: Number(formData.get("stock") || 0),
+    descriptionAr: String(formData.get("descriptionAr") || ""),
+    brand: String(formData.get("brand") || "").trim(),
+    modelNumber: String(formData.get("modelNumber") || "").trim(),
+    sku,
+    barcode: String(formData.get("barcode") || "").trim(),
+    gtin: String(formData.get("gtin") || "").trim(),
+    manufacturer: String(formData.get("manufacturer") || "").trim(),
+    countryOfOrigin: String(formData.get("countryOfOrigin") || "").trim(),
+    price: Math.trunc(price),
+    compareAtPrice: optionalNumber(formData.get("compareAtPrice")),
+    costPrice: optionalNumber(formData.get("costPrice")),
+    stock: Math.trunc(stock),
+    lowStockThreshold: optionalNumber(formData.get("lowStockThreshold")) ?? 2,
+    minOrderQty: optionalNumber(formData.get("minOrderQty")) ?? 1,
+    maxOrderQty: optionalNumber(formData.get("maxOrderQty")),
+    warrantyMonths: optionalNumber(formData.get("warrantyMonths")),
     specs: String(formData.get("specs") || "{}"),
+    tags: String(formData.get("tags") || "[]"),
+    seoTitleFa: String(formData.get("seoTitleFa") || ""),
+    seoTitleTr: String(formData.get("seoTitleTr") || ""),
+    seoTitleEn: String(formData.get("seoTitleEn") || ""),
+    seoTitleAr: String(formData.get("seoTitleAr") || ""),
+    seoDescriptionFa: String(formData.get("seoDescriptionFa") || ""),
+    seoDescriptionTr: String(formData.get("seoDescriptionTr") || ""),
+    seoDescriptionEn: String(formData.get("seoDescriptionEn") || ""),
+    seoDescriptionAr: String(formData.get("seoDescriptionAr") || ""),
     isPublished: formData.get("isPublished") === "on",
     isFeatured: formData.get("isFeatured") === "on",
+    isNewArrival: formData.get("isNewArrival") === "on",
   };
 
   const product = id
     ? await prisma.product.update({ where: { id }, data })
     : await prisma.product.create({ data });
 
-  if (imageUrl) {
-    const existingImage = await prisma.media.findFirst({ where: { productId: product.id } });
-    if (existingImage) {
-      await prisma.media.update({ where: { id: existingImage.id }, data: { url: imageUrl } });
-    } else {
-      await prisma.media.create({
-        data: { url: imageUrl, productId: product.id, altFa: data.nameFa, altEn: data.nameEn },
+  const imageUrls = parseImages(formData.get("imageUrls"));
+  if (formData.has("imageUrls")) {
+    await prisma.media.deleteMany({ where: { productId: product.id } });
+    if (imageUrls.length) {
+      await prisma.media.createMany({
+        data: imageUrls.map((url, sortOrder) => ({
+          url,
+          sortOrder,
+          productId: product.id,
+          altFa: nameFa,
+          altTr: nameTr || nameEn,
+          altEn: nameEn,
+          altAr: nameAr || nameFa,
+        })),
       });
     }
   }
