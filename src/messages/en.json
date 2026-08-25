@@ -1,6 +1,6 @@
 {
   "brand": {
-    "holding": "Vetrix Holding",
+    "holding": "VITALIS Group",
     "subBrand": "Hyper Doctor",
     "tagline": "Smart Technology, Better Care"
   },
@@ -14,22 +14,22 @@
     "search": "Search products or services..."
   },
   "home": {
-    "heroEyebrow": "Authorized medical equipment distributor",
+    "heroEyebrow": "Professional medical equipment solutions",
     "heroTitle": "Medical equipment and respiratory services, backed by Hyper Doctor quality",
-    "heroSubtitle": "From CPAP devices and oxygen concentrators to at-home sleep testing — everything from one trusted source under Vetrix Holding.",
+    "heroSubtitle": "From CPAP devices and oxygen concentrators to at-home sleep testing — trusted healthcare solutions within the VITALIS Group ecosystem.",
     "heroCtaShop": "Browse Products",
     "heroCtaServices": "Book a Sleep Test",
-    "trustBarTitle": "Trusted by hospitals and clinics nationwide",
+    "trustBarTitle": "Trusted by hospitals, clinics and healthcare professionals",
     "categoriesTitle": "Products & Service Categories",
     "featuredTitle": "Featured Products",
     "featuredSubtitle": "Our best-selling and recommended respiratory & medical equipment",
     "serviceSpotlightEyebrow": "At-Home Respiratory Care",
     "serviceSpotlightTitle": "Sleep Test in the comfort of your own home",
-    "serviceSpotlightBody": "Hyper Doctor's specialist team evaluates your sleep quality at home with standardized equipment and delivers results with medical guidance.",
+    "serviceSpotlightBody": "Hyper Doctor's specialist team evaluates your sleep quality at home with standardized equipment and delivers results with professional guidance.",
     "serviceSpotlightCta": "Details & Booking",
-    "roadmapEyebrow": "Vetrix Holding Vision",
-    "roadmapTitle": "Coming soon alongside Hyper Doctor",
-    "roadmapBody": "Vetrix Holding is expanding into other areas of healthcare.",
+    "roadmapEyebrow": "VITALIS Group Vision",
+    "roadmapTitle": "A growing healthcare ecosystem alongside Hyper Doctor",
+    "roadmapBody": "VITALIS Group is expanding into new healthcare technology and service verticals.",
     "roadmapDental": "Dental",
     "roadmapVeterinary": "Veterinary",
     "roadmapPharmacy": "Pharmacy",
@@ -88,7 +88,7 @@
     "postalCode": "Postal Code",
     "notes": "Order Notes (optional)",
     "submit": "Pay & Place Order",
-    "gatewayNote": "You'll be redirected to Zarinpal's secure payment gateway after submitting."
+    "gatewayNote": "You'll be redirected to a secure payment step after submitting."
   },
   "orderResult": {
     "successTitle": "Payment Successful",
@@ -99,13 +99,13 @@
     "backHome": "Back to Home"
   },
   "footer": {
-    "about": "Hyper Doctor, the medical equipment distribution arm of Vetrix Holding, providing genuine equipment and respiratory services.",
+    "about": "Hyper Doctor is the medical equipment and respiratory-care brand within the VITALIS Group healthcare ecosystem.",
     "quickLinks": "Quick Links",
     "contactTitle": "Contact Info",
     "rights": "All rights reserved."
   },
   "common": {
-    "currency": "IRT",
+    "currency": "TRY",
     "loading": "Loading...",
     "readMore": "Read More"
   }
