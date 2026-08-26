@@ -112,30 +112,66 @@ model Service {
 }
 
 model Page {
-  id          String   @id @default(cuid())
-  slug        String   @unique
+  id          String        @id @default(cuid())
+  slug        String        @unique
   titleFa     String
   titleEn     String
-  contentFa   String   @default("")
-  contentEn   String   @default("")
-  template    String   @default("default")
-  isPublished Boolean  @default(false)
-  showInNav   Boolean  @default(false)
-  navOrder    Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  contentFa   String        @default("")
+  contentEn   String        @default("")
+  template    String        @default("default")
+  isPublished Boolean       @default(false)
+  showInNav   Boolean       @default(false)
+  navOrder    Int           @default(0)
+  sections    PageSection[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+/// Ordered, bilingual page blocks managed by the admin. `type` and `status`
+/// intentionally remain strings so adding a new renderer does not require a
+/// database enum migration; the server-side section validator owns the closed
+/// set accepted for public rendering.
+model PageSection {
+  id              String   @id @default(cuid())
+  pageId          String
+  page            Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  type            String
+  sortOrder       Int      @default(0)
+  enabled         Boolean  @default(true)
+  status          String   @default("DRAFT")
+  titleFa         String   @default("")
+  titleEn         String   @default("")
+  bodyFa          String   @default("")
+  bodyEn          String   @default("")
+  ctaLabelFa      String   @default("")
+  ctaLabelEn      String   @default("")
+  ctaHref         String   @default("")
+  backgroundUrl   String   @default("")
+  backgroundAltFa String   @default("")
+  backgroundAltEn String   @default("")
+  settings        String   @default("{}")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([pageId, sortOrder])
+  @@unique([pageId, sortOrder])
 }
 
 model Media {
-  id        String   @id @default(cuid())
-  url       String
-  altFa     String   @default("")
-  altEn     String   @default("")
-  width     Int?
-  height    Int?
-  productId String?
-  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
-  createdAt DateTime @default(now())
+  id          String   @id @default(cuid())
+  url         String
+  altFa       String   @default("")
+  altEn       String   @default("")
+  width       Int?
+  height      Int?
+  sortOrder   Int      @default(0)
+  isPrimary   Boolean  @default(false)
+  isPublished Boolean  @default(true)
+  productId   String?
+  product     Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+
+  @@index([productId, sortOrder])
 }
 
 model Order {
