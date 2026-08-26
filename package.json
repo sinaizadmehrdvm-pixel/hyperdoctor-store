@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "seed": "tsx prisma/seed.ts",
-    "import:products": "tsx scripts/import-products.ts"
+    "import:products": "tsx scripts/import-products.ts",
+    "test:catalog-smoke": "tsx scripts/smoke-catalog.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
