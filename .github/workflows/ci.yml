@@ -27,4 +27,5 @@ jobs:
       - run: npm ci
       - run: npx prisma generate
       - run: npx prisma db push
+      - run: npm run test:catalog-smoke
       - run: npm run build
