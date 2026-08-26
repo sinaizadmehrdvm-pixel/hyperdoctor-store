@@ -1,9 +1,13 @@
 import { prisma } from "@/lib/prisma";
 
-export async function getSiteSettings() {
-  const settings = await prisma.siteSetting.findUnique({ where: { id: 1 } });
-  if (settings) return settings;
-  return prisma.siteSetting.create({ data: { id: 1 } });
+export function getSiteSettings() {
+  // `findUnique() → create()` races during parallel prerender workers. Use one
+  // atomic upsert so every route can safely request settings concurrently.
+  return prisma.siteSetting.upsert({
+    where: { id: 1 },
+    update: {},
+    create: { id: 1 },
+  });
 }
 
 export async function getNavPages() {
