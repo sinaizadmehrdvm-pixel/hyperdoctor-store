@@ -1,10 +1,9 @@
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
-import Image from "next/image";
-import { ImageOff } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { Badge } from "@/components/ui/badge";
 import { ProductCard } from "@/components/site/product-card";
+import { ProductGallery } from "@/components/site/product-gallery";
 import { AddToCartButton } from "@/components/site/add-to-cart-button";
 import { formatPrice } from "@/lib/utils";
 import { getProductBySlug, getRelatedProducts } from "@/lib/queries";
@@ -17,11 +16,12 @@ export default async function ProductPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const [locale, t, c] = await Promise.all([
+  const [localeValue, t, c] = await Promise.all([
     getLocale(),
     getTranslations("shop"),
     getTranslations("common"),
   ]);
+  const locale = localeValue === "en" ? "en" : "fa";
 
   const product = await getProductBySlug(slug);
   if (!product) notFound();
@@ -42,22 +42,7 @@ export default async function ProductPage({
     <main className="flex-1 py-12">
       <Container>
         <div className="grid gap-10 lg:grid-cols-2">
-          <div className="relative aspect-square overflow-hidden rounded-2xl bg-muted-bg">
-            {image ? (
-              <Image
-                src={image.url}
-                alt={locale === "fa" ? image.altFa : image.altEn}
-                fill
-                className="object-cover"
-                sizes="(min-width: 1024px) 45vw, 90vw"
-                priority
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center text-muted">
-                <ImageOff className="h-12 w-12" aria-hidden="true" />
-              </div>
-            )}
-          </div>
+          <ProductGallery images={product.images} locale={locale} />
 
           <div>
             {product.brand ? <Badge variant="muted">{product.brand}</Badge> : null}
