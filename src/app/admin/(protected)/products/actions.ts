@@ -2,19 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { adminRpc } from "@/lib/admin-data";
 import { slugify } from "@/lib/slug";
 
-async function requireAdmin() {
-  const session = await auth();
-  if (!session) redirect("/admin/login");
-}
-
 function optionalNumber(value: FormDataEntryValue | null) {
-  if (value === null || String(value).trim() === "") return null;
+  if (value === null || String(value).trim() === "") return "";
   const number = Number(value);
-  return Number.isFinite(number) ? Math.trunc(number) : null;
+  return Number.isFinite(number) ? String(Math.trunc(number)) : "";
 }
 
 function parseImages(value: FormDataEntryValue | null) {
@@ -29,34 +23,22 @@ function parseImages(value: FormDataEntryValue | null) {
 }
 
 export async function upsertProduct(formData: FormData) {
-  await requireAdmin();
-
-  const id = String(formData.get("id") || "");
+  const id = String(formData.get("id") || "").trim();
   const nameFa = String(formData.get("nameFa") || "").trim();
   const nameTr = String(formData.get("nameTr") || "").trim();
   const nameEn = String(formData.get("nameEn") || "").trim();
   const nameAr = String(formData.get("nameAr") || "").trim();
   const sku = String(formData.get("sku") || "").trim();
   const categoryId = String(formData.get("categoryId") || "").trim();
-
-  if (!nameFa || !nameEn || !sku || !categoryId) {
-    throw new Error("نام فارسی، نام انگلیسی، SKU و دسته‌بندی الزامی هستند.");
-  }
-
   const price = Number(formData.get("price") || 0);
   const stock = Number(formData.get("stock") || 0);
-  if (!Number.isFinite(price) || price < 0 || !Number.isFinite(stock) || stock < 0) {
-    throw new Error("قیمت و موجودی باید عدد معتبر و غیرمنفی باشند.");
-  }
 
-  const data = {
-    vertical: String(formData.get("vertical")) as
-      | "MEDICAL_EQUIPMENT"
-      | "RESPIRATORY_SERVICES"
-      | "DENTAL"
-      | "VETERINARY"
-      | "PHARMACY"
-      | "NURSING",
+  if (!nameFa || !nameEn || !sku || !categoryId) throw new Error("نام فارسی، نام انگلیسی، SKU و دسته‌بندی الزامی هستند.");
+  if (!Number.isFinite(price) || price < 0 || !Number.isFinite(stock) || stock < 0) throw new Error("قیمت و موجودی باید عدد معتبر و غیرمنفی باشند.");
+
+  const payload = {
+    id,
+    vertical: String(formData.get("vertical") || "MEDICAL_EQUIPMENT"),
     categoryId,
     slug: slugify(String(formData.get("slug") || nameEn || nameFa)),
     nameFa,
@@ -74,13 +56,17 @@ export async function upsertProduct(formData: FormData) {
     gtin: String(formData.get("gtin") || "").trim(),
     manufacturer: String(formData.get("manufacturer") || "").trim(),
     countryOfOrigin: String(formData.get("countryOfOrigin") || "").trim(),
-    price: Math.trunc(price),
+    price: String(Math.trunc(price)),
     compareAtPrice: optionalNumber(formData.get("compareAtPrice")),
     costPrice: optionalNumber(formData.get("costPrice")),
-    stock: Math.trunc(stock),
-    lowStockThreshold: optionalNumber(formData.get("lowStockThreshold")) ?? 2,
-    minOrderQty: optionalNumber(formData.get("minOrderQty")) ?? 1,
+    stock: String(Math.trunc(stock)),
+    lowStockThreshold: optionalNumber(formData.get("lowStockThreshold")) || "2",
+    minOrderQty: optionalNumber(formData.get("minOrderQty")) || "1",
     maxOrderQty: optionalNumber(formData.get("maxOrderQty")),
+    weightGrams: optionalNumber(formData.get("weightGrams")),
+    lengthMm: optionalNumber(formData.get("lengthMm")),
+    widthMm: optionalNumber(formData.get("widthMm")),
+    heightMm: optionalNumber(formData.get("heightMm")),
     warrantyMonths: optionalNumber(formData.get("warrantyMonths")),
     specs: String(formData.get("specs") || "{}"),
     tags: String(formData.get("tags") || "[]"),
@@ -97,27 +83,10 @@ export async function upsertProduct(formData: FormData) {
     isNewArrival: formData.get("isNewArrival") === "on",
   };
 
-  const product = id
-    ? await prisma.product.update({ where: { id }, data })
-    : await prisma.product.create({ data });
-
-  const imageUrls = parseImages(formData.get("imageUrls"));
-  if (formData.has("imageUrls")) {
-    await prisma.media.deleteMany({ where: { productId: product.id } });
-    if (imageUrls.length) {
-      await prisma.media.createMany({
-        data: imageUrls.map((url, sortOrder) => ({
-          url,
-          sortOrder,
-          productId: product.id,
-          altFa: nameFa,
-          altTr: nameTr || nameEn,
-          altEn: nameEn,
-          altAr: nameAr || nameFa,
-        })),
-      });
-    }
-  }
+  await adminRpc<{ id: string }>("admin_upsert_product", {
+    p_data: payload,
+    p_images: parseImages(formData.get("imageUrls")),
+  });
 
   revalidatePath("/admin/products");
   revalidatePath("/", "layout");
@@ -125,8 +94,7 @@ export async function upsertProduct(formData: FormData) {
 }
 
 export async function deleteProduct(id: string) {
-  await requireAdmin();
-  await prisma.product.delete({ where: { id } });
+  await adminRpc<boolean>("admin_archive_product", { p_id: id });
   revalidatePath("/admin/products");
   revalidatePath("/", "layout");
 }
