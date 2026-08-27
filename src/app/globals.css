@@ -129,6 +129,150 @@ body {
   box-shadow: 0 20px 50px rgb(0 23 54 / 11%);
 }
 
+/* Google Stitch 61-screen reference primitives */
+.stitch-page-shell {
+  background:
+    radial-gradient(circle at 82% 0%, rgb(0 157 216 / 7%), transparent 28rem),
+    radial-gradient(circle at 4% 28%, rgb(186 0 54 / 4%), transparent 24rem),
+    #f7fafd;
+}
+
+.stitch-home-stage {
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+
+.stitch-hero-slide {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  transform-style: preserve-3d;
+}
+
+.stitch-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgb(0 23 54 / 96%), rgb(0 23 54 / 64%), rgb(0 23 54 / 28%));
+}
+
+@media (min-width: 768px) {
+  .stitch-hero-overlay {
+    background: linear-gradient(to right, rgb(0 23 54 / 96%), rgb(0 43 91 / 80%), rgb(0 23 54 / 30%));
+  }
+}
+
+.stitch-glass-card {
+  background: rgb(255 255 255 / 68%);
+  border: 1px solid rgb(255 255 255 / 62%);
+  backdrop-filter: blur(16px) saturate(130%);
+  -webkit-backdrop-filter: blur(16px) saturate(130%);
+  box-shadow: 0 8px 32px rgb(0 23 54 / 8%);
+}
+
+.stitch-button {
+  min-height: 44px;
+  border-radius: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding-inline: 1.5rem;
+  font-weight: 700;
+  transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+}
+
+.stitch-button:hover { transform: translateY(-1px); }
+.stitch-button-primary {
+  background: linear-gradient(145deg, #ba0036, #e80346);
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 22%), 0 8px 22px rgb(186 0 54 / 22%);
+}
+.stitch-button-ghost {
+  color: #fff;
+  background: rgb(255 255 255 / 10%);
+  border: 1px solid rgb(255 255 255 / 22%);
+  backdrop-filter: blur(10px);
+}
+
+.stitch-section-title {
+  font-size: clamp(1.35rem, 3vw, 2rem);
+  line-height: 1.35;
+  font-weight: 800;
+  color: #181c1e;
+  text-align: center;
+}
+
+.stitch-soft-card {
+  border-radius: 1rem;
+  background: #fff;
+  border: 1px solid rgb(196 198 208 / 35%);
+  box-shadow: 0 4px 20px rgb(0 23 54 / 5%);
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+.stitch-soft-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 34px rgb(0 23 54 / 10%);
+}
+
+.stitch-dark-feature {
+  background: #001736;
+  color: #fff;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 1.5rem;
+  box-shadow: 0 20px 58px rgb(0 23 54 / 18%);
+}
+
+.stitch-logo-strip {
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid rgb(196 198 208 / 30%);
+  border-radius: 1.5rem;
+}
+.stitch-logo-track {
+  display: flex;
+  width: max-content;
+  align-items: center;
+  gap: 3rem;
+  padding: 1.2rem 2rem;
+  animation: stitch-marquee 22s linear infinite;
+}
+
+@keyframes stitch-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes stitch-slide-1 {
+  0%, 14% { opacity: 1; transform: scale(1); z-index: 6; }
+  17%, 100% { opacity: 0; transform: scale(.97); z-index: 0; }
+}
+@keyframes stitch-slide-2 {
+  0%, 14%, 33%, 100% { opacity: 0; transform: scale(.97); z-index: 0; }
+  17%, 30% { opacity: 1; transform: scale(1); z-index: 6; }
+}
+@keyframes stitch-slide-3 {
+  0%, 30%, 50%, 100% { opacity: 0; transform: scale(.97); z-index: 0; }
+  33%, 47% { opacity: 1; transform: scale(1); z-index: 6; }
+}
+@keyframes stitch-slide-4 {
+  0%, 47%, 67%, 100% { opacity: 0; transform: scale(.97); z-index: 0; }
+  50%, 64% { opacity: 1; transform: scale(1); z-index: 6; }
+}
+@keyframes stitch-slide-5 {
+  0%, 64%, 84%, 100% { opacity: 0; transform: scale(.97); z-index: 0; }
+  67%, 81% { opacity: 1; transform: scale(1); z-index: 6; }
+}
+@keyframes stitch-slide-6 {
+  0%, 81%, 100% { opacity: 0; transform: scale(.97); z-index: 0; }
+  84%, 97% { opacity: 1; transform: scale(1); z-index: 6; }
+}
+.stitch-slide-1 { animation: stitch-slide-1 30s infinite cubic-bezier(.4,0,.2,1); }
+.stitch-slide-2 { animation: stitch-slide-2 30s infinite cubic-bezier(.4,0,.2,1); }
+.stitch-slide-3 { animation: stitch-slide-3 30s infinite cubic-bezier(.4,0,.2,1); }
+.stitch-slide-4 { animation: stitch-slide-4 30s infinite cubic-bezier(.4,0,.2,1); }
+.stitch-slide-5 { animation: stitch-slide-5 30s infinite cubic-bezier(.4,0,.2,1); }
+.stitch-slide-6 { animation: stitch-slide-6 30s infinite cubic-bezier(.4,0,.2,1); }
+
 /* Tabular figures for prices/specs so columns stay aligned */
 .tabular-nums {
   font-variant-numeric: tabular-nums;
@@ -143,6 +287,7 @@ body {
   .vitalis-container {
     width: min(calc(100% - 1.25rem), var(--content-max));
   }
+  .stitch-logo-track { gap: 2rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
