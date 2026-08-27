@@ -1,21 +1,41 @@
 import "server-only";
 
+const DEFAULT_PUBLISHABLE_KEY = "sb_publishable_Y2epk6rqs9_hlER6Pp6dTQ_5JlIjyyJ";
+
+function isByteString(value: string) {
+  return [...value].every((char) => char.charCodeAt(0) <= 255);
+}
+
 function getConfig() {
   const baseUrl = process.env.SUPABASE_URL?.replace(/\/$/, "");
+  const configuredPublishableKey =
+    process.env.SUPABASE_PUBLISHABLE_KEY ??
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!baseUrl || !serviceRoleKey) {
-    throw new Error("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required");
+  if (!baseUrl) {
+    throw new Error("SUPABASE_URL is required");
   }
 
-  return { baseUrl, serviceRoleKey };
+  const apiKey =
+    configuredPublishableKey?.trim() ||
+    (serviceRoleKey && isByteString(serviceRoleKey) && !serviceRoleKey.includes("•")
+      ? serviceRoleKey.trim()
+      : DEFAULT_PUBLISHABLE_KEY);
+
+  if (!apiKey || !isByteString(apiKey)) {
+    throw new Error("A valid Supabase API key is required");
+  }
+
+  return { baseUrl, apiKey };
 }
 
 export async function supabaseSelect<T>(
   table: string,
   params: Record<string, string> = {},
 ): Promise<T[]> {
-  const { baseUrl, serviceRoleKey } = getConfig();
+  const { baseUrl, apiKey } = getConfig();
   const url = new URL(`${baseUrl}/rest/v1/${encodeURIComponent(table)}`);
 
   for (const [key, value] of Object.entries(params)) {
@@ -25,8 +45,8 @@ export async function supabaseSelect<T>(
   const response = await fetch(url, {
     method: "GET",
     headers: {
-      apikey: serviceRoleKey,
-      Authorization: `Bearer ${serviceRoleKey}`,
+      apikey: apiKey,
+      Authorization: `Bearer ${apiKey}`,
       Accept: "application/json",
     },
     cache: "no-store",
