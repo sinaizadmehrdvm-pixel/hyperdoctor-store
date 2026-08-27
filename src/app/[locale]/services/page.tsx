@@ -1,71 +1,126 @@
-import { getLocale, getTranslations } from "next-intl/server";
-import Image from "next/image";
-import { Moon } from "lucide-react";
+import { getLocale } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
+import {
+  CalendarDays,
+  Home,
+  MoonStar,
+  ShieldCheck,
+  Stethoscope,
+  Wrench,
+  Wind,
+} from "lucide-react";
 import { Container } from "@/components/ui/container";
-import { LinkButton } from "@/components/ui/button";
-import { formatPrice } from "@/lib/utils";
 import { getServices } from "@/lib/queries";
+import { localizedDescription, localizedName } from "@/lib/i18n-content";
+
+function serviceIcon(slug: string) {
+  if (slug.includes("sleep")) return MoonStar;
+  if (slug.includes("titration")) return Wind;
+  if (slug.includes("installation")) return Home;
+  if (slug.includes("repair")) return Wrench;
+  return Stethoscope;
+}
 
 export default async function ServicesPage() {
-  const [locale, t, c] = await Promise.all([
-    getLocale(),
-    getTranslations("services"),
-    getTranslations("common"),
-  ]);
-  const services = await getServices();
+  const [locale, services] = await Promise.all([getLocale(), getServices()]);
+  const copy = locale === "fa"
+    ? {
+        eyebrow: "خدمات تخصصی Hyper Doctor",
+        title: "خدمات تنفسی و پشتیبانی تجهیزات پزشکی",
+        body: "از تست خواب در منزل و تیتراسیون PAP تا نصب، اجاره و تعمیر تجهیزات؛ درخواست خود را آنلاین ثبت کنید و پیگیری را به تیم تخصصی هایپر دکتر بسپارید.",
+        booking: "رزرو آنلاین",
+        details: "مشاهده جزئیات",
+        workflow: "فرآیند دریافت خدمت",
+        steps: ["انتخاب خدمت", "ثبت زمان و اطلاعات", "تأیید توسط تیم", "ارائه و پیگیری خدمت"],
+      }
+    : locale === "tr"
+      ? {
+          eyebrow: "Hyper Doctor Uzman Hizmetleri",
+          title: "Solunum ve Medikal Cihaz Destek Hizmetleri",
+          body: "Evde uyku testi ve PAP titrasyonundan cihaz kurulumu, kiralama ve onarıma kadar talebinizi çevrimiçi oluşturun.",
+          booking: "Online randevu",
+          details: "Detayları gör",
+          workflow: "Hizmet süreci",
+          steps: ["Hizmeti seçin", "Zaman ve bilgileri girin", "Ekip onayı", "Hizmet ve takip"],
+        }
+      : locale === "ar"
+        ? {
+            eyebrow: "خدمات Hyper Doctor المتخصصة",
+            title: "خدمات التنفس ودعم المعدات الطبية",
+            body: "من اختبار النوم ومعايرة PAP إلى تركيب الأجهزة وتأجيرها وصيانتها، سجّل طلبك عبر الإنترنت.",
+            booking: "حجز عبر الإنترنت",
+            details: "عرض التفاصيل",
+            workflow: "مسار الخدمة",
+            steps: ["اختيار الخدمة", "إدخال الوقت والبيانات", "تأكيد الفريق", "تنفيذ ومتابعة الخدمة"],
+          }
+        : {
+            eyebrow: "Hyper Doctor Specialist Services",
+            title: "Respiratory & Medical Equipment Support",
+            body: "From at-home sleep testing and PAP titration to device installation, rental and repair, register your request online.",
+            booking: "Book online",
+            details: "View details",
+            workflow: "Service workflow",
+            steps: ["Choose a service", "Enter time and details", "Team confirmation", "Service and follow-up"],
+          };
 
   return (
-    <main className="flex-1 py-12">
+    <main className="flex-1 bg-[#f5f8fb] pb-16 pt-6 sm:pt-10">
       <Container>
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{t("title")}</h1>
-        <div className="mt-8 grid gap-6 sm:grid-cols-2">
-          {services.map((service) => {
-            const name = locale === "fa" ? service.nameFa : service.nameEn;
-            const description =
-              locale === "fa" ? service.descriptionFa : service.descriptionEn;
-            return (
-              <div
-                key={service.id}
-                className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card"
-              >
-                <div className="relative aspect-video bg-navy">
-                  {service.image ? (
-                    <Image
-                      src={service.image}
-                      alt={name}
-                      fill
-                      className="object-cover"
-                      sizes="(min-width: 640px) 45vw, 90vw"
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center">
-                      <Moon className="h-10 w-10 text-primary-glow" aria-hidden="true" />
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-1 flex-col p-6">
-                  <h2 className="text-lg font-bold text-foreground">{name}</h2>
-                  <p className="mt-2 text-sm leading-6 text-muted line-clamp-3">
-                    {description}
-                  </p>
-                  <div className="mt-4 flex items-center justify-between">
-                    {service.price ? (
-                      <span className="text-sm font-semibold text-foreground tabular-nums">
-                        {service.priceIsFrom ? `${t("priceFrom")} ` : ""}
-                        {formatPrice(service.price, locale)} {c("currency")}
-                      </span>
-                    ) : (
-                      <span />
-                    )}
-                    <LinkButton href={`/services/${service.slug}`} size="sm">
-                      {t("bookNow")}
-                    </LinkButton>
+        <section className="relative overflow-hidden rounded-[2rem] bg-[#001736] px-6 py-10 text-white shadow-[0_24px_65px_rgba(0,23,54,.16)] sm:px-10 lg:px-14 lg:py-14">
+          <div className="absolute inset-y-0 end-0 w-1/2 bg-[radial-gradient(circle_at_center,rgba(0,157,216,.28),transparent_62%)]" />
+          <div className="relative z-10 max-w-3xl">
+            <p className="text-xs font-black uppercase tracking-[.18em] text-[#82cfff]">{copy.eyebrow}</p>
+            <h1 className="mt-4 text-3xl font-black leading-[1.3] sm:text-5xl">{copy.title}</h1>
+            <p className="mt-5 max-w-2xl text-sm leading-8 text-[#d6e3ff]/85 sm:text-base">{copy.body}</p>
+            <Link href="/booking" className="mt-7 inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-[#ba0036] px-6 text-sm font-black text-white shadow-[0_12px_28px_rgba(186,0,54,.20)] hover:bg-[#e80346]">
+              <CalendarDays className="h-4 w-4" />
+              {copy.booking}
+            </Link>
+          </div>
+        </section>
+
+        <section className="py-10 sm:py-14">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {services.map((service) => {
+              const Icon = serviceIcon(service.slug);
+              const name = localizedName(locale, service);
+              const description = localizedDescription(locale, service);
+              return (
+                <article key={service.id} className="group flex min-h-72 flex-col rounded-3xl border border-[#dfe4ea] bg-white p-6 shadow-[0_14px_38px_rgba(0,23,54,.045)] transition hover:-translate-y-1 hover:shadow-[0_22px_48px_rgba(0,23,54,.08)]">
+                  <div className="flex items-start justify-between gap-4">
+                    <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#001736] text-white shadow-[0_10px_22px_rgba(0,23,54,.15)] transition group-hover:bg-[#ba0036]">
+                      <Icon className="h-6 w-6" aria-hidden="true" />
+                    </span>
+                    <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-black text-emerald-700">
+                      {service.requiresBooking ? copy.booking : "Online"}
+                    </span>
                   </div>
-                </div>
+                  <h2 className="mt-5 text-xl font-black text-[#001736]">{name}</h2>
+                  <p className="mt-3 line-clamp-4 text-sm leading-7 text-[#5f6570]">{description}</p>
+                  <div className="mt-auto flex flex-wrap gap-2 pt-6">
+                    <Link href={`/services/${service.slug}`} className="inline-flex min-h-11 items-center justify-center rounded-xl border border-[#c4c6d0] bg-white px-4 text-xs font-black text-[#001736] hover:border-[#009dd8]">{copy.details}</Link>
+                    <Link href={`/booking?service=${encodeURIComponent(service.slug)}`} className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#002b5b] px-4 text-xs font-black text-white hover:bg-[#001736]">{copy.booking}</Link>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="overflow-hidden rounded-3xl bg-[#001736] px-6 py-8 text-white sm:px-10">
+          <div className="flex items-center gap-3">
+            <ShieldCheck className="h-6 w-6 text-[#82cfff]" />
+            <h2 className="text-xl font-black sm:text-2xl">{copy.workflow}</h2>
+          </div>
+          <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {copy.steps.map((step, index) => (
+              <div key={step} className="rounded-2xl border border-white/10 bg-white/8 p-5 backdrop-blur">
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-sm font-black text-[#001736]">{index + 1}</span>
+                <p className="mt-4 text-sm font-bold leading-6">{step}</p>
               </div>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        </section>
       </Container>
     </main>
   );
