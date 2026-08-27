@@ -18,9 +18,18 @@ export async function requestZarinpalPayment(opts: {
   amountToman: number;
   description: string;
   orderNumber: string;
+  checkoutToken: string;
   mobile?: string;
   email?: string;
 }): Promise<{ authority: string; redirectUrl: string }> {
+  if (!MERCHANT_ID) {
+    throw new Error("ZARINPAL_MERCHANT_ID is not configured");
+  }
+
+  const callback = new URL(`${SITE_URL}/api/payments/zarinpal/callback`);
+  callback.searchParams.set("order", opts.orderNumber);
+  callback.searchParams.set("ct", opts.checkoutToken);
+
   const response = await fetch(`${API_BASE}/request.json`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -28,7 +37,7 @@ export async function requestZarinpalPayment(opts: {
       merchant_id: MERCHANT_ID,
       amount: tomanToRial(opts.amountToman),
       description: opts.description,
-      callback_url: `${SITE_URL}/api/payments/zarinpal/callback?order=${opts.orderNumber}`,
+      callback_url: callback.toString(),
       metadata: { mobile: opts.mobile, email: opts.email },
     }),
   });
@@ -50,6 +59,8 @@ export async function verifyZarinpalPayment(opts: {
   amountToman: number;
   authority: string;
 }): Promise<{ success: boolean; refId?: string }> {
+  if (!MERCHANT_ID) return { success: false };
+
   const response = await fetch(`${API_BASE}/verify.json`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -62,7 +73,6 @@ export async function verifyZarinpalPayment(opts: {
 
   const data = await response.json();
   const code: number | undefined = data?.data?.code;
-  // 100 = verified now, 101 = already verified previously — both are success
   if (code === 100 || code === 101) {
     return { success: true, refId: String(data.data.ref_id) };
   }
