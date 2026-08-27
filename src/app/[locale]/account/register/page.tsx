@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { UserPlus, ShieldCheck, PackageCheck } from "lucide-react";
 import { getCustomerSession } from "@/lib/customer-auth";
-import { registerAction } from "../../actions";
+import { registerAction } from "../actions";
 
 const copy={fa:{title:"ساخت حساب کاربری",sub:"برای پیگیری سفارش، گارانتی، خدمات و پشتیبانی یک حساب امن بسازید.",name:"نام و نام خانوادگی",email:"ایمیل",phone:"شماره موبایل",pass:"رمز عبور",confirm:"تکرار رمز عبور",submit:"ایجاد حساب",have:"قبلاً ثبت‌نام کرده‌اید؟",login:"ورود"},tr:{title:"Hesap oluşturun",sub:"Sipariş, garanti, hizmet ve destek takibi için güvenli bir hesap oluşturun.",name:"Ad soyad",email:"E-posta",phone:"Telefon",pass:"Şifre",confirm:"Şifre tekrar",submit:"Hesap oluştur",have:"Zaten hesabınız var mı?",login:"Giriş"},en:{title:"Create your account",sub:"Create a secure account to track orders, warranty, services and support.",name:"Full name",email:"Email",phone:"Mobile number",pass:"Password",confirm:"Confirm password",submit:"Create account",have:"Already registered?",login:"Sign in"},ar:{title:"إنشاء حساب",sub:"أنشئ حساباً آمناً لمتابعة الطلبات والضمان والخدمات والدعم.",name:"الاسم الكامل",email:"البريد الإلكتروني",phone:"رقم الهاتف",pass:"كلمة المرور",confirm:"تأكيد كلمة المرور",submit:"إنشاء الحساب",have:"لديك حساب بالفعل؟",login:"تسجيل الدخول"}} as const;
 
