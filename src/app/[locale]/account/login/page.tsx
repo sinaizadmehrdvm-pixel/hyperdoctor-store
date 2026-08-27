@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LockKeyhole, Mail, ShieldCheck } from "lucide-react";
 import { getCustomerSession } from "@/lib/customer-auth";
-import { loginAction } from "../../actions";
+import { loginAction } from "../actions";
 
 const copy={fa:{title:"ورود به حساب کاربری",sub:"سفارش‌ها، گارانتی و درخواست‌های پشتیبانی را در یک پنل مدیریت کنید.",id:"ایمیل یا شماره موبایل",pass:"رمز عبور",submit:"ورود امن",forgot:"رمز عبور را فراموش کرده‌اید؟",new:"حساب ندارید؟",register:"ثبت‌نام"},tr:{title:"Hesabınıza giriş yapın",sub:"Siparişlerinizi, garantilerinizi ve destek taleplerinizi tek panelden yönetin.",id:"E-posta veya telefon",pass:"Şifre",submit:"Güvenli giriş",forgot:"Şifrenizi mi unuttunuz?",new:"Hesabınız yok mu?",register:"Kayıt ol"},en:{title:"Sign in to your account",sub:"Manage orders, warranties and support requests from one secure dashboard.",id:"Email or phone",pass:"Password",submit:"Secure sign in",forgot:"Forgot password?",new:"New here?",register:"Create account"},ar:{title:"تسجيل الدخول إلى حسابك",sub:"إدارة الطلبات والضمان والدعم من لوحة واحدة آمنة.",id:"البريد الإلكتروني أو الهاتف",pass:"كلمة المرور",submit:"تسجيل دخول آمن",forgot:"نسيت كلمة المرور؟",new:"ليس لديك حساب؟",register:"إنشاء حساب"}} as const;
 
