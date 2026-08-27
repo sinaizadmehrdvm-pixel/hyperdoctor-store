@@ -16,6 +16,10 @@ import {
   Headphones,
   MessageSquareText,
   ShieldCheck,
+  UsersRound,
+  Boxes,
+  Star,
+  BadgePercent,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -23,10 +27,14 @@ const items = [
   { href: "/admin", label: "داشبورد", icon: LayoutDashboard },
   { href: "/admin/products", label: "محصولات", icon: Package },
   { href: "/admin/products/import", label: "ورود گروهی کالا", icon: FileUp },
+  { href: "/admin/inventory", label: "موجودی و انبار", icon: Boxes },
   { href: "/admin/categories", label: "دسته‌بندی‌ها", icon: FolderTree },
   { href: "/admin/services", label: "خدمات", icon: Stethoscope },
   { href: "/admin/bookings", label: "رزرو خدمات", icon: CalendarCheck2 },
   { href: "/admin/orders", label: "سفارش‌ها", icon: ShoppingBag },
+  { href: "/admin/customers", label: "مشتریان", icon: UsersRound },
+  { href: "/admin/reviews", label: "نظرات", icon: Star },
+  { href: "/admin/discounts", label: "تخفیف‌ها", icon: BadgePercent },
   { href: "/admin/support", label: "پشتیبانی", icon: Headphones },
   { href: "/admin/contacts", label: "پیام‌های تماس", icon: MessageSquareText },
   { href: "/admin/warranties", label: "گارانتی", icon: ShieldCheck },
