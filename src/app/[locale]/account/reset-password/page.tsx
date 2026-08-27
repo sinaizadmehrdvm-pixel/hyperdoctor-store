@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { KeyRound, ShieldCheck } from "lucide-react";
-import { resetPasswordAction } from "../../actions";
+import { resetPasswordAction } from "../actions";
 
 export default async function ResetPasswordPage({params,searchParams}:{params:Promise<{locale:string}>;searchParams:Promise<{token?:string;error?:string}>}){
   const {locale}=await params; const q=await searchParams; const token=q.token??""; const action=resetPasswordAction.bind(null,locale);
