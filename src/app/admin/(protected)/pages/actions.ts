@@ -2,40 +2,32 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
-import { slugify, RESERVED_SLUGS } from "@/lib/slug";
-
-async function requireAdmin() {
-  const session = await auth();
-  if (!session) redirect("/admin/login");
-}
+import { adminRpc } from "@/lib/admin-data";
+import { RESERVED_SLUGS, slugify } from "@/lib/slug";
 
 export async function upsertPage(formData: FormData) {
-  await requireAdmin();
-
   const id = String(formData.get("id") || "");
-  const slug = slugify(String(formData.get("slug") || formData.get("titleEn")));
-  if (RESERVED_SLUGS.has(slug)) {
-    throw new Error(`اسلاگ "${slug}" رزرو شده است و قابل استفاده نیست.`);
-  }
+  const slug = slugify(String(formData.get("slug") || formData.get("titleEn") || formData.get("titleFa")));
+  if (RESERVED_SLUGS.has(slug)) throw new Error(`اسلاگ "${slug}" رزرو شده است و قابل استفاده نیست.`);
 
-  const data = {
-    slug,
-    titleFa: String(formData.get("titleFa") || ""),
-    titleEn: String(formData.get("titleEn") || ""),
-    contentFa: String(formData.get("contentFa") || ""),
-    contentEn: String(formData.get("contentEn") || ""),
-    isPublished: formData.get("isPublished") === "on",
-    showInNav: formData.get("showInNav") === "on",
-    navOrder: Number(formData.get("navOrder") || 0),
-  };
-
-  if (id) {
-    await prisma.page.update({ where: { id }, data });
-  } else {
-    await prisma.page.create({ data });
-  }
+  await adminRpc<string>("admin_upsert_page", {
+    p_data: {
+      id,
+      slug,
+      titleFa: String(formData.get("titleFa") || ""),
+      titleTr: String(formData.get("titleTr") || ""),
+      titleEn: String(formData.get("titleEn") || ""),
+      titleAr: String(formData.get("titleAr") || ""),
+      contentFa: String(formData.get("contentFa") || ""),
+      contentTr: String(formData.get("contentTr") || ""),
+      contentEn: String(formData.get("contentEn") || ""),
+      contentAr: String(formData.get("contentAr") || ""),
+      template: String(formData.get("template") || "default"),
+      isPublished: formData.get("isPublished") === "on",
+      showInNav: formData.get("showInNav") === "on",
+      navOrder: Number(formData.get("navOrder") || 0),
+    },
+  });
 
   revalidatePath("/admin/pages");
   revalidatePath("/", "layout");
@@ -43,8 +35,7 @@ export async function upsertPage(formData: FormData) {
 }
 
 export async function deletePage(id: string) {
-  await requireAdmin();
-  await prisma.page.delete({ where: { id } });
+  await adminRpc<boolean>("admin_delete_page", { p_id: id });
   revalidatePath("/admin/pages");
   revalidatePath("/", "layout");
 }
