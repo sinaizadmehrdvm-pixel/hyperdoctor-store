@@ -24,7 +24,7 @@ export async function Header() {
   const navItems = [
     { href: "/", label: t("home") },
     { href: "/shop", label: t("shop") },
-    { href: "/shop/respiratory-sleep", label: l(locale, "تجهیزات تخصصی", "Specialist Equipment", "Uzman Ekipman", "معدات متخصصة") },
+    { href: "/shop/respiratory", label: l(locale, "تجهیزات تخصصی", "Specialist Equipment", "Uzman Ekipman", "معدات متخصصة") },
     { href: "/services", label: t("services") },
     { href: "/club", label: l(locale, "باشگاه مشتریان", "Customer Club", "Müşteri Kulübü", "نادي العملاء") },
     { href: "/articles", label: l(locale, "مقالات", "Articles", "Makaleler", "المقالات") },
