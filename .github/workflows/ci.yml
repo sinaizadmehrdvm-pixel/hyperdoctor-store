@@ -39,6 +39,15 @@ jobs:
           node-version: 22
       - run: npm install --no-audit --no-fund
       - run: npx prisma generate
+      - name: Generate PostgreSQL initialization SQL
+        run: |
+          mkdir -p artifacts
+          npx prisma migrate diff --from-empty --to-schema=prisma/schema.prisma --script > artifacts/postgres-init.sql
+      - uses: actions/upload-artifact@v4
+        with:
+          name: prisma-postgres-init
+          path: artifacts/postgres-init.sql
+          if-no-files-found: error
       - run: npx prisma db push
       - run: npm run test:catalog-smoke
       - run: npm run build
