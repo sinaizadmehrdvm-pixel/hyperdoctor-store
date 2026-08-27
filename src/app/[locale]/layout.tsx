@@ -10,6 +10,12 @@ import { Header } from "@/components/site/header";
 import { Footer } from "@/components/site/footer";
 import "../globals.css";
 
+// Locale pages depend on live PostgreSQL data through the shared Header/Footer.
+// Keep them dynamic so a temporary database/auth issue never makes the Vercel
+// build fail during static prerendering. Database access now happens at request time.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const vazirmatn = localFont({
   src: "../../fonts/Vazirmatn-Variable.ttf",
   variable: "--font-vazirmatn",
