@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { supabaseRpc } from "@/lib/supabase-rest";
+import { getCustomerToken } from "@/lib/customer-auth";
 
 const schema = z.object({
   requestToken: z.string().uuid(),
@@ -40,6 +41,15 @@ export async function POST(request: Request) {
       p_email: body.email || null,
       p_locale: body.locale,
     });
+
+    const customerToken = await getCustomerToken();
+    if (customerToken && warranty.publicToken) {
+      await supabaseRpc<boolean>("attach_warranty_customer", {
+        p_public_token: warranty.publicToken,
+        p_customer_token: customerToken,
+      }).catch(() => false);
+    }
+
     return NextResponse.json({ ok: true, ...warranty });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Warranty registration failed";
