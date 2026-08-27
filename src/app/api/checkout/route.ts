@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requestZarinpalPayment } from "@/lib/payments/zarinpal";
 import { supabaseRpc } from "@/lib/supabase-rest";
+import { getCustomerToken } from "@/lib/customer-auth";
 
 const lineSchema = z.object({
   type: z.enum(["product", "service"]),
@@ -36,9 +37,7 @@ type CreatedOrder = {
 
 export async function POST(request: Request) {
   const parsed = checkoutSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid checkout payload" }, { status: 400 });
-  }
+  if (!parsed.success) return NextResponse.json({ error: "Invalid checkout payload" }, { status: 400 });
 
   const body = parsed.data;
   let order: CreatedOrder | null = null;
@@ -59,8 +58,15 @@ export async function POST(request: Request) {
       p_lines: body.lines,
     });
 
-    if (!order?.orderNumber || !order.checkoutToken || !Number.isInteger(order.total) || order.total <= 0) {
-      throw new Error("Order could not be created");
+    if (!order?.orderNumber || !order.checkoutToken || !Number.isInteger(order.total) || order.total <= 0) throw new Error("Order could not be created");
+
+    const customerToken = await getCustomerToken();
+    if (customerToken) {
+      await supabaseRpc<boolean>("attach_order_customer", {
+        p_order_number: order.orderNumber,
+        p_checkout_token: order.checkoutToken,
+        p_customer_token: customerToken,
+      }).catch(() => false);
     }
 
     const { authority, redirectUrl } = await requestZarinpalPayment({
@@ -79,26 +85,15 @@ export async function POST(request: Request) {
     });
 
     if (!attached) {
-      await supabaseRpc<boolean>("cancel_guest_order", {
-        p_order_number: order.orderNumber,
-        p_checkout_token: order.checkoutToken,
-      }).catch(() => false);
+      await supabaseRpc<boolean>("cancel_guest_order", { p_order_number: order.orderNumber, p_checkout_token: order.checkoutToken }).catch(() => false);
       throw new Error("Payment session could not be attached to the order");
     }
 
     return NextResponse.json({ redirectUrl, orderNumber: order.orderNumber });
   } catch (error) {
-    if (order?.orderNumber && order.checkoutToken) {
-      await supabaseRpc<boolean>("cancel_guest_order", {
-        p_order_number: order.orderNumber,
-        p_checkout_token: order.checkoutToken,
-      }).catch(() => false);
-    }
-
+    if (order?.orderNumber && order.checkoutToken) await supabaseRpc<boolean>("cancel_guest_order", { p_order_number: order.orderNumber, p_checkout_token: order.checkoutToken }).catch(() => false);
     const message = error instanceof Error ? error.message : "Checkout failed";
-    const clientMessage = /stock|quantity|unavailable|booking|total/i.test(message)
-      ? message
-      : "Checkout could not be completed";
+    const clientMessage = /stock|quantity|unavailable|booking|total/i.test(message) ? message : "Checkout could not be completed";
     console.error("[checkout] failed", error);
     return NextResponse.json({ error: clientMessage }, { status: 502 });
   }
