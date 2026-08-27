@@ -6,6 +6,16 @@ import { LocaleSwitcher } from "./locale-switcher";
 import { CartBadge } from "./cart-badge";
 import { MobileNav } from "./mobile-nav";
 
+function localizedPageTitle(
+  page: { titleFa: string; titleTr?: string | null; titleEn: string; titleAr?: string | null },
+  locale: string,
+) {
+  if (locale === "tr") return page.titleTr || page.titleEn || page.titleFa;
+  if (locale === "ar") return page.titleAr || page.titleFa || page.titleEn;
+  if (locale === "en") return page.titleEn || page.titleFa;
+  return page.titleFa || page.titleEn;
+}
+
 export async function Header() {
   const locale = await getLocale();
   const t = await getTranslations("nav");
@@ -18,14 +28,14 @@ export async function Header() {
     { href: "/services", label: t("services") },
     ...pages.map((p) => ({
       href: `/${p.slug}`,
-      label: locale === "fa" ? p.titleFa : p.titleEn,
+      label: localizedPageTitle(p, locale),
     })),
   ];
 
   return (
-    <header className="relative z-40 bg-navy text-navy-foreground">
-      <div className="mx-auto flex h-18 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="shrink-0">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-navy/95 text-navy-foreground shadow-[0_10px_35px_rgba(0,23,54,0.12)] backdrop-blur-xl">
+      <div className="vitalis-container flex min-h-18 items-center justify-between gap-3 py-3">
+        <Link href="/" className="shrink-0 rounded-xl vitalis-focus">
           <HyperDoctorLogo
             tagline={brandT("tagline")}
             name={settings.subBrandName}
@@ -33,12 +43,12 @@ export async function Header() {
           />
         </Link>
 
-        <nav className="hidden md:flex items-center gap-1">
+        <nav className="hidden lg:flex items-center gap-1" aria-label="Primary navigation">
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="min-h-11 flex items-center px-4 rounded-full text-sm font-medium text-navy-muted hover:text-white hover:bg-white/5 transition-colors"
+              className="min-h-11 flex items-center px-4 rounded-full text-sm font-medium text-navy-muted hover:text-white hover:bg-white/8 transition-colors vitalis-focus"
             >
               {item.label}
             </Link>
@@ -46,7 +56,7 @@ export async function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <LocaleSwitcher className="hidden sm:flex" />
+          <LocaleSwitcher className="hidden md:flex" />
           <CartBadge />
           <MobileNav items={navItems} />
         </div>

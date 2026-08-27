@@ -1,0 +1,112 @@
+{
+  "brand": {
+    "holding": "VITALIS Group",
+    "subBrand": "Hyper Doctor",
+    "tagline": "Akıllı Teknoloji, Daha İyi Bakım"
+  },
+  "nav": {
+    "home": "Ana Sayfa",
+    "shop": "Mağaza",
+    "services": "Solunum Hizmetleri",
+    "about": "Hakkımızda",
+    "contact": "İletişim",
+    "cart": "Sepet",
+    "search": "Ürün veya hizmet ara..."
+  },
+  "home": {
+    "heroEyebrow": "Profesyonel tıbbi cihaz tedariki",
+    "heroTitle": "Tıbbi cihazlar ve solunum hizmetleri, Hyper Doctor kalite güvencesiyle",
+    "heroSubtitle": "CPAP cihazlarından oksijen konsantratörlerine ve evde uyku testine kadar sağlık teknolojilerini tek güvenilir noktada sunuyoruz.",
+    "heroCtaShop": "Ürünleri İncele",
+    "heroCtaServices": "Uyku Testi Randevusu",
+    "trustBarTitle": "Hastaneler, klinikler ve sağlık profesyonelleri için güvenilir çözüm ortağı",
+    "categoriesTitle": "Ürün ve Hizmet Kategorileri",
+    "featuredTitle": "Öne Çıkan Ürünler",
+    "featuredSubtitle": "En çok tercih edilen solunum ve medikal ekipmanlar",
+    "serviceSpotlightEyebrow": "Evde Solunum Bakımı",
+    "serviceSpotlightTitle": "Evinizin konforunda Uyku Testi",
+    "serviceSpotlightBody": "Hyper Doctor uzman ekibi, standart ekipmanlarla uyku kalitenizi evinizde değerlendirir ve sonuçları profesyonel yönlendirmeyle sunar.",
+    "serviceSpotlightCta": "Detaylar ve Randevu",
+    "roadmapEyebrow": "VITALIS Group Vizyonu",
+    "roadmapTitle": "Hyper Doctor ile büyüyen sağlık ekosistemi",
+    "roadmapBody": "VITALIS Group sağlık teknolojileri ve hizmetlerinde yeni alanlara genişliyor.",
+    "roadmapDental": "Diş Sağlığı",
+    "roadmapVeterinary": "Veterinerlik",
+    "roadmapPharmacy": "Eczane",
+    "roadmapNursing": "Hemşirelik Hizmetleri",
+    "roadmapComingSoon": "Yakında",
+    "ctaTitle": "Tıbbi cihaz seçimi için uzmanlarımızla görüşün",
+    "ctaButton": "Uzmanlarımızla İletişime Geçin"
+  },
+  "shop": {
+    "title": "Tıbbi Cihaz Mağazası",
+    "filterCategory": "Kategori",
+    "filterAll": "Tüm Kategoriler",
+    "sortLabel": "Sırala",
+    "sortNewest": "En Yeni",
+    "sortPriceAsc": "Fiyat: Düşükten Yükseğe",
+    "sortPriceDesc": "Fiyat: Yüksekten Düşüğe",
+    "empty": "Ürün bulunamadı.",
+    "addToCart": "Sepete Ekle",
+    "outOfStock": "Stokta Yok",
+    "inStock": "Stokta Var",
+    "priceLabel": "Fiyat",
+    "specsTitle": "Teknik Özellikler",
+    "relatedTitle": "İlgili Ürünler"
+  },
+  "services": {
+    "title": "Solunum Hizmetleri",
+    "bookNow": "Randevu Al",
+    "priceFrom": "Başlangıç fiyatı",
+    "durationLabel": "Süre",
+    "minutes": "dakika",
+    "preferredDate": "Tercih Edilen Tarih",
+    "requiresBooking": "Bu hizmet için randevu gereklidir"
+  },
+  "cart": {
+    "title": "Alışveriş Sepeti",
+    "empty": "Sepetiniz boş.",
+    "product": "Ürün / Hizmet",
+    "quantity": "Adet",
+    "price": "Fiyat",
+    "total": "Toplam",
+    "remove": "Kaldır",
+    "continueShopping": "Alışverişe Devam Et",
+    "checkout": "Ödemeye Geç",
+    "subtotal": "Ara Toplam",
+    "shipping": "Kargo",
+    "grandTotal": "Ödenecek Tutar"
+  },
+  "checkout": {
+    "title": "Siparişi Tamamla",
+    "customerInfo": "Müşteri Bilgileri",
+    "fullName": "Ad Soyad",
+    "phone": "Telefon",
+    "email": "E-posta (isteğe bağlı)",
+    "address": "Açık Adres",
+    "city": "Şehir",
+    "postalCode": "Posta Kodu",
+    "notes": "Sipariş Notu (isteğe bağlı)",
+    "submit": "Öde ve Siparişi Ver",
+    "gatewayNote": "Sipariş bilgilerini gönderdikten sonra güvenli ödeme adımına yönlendirileceksiniz."
+  },
+  "orderResult": {
+    "successTitle": "Ödeme Başarılı",
+    "successBody": "Siparişiniz aşağıdaki takip numarasıyla oluşturuldu. Ekibimiz kısa süre içinde sizinle iletişime geçecektir.",
+    "failTitle": "Ödeme Başarısız",
+    "failBody": "Ödeme tamamlanamadı. Tekrar deneyebilir veya destek ekibimizle iletişime geçebilirsiniz.",
+    "orderNumber": "Sipariş Numarası",
+    "backHome": "Ana Sayfaya Dön"
+  },
+  "footer": {
+    "about": "Hyper Doctor, VITALIS Group çatısı altında tıbbi cihazlar ve solunum hizmetleri sunan sağlık teknolojileri markasıdır.",
+    "quickLinks": "Hızlı Bağlantılar",
+    "contactTitle": "İletişim Bilgileri",
+    "rights": "Tüm hakları saklıdır."
+  },
+  "common": {
+    "currency": "TRY",
+    "loading": "Yükleniyor...",
+    "readMore": "Devamını Oku"
+  }
+}

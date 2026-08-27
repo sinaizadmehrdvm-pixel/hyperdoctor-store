@@ -1,13 +1,10 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 enum Vertical {
@@ -27,16 +24,53 @@ enum OrderStatus {
   SHIPPED
   COMPLETED
   CANCELLED
+  REFUNDED
 }
 
 enum PaymentGateway {
   ZARINPAL
   IDPAY
+  MANUAL
 }
 
 enum AdminRole {
   SUPER_ADMIN
   EDITOR
+  SUPPORT
+  SALES
+}
+
+enum DiscountType {
+  PERCENT
+  FIXED
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  WAITING_CUSTOMER
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum WarrantyStatus {
+  ACTIVE
+  EXPIRED
+  SUSPENDED
+  REPLACED
 }
 
 model Category {
@@ -44,11 +78,16 @@ model Category {
   vertical      Vertical
   slug          String     @unique
   nameFa        String
+  nameTr        String     @default("")
   nameEn        String
+  nameAr        String     @default("")
   descriptionFa String     @default("")
+  descriptionTr String     @default("")
   descriptionEn String     @default("")
+  descriptionAr String     @default("")
   image         String?
   order         Int        @default(0)
+  isPublished   Boolean    @default(true)
   parentId      String?
   parent        Category?  @relation("CategoryToCategory", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   children      Category[] @relation("CategoryToCategory")
@@ -57,37 +96,100 @@ model Category {
   updatedAt     DateTime   @updatedAt
 
   @@index([vertical])
+  @@index([parentId])
+}
+
+model Brand {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  name        String    @unique
+  description String    @default("")
+  logoUrl     String    @default("")
+  websiteUrl  String    @default("")
+  isPublished Boolean   @default(true)
+  products    Product[] @relation("ProductBrand")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 model Product {
-  id               String      @id @default(cuid())
-  vertical         Vertical
-  categoryId       String
-  category         Category    @relation(fields: [categoryId], references: [id])
-  slug             String      @unique
-  nameFa           String
-  nameEn           String
-  descriptionFa    String      @default("")
-  descriptionEn    String      @default("")
-  brand            String      @default("")
-  sku              String      @unique
-  price            Int
-  compareAtPrice   Int?
-  stock            Int         @default(0)
-  specs            String      @default("{}") // JSON string: {key: {fa, en}}
-  images           Media[]
-  isPublished      Boolean     @default(false)
-  isFeatured       Boolean     @default(false)
-  seoTitleFa       String      @default("")
-  seoTitleEn       String      @default("")
-  seoDescriptionFa String      @default("")
-  seoDescriptionEn String      @default("")
-  orderItems       OrderItem[]
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
+  id                 String                 @id @default(cuid())
+  vertical           Vertical
+  categoryId         String
+  category           Category               @relation(fields: [categoryId], references: [id])
+  brandId            String?
+  brandEntity        Brand?                 @relation("ProductBrand", fields: [brandId], references: [id], onDelete: SetNull)
+  slug               String                 @unique
+  nameFa             String
+  nameTr             String                 @default("")
+  nameEn             String
+  nameAr             String                 @default("")
+  descriptionFa      String                 @default("")
+  descriptionTr      String                 @default("")
+  descriptionEn      String                 @default("")
+  descriptionAr      String                 @default("")
+  brand              String                 @default("")
+  modelNumber        String                 @default("")
+  sku                String                 @unique
+  barcode            String                 @default("")
+  gtin               String                 @default("")
+  manufacturer       String                 @default("")
+  countryOfOrigin    String                 @default("")
+  price              Int
+  compareAtPrice     Int?
+  costPrice          Int?
+  stock              Int                    @default(0)
+  lowStockThreshold  Int                    @default(2)
+  minOrderQty        Int                    @default(1)
+  maxOrderQty        Int?
+  weightGrams        Int?
+  lengthMm           Int?
+  widthMm            Int?
+  heightMm           Int?
+  warrantyMonths     Int?
+  specs              String                 @default("{}")
+  tags               String                 @default("[]")
+  images             Media[]
+  variants           ProductVariant[]
+  isPublished        Boolean                @default(false)
+  isFeatured         Boolean                @default(false)
+  isNewArrival       Boolean                @default(false)
+  seoTitleFa         String                 @default("")
+  seoTitleTr         String                 @default("")
+  seoTitleEn         String                 @default("")
+  seoTitleAr         String                 @default("")
+  seoDescriptionFa   String                 @default("")
+  seoDescriptionTr   String                 @default("")
+  seoDescriptionEn   String                 @default("")
+  seoDescriptionAr   String                 @default("")
+  orderItems         OrderItem[]
+  wishlistItems      WishlistItem[]
+  reviews            Review[]
+  warranties         WarrantyRegistration[]
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
 
   @@index([vertical])
   @@index([categoryId])
+  @@index([brandId])
+  @@index([isPublished, isFeatured])
+}
+
+model ProductVariant {
+  id             String   @id @default(cuid())
+  productId      String
+  product        Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name           String
+  sku            String   @unique
+  price          Int?
+  compareAtPrice Int?
+  stock          Int      @default(0)
+  attributes     String   @default("{}")
+  isPublished    Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([productId])
 }
 
 model Service {
@@ -95,9 +197,13 @@ model Service {
   vertical        Vertical
   slug            String      @unique
   nameFa          String
+  nameTr          String      @default("")
   nameEn          String
+  nameAr          String      @default("")
   descriptionFa   String      @default("")
+  descriptionTr   String      @default("")
   descriptionEn   String      @default("")
+  descriptionAr   String      @default("")
   image           String?
   price           Int?
   priceIsFrom     Boolean     @default(true)
@@ -115,9 +221,13 @@ model Page {
   id          String   @id @default(cuid())
   slug        String   @unique
   titleFa     String
+  titleTr     String   @default("")
   titleEn     String
+  titleAr     String   @default("")
   contentFa   String   @default("")
+  contentTr   String   @default("")
   contentEn   String   @default("")
+  contentAr   String   @default("")
   template    String   @default("default")
   isPublished Boolean  @default(false)
   showInNav   Boolean  @default(false)
@@ -130,49 +240,280 @@ model Media {
   id        String   @id @default(cuid())
   url       String
   altFa     String   @default("")
+  altTr     String   @default("")
   altEn     String   @default("")
+  altAr     String   @default("")
   width     Int?
   height    Int?
+  sortOrder Int      @default(0)
   productId String?
-  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
+
+  @@index([productId, sortOrder])
+}
+
+model Customer {
+  id                String                 @id @default(cuid())
+  email             String?                @unique
+  phone             String?                @unique
+  passwordHash      String                 @default("")
+  fullName          String                 @default("")
+  locale            String                 @default("fa")
+  isActive          Boolean                @default(true)
+  marketingConsent  Boolean                @default(false)
+  addresses         Address[]
+  orders            Order[]
+  wishlistItems     WishlistItem[]
+  reviews           Review[]
+  couponRedemptions CouponRedemption[]
+  tickets           SupportTicket[]
+  warranties        WarrantyRegistration[]
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+}
+
+model Address {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  label      String   @default("")
+  fullName   String   @default("")
+  phone      String   @default("")
+  country    String   @default("")
+  province   String   @default("")
+  city       String
+  address    String
+  postalCode String   @default("")
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([customerId])
+}
+
+model WishlistItem {
+  id         String   @id @default(cuid())
+  customerId String
+  productId  String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([customerId, productId])
+  @@index([productId])
+}
+
+model Review {
+  id         String       @id @default(cuid())
+  customerId String?
+  customer   Customer?    @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  productId  String
+  product    Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  authorName String
+  rating     Int
+  title      String       @default("")
+  body       String       @default("")
+  status     ReviewStatus @default(PENDING)
+  isVerified Boolean      @default(false)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  @@index([productId, status])
+}
+
+model Coupon {
+  id                String             @id @default(cuid())
+  code              String             @unique
+  type              DiscountType
+  value             Int
+  minOrderAmount    Int?
+  maxDiscount       Int?
+  usageLimit        Int?
+  usageLimitPerUser Int?
+  startsAt          DateTime?
+  expiresAt         DateTime?
+  isActive          Boolean            @default(true)
+  orders            Order[]
+  redemptions       CouponRedemption[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+}
+
+model CouponRedemption {
+  id         String    @id @default(cuid())
+  couponId   String
+  customerId String?
+  orderId    String?
+  coupon     Coupon    @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  order      Order?    @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  createdAt  DateTime  @default(now())
+
+  @@index([couponId])
+  @@index([customerId])
 }
 
 model Order {
-  id               String         @id @default(cuid())
-  orderNumber      String         @unique
+  id               String             @id @default(cuid())
+  orderNumber      String             @unique
+  customerId       String?
+  customer         Customer?          @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  couponId         String?
+  coupon           Coupon?            @relation(fields: [couponId], references: [id], onDelete: SetNull)
+  couponRedemption CouponRedemption[]
   customerName     String
   phone            String
   email            String?
   address          String
+  province         String             @default("")
   city             String
+  country          String             @default("")
   postalCode       String?
-  notes            String         @default("")
-  locale           String         @default("fa")
+  notes            String             @default("")
+  locale           String             @default("fa")
+  currency         String             @default("IRT")
   items            OrderItem[]
   subtotal         Int
-  shippingFee      Int            @default(0)
+  discountAmount   Int                @default(0)
+  shippingFee      Int                @default(0)
   total            Int
-  status           OrderStatus    @default(PENDING_PAYMENT)
-  gateway          PaymentGateway @default(ZARINPAL)
-  paymentAuthority String?        @unique
+  status           OrderStatus        @default(PENDING_PAYMENT)
+  gateway          PaymentGateway     @default(ZARINPAL)
+  paymentAuthority String?            @unique
   paymentRefId     String?
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
+  shippingMethod   String             @default("")
+  trackingCode     String             @default("")
+  shippedAt        DateTime?
+  completedAt      DateTime?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  @@index([customerId])
+  @@index([status, createdAt])
 }
 
 model OrderItem {
-  id            String    @id @default(cuid())
+  id            String   @id @default(cuid())
   orderId       String
-  order         Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   productId     String?
-  product       Product?  @relation(fields: [productId], references: [id])
+  product       Product? @relation(fields: [productId], references: [id])
   serviceId     String?
-  service       Service?  @relation(fields: [serviceId], references: [id])
+  service       Service? @relation(fields: [serviceId], references: [id])
   nameSnapshot  String
   priceSnapshot Int
-  quantity      Int       @default(1)
+  quantity      Int      @default(1)
   preferredDate DateTime?
+}
+
+model SupportTicket {
+  id         String          @id @default(cuid())
+  ticketNo   String          @unique
+  customerId String?
+  customer   Customer?       @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  subject    String
+  category   String          @default("")
+  status     TicketStatus    @default(OPEN)
+  priority   TicketPriority  @default(NORMAL)
+  messages   TicketMessage[]
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  @@index([status, updatedAt])
+}
+
+model TicketMessage {
+  id            String        @id @default(cuid())
+  ticketId      String
+  ticket        SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  senderType    String
+  senderName    String        @default("")
+  body          String
+  attachmentUrl String        @default("")
+  createdAt     DateTime      @default(now())
+
+  @@index([ticketId, createdAt])
+}
+
+model WarrantyRegistration {
+  id           String          @id @default(cuid())
+  serialNumber String          @unique
+  customerId   String?
+  customer     Customer?       @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  productId    String
+  product      Product         @relation(fields: [productId], references: [id])
+  orderId      String?
+  orderNumber  String          @default("")
+  purchaseDate DateTime?
+  startsAt     DateTime
+  expiresAt    DateTime
+  status       WarrantyStatus  @default(ACTIVE)
+  notes        String          @default("")
+  events       WarrantyEvent[]
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  @@index([productId])
+  @@index([customerId])
+}
+
+model WarrantyEvent {
+  id          String               @id @default(cuid())
+  warrantyId  String
+  warranty    WarrantyRegistration @relation(fields: [warrantyId], references: [id], onDelete: Cascade)
+  type        String
+  title       String
+  description String               @default("")
+  createdAt   DateTime             @default(now())
+
+  @@index([warrantyId, createdAt])
+}
+
+model SiteBanner {
+  id             String   @id @default(cuid())
+  key            String   @unique
+  titleFa        String   @default("")
+  titleTr        String   @default("")
+  titleEn        String   @default("")
+  titleAr        String   @default("")
+  subtitleFa     String   @default("")
+  subtitleTr     String   @default("")
+  subtitleEn     String   @default("")
+  subtitleAr     String   @default("")
+  imageUrl       String   @default("")
+  mobileImageUrl String   @default("")
+  linkUrl        String   @default("")
+  isPublished    Boolean  @default(true)
+  order          Int      @default(0)
+  startsAt       DateTime?
+  endsAt         DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Article {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  titleFa     String
+  titleTr     String   @default("")
+  titleEn     String   @default("")
+  titleAr     String   @default("")
+  excerptFa   String   @default("")
+  excerptTr   String   @default("")
+  excerptEn   String   @default("")
+  excerptAr   String   @default("")
+  contentFa   String   @default("")
+  contentTr   String   @default("")
+  contentEn   String   @default("")
+  contentAr   String   @default("")
+  coverImage  String   @default("")
+  category    String   @default("")
+  tags        String   @default("[]")
+  isPublished Boolean  @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model AdminUser {
@@ -181,21 +522,25 @@ model AdminUser {
   passwordHash String
   name         String
   role         AdminRole @default(EDITOR)
+  isActive     Boolean   @default(true)
   createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 }
 
 model SiteSetting {
-  id              Int      @id @default(1)
-  holdingName     String   @default("Vetrix")
-  holdingLogoUrl  String   @default("")
-  subBrandName    String   @default("Hyper Doctor")
-  subBrandLogoUrl String   @default("")
-  contactPhone    String   @default("")
-  contactEmail    String   @default("")
-  address         String   @default("")
-  instagramUrl    String   @default("")
-  telegramUrl     String   @default("")
-  whatsappUrl     String   @default("")
-  defaultLocale   String   @default("fa")
-  updatedAt       DateTime @updatedAt
+  id               Int      @id @default(1)
+  holdingName      String   @default("VITALIS Group")
+  holdingLogoUrl   String   @default("")
+  subBrandName     String   @default("Hyper Doctor")
+  subBrandLogoUrl  String   @default("")
+  contactPhone     String   @default("")
+  contactEmail     String   @default("")
+  address          String   @default("")
+  instagramUrl     String   @default("")
+  telegramUrl      String   @default("")
+  whatsappUrl      String   @default("")
+  defaultLocale    String   @default("fa")
+  supportedLocales String   @default("fa,tr,en,ar")
+  currency         String   @default("IRT")
+  updatedAt        DateTime @updatedAt
 }

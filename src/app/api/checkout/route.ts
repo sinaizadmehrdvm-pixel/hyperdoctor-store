@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requestZarinpalPayment } from "@/lib/payments/zarinpal";
 import { generateOrderNumber } from "@/lib/order-number";
+import { localizedName } from "@/lib/i18n-content";
 
 const lineSchema = z.object({
   type: z.enum(["product", "service"]),
@@ -12,15 +13,17 @@ const lineSchema = z.object({
 });
 
 const checkoutSchema = z.object({
-  locale: z.enum(["fa", "en"]),
+  locale: z.enum(["fa", "tr", "en", "ar"]),
   customerName: z.string().trim().min(2).max(120),
   phone: z.string().trim().min(8).max(20),
   email: z.string().trim().email().optional().or(z.literal("")),
   address: z.string().trim().min(5).max(500),
+  province: z.string().trim().max(120).optional(),
   city: z.string().trim().min(2).max(120),
+  country: z.string().trim().max(120).optional(),
   postalCode: z.string().trim().max(20).optional(),
   notes: z.string().trim().max(1000).optional(),
-  lines: z.array(lineSchema).min(1),
+  lines: z.array(lineSchema).min(1).max(100),
 });
 
 export async function POST(request: Request) {
@@ -30,7 +33,6 @@ export async function POST(request: Request) {
   }
   const body = parsed.data;
 
-  // Re-price every line from the database — never trust client-supplied prices.
   const orderItems: {
     productId?: string;
     serviceId?: string;
@@ -46,15 +48,18 @@ export async function POST(request: Request) {
       if (!product || !product.isPublished) {
         return NextResponse.json({ error: "Product unavailable" }, { status: 409 });
       }
+      if (line.quantity < product.minOrderQty) {
+        return NextResponse.json({ error: `Minimum order quantity is ${product.minOrderQty}` }, { status: 409 });
+      }
+      if (product.maxOrderQty && line.quantity > product.maxOrderQty) {
+        return NextResponse.json({ error: `Maximum order quantity is ${product.maxOrderQty}` }, { status: 409 });
+      }
       if (product.stock < line.quantity) {
-        return NextResponse.json(
-          { error: `Insufficient stock for ${product.nameEn}` },
-          { status: 409 }
-        );
+        return NextResponse.json({ error: `Insufficient stock for ${product.nameEn}` }, { status: 409 });
       }
       orderItems.push({
         productId: product.id,
-        nameSnapshot: body.locale === "fa" ? product.nameFa : product.nameEn,
+        nameSnapshot: localizedName(body.locale, product),
         priceSnapshot: product.price,
         quantity: line.quantity,
       });
@@ -65,7 +70,7 @@ export async function POST(request: Request) {
       }
       orderItems.push({
         serviceId: service.id,
-        nameSnapshot: body.locale === "fa" ? service.nameFa : service.nameEn,
+        nameSnapshot: localizedName(body.locale, service),
         priceSnapshot: service.price ?? 0,
         quantity: line.quantity,
         preferredDate: line.preferredDate ? new Date(line.preferredDate) : undefined,
@@ -73,10 +78,7 @@ export async function POST(request: Request) {
     }
   }
 
-  const subtotal = orderItems.reduce(
-    (sum, item) => sum + item.priceSnapshot * item.quantity,
-    0
-  );
+  const subtotal = orderItems.reduce((sum, item) => sum + item.priceSnapshot * item.quantity, 0);
   const shippingFee = 0;
   const total = subtotal + shippingFee;
 
@@ -91,7 +93,9 @@ export async function POST(request: Request) {
       phone: body.phone,
       email: body.email || null,
       address: body.address,
+      province: body.province || "",
       city: body.city,
+      country: body.country || "",
       postalCode: body.postalCode || null,
       notes: body.notes || "",
       locale: body.locale,
@@ -111,17 +115,13 @@ export async function POST(request: Request) {
       email: body.email || undefined,
     });
 
-    await prisma.order.update({
-      where: { id: order.id },
-      data: { paymentAuthority: authority },
-    });
-
-    return NextResponse.json({ redirectUrl });
+    await prisma.order.update({ where: { id: order.id }, data: { paymentAuthority: authority } });
+    return NextResponse.json({ redirectUrl, orderNumber: order.orderNumber });
   } catch (error) {
     await prisma.order.update({ where: { id: order.id }, data: { status: "FAILED" } });
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Payment request failed" },
-      { status: 502 }
+      { status: 502 },
     );
   }
 }
