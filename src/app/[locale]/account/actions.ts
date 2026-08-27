@@ -25,7 +25,7 @@ export async function registerAction(locale:string,formData:FormData){
   const password=String(formData.get("password")||"");
   const confirm=String(formData.get("confirmPassword")||"");
   if(password!==confirm) redirect(`/${locale}/account/register?error=password_mismatch`);
-  try{await registerCustomer({fullName,email,phone,password,locale});}catch(error){const msg=String(error);redirect(`/${locale}/account/register?error=${msg.includes("account_exists")?"exists":msg.includes("password_too_short")?"short":"failed"}`)}
+  try{await registerCustomer({fullName,email,phone,password,locale});}catch(error){const msg=String(error);redirect(`/${locale}/account/register?error=${msg.includes("account_exists")?"exists":msg.includes("invalid_password")?"short":"failed"}`)}
   redirect(`/${locale}/account`);
 }
 
@@ -42,15 +42,14 @@ export async function changePasswordAction(locale:string,formData:FormData){
   const current=String(formData.get("currentPassword")||"");
   const next=String(formData.get("newPassword")||"");
   const confirm=String(formData.get("confirmPassword")||"");
-  if(next!==confirm) redirect(`/${locale}/account?password=mismatch`);
-  if(next.length<8) redirect(`/${locale}/account?password=short`);
+  if(next!==confirm) redirect(`/${locale}/account/security?status=mismatch`);
+  if(next.length<8||next.length>128) redirect(`/${locale}/account/security?status=short`);
   const ok=await customerRpc<boolean>("customer_change_password",{p_current_password:current,p_new_password:next}).catch(()=>false);
-  redirect(`/${locale}/account?password=${ok?"changed":"invalid"}`);
+  redirect(`/${locale}/account/security?status=${ok?"changed":"invalid"}`);
 }
 
 export async function forgotPasswordAction(locale:string,_formData:FormData){
-  locale=safeLocale(locale);
-  redirect(`/${locale}/account/forgot-password?status=support`);
+  redirect(`/${safeLocale(locale)}/account/forgot-password?status=support`);
 }
 
 export async function resetPasswordAction(locale:string,_formData:FormData){
