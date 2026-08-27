@@ -2,9 +2,24 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
-import { Minus, Plus, Trash2, ImageOff, ShieldCheck, Truck } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  BadgeCheck,
+  Download,
+  Gift,
+  ImageOff,
+  Minus,
+  PackageCheck,
+  Plus,
+  ReceiptText,
+  ShieldCheck,
+  ShoppingBag,
+  Trash2,
+  Truck,
+} from "lucide-react";
 import { Container } from "@/components/ui/container";
-import { LinkButton } from "@/components/ui/button";
+import { Link, useRouter } from "@/i18n/navigation";
 import { useCart } from "@/lib/cart-context";
 import { formatPrice } from "@/lib/utils";
 import { pickLocalized } from "@/lib/i18n-content";
@@ -13,87 +28,120 @@ export default function CartPage() {
   const t = useTranslations("cart");
   const c = useTranslations("common");
   const locale = useLocale();
+  const router = useRouter();
   const { lines, updateQuantity, remove, subtotal, hydrated } = useCart();
+  const BackArrow = locale === "fa" || locale === "ar" ? ArrowLeft : ArrowRight;
+
+  const copy = {
+    title: locale === "fa" ? "سبد خرید شما" : locale === "tr" ? "Sepetiniz" : locale === "ar" ? "سلة التسوق" : "Your shopping cart",
+    invoice: locale === "fa" ? "فاکتور نهایی" : locale === "tr" ? "Sipariş özeti" : locale === "ar" ? "الفاتورة النهائية" : "Final invoice",
+    products: locale === "fa" ? "مبلغ کل کالاها" : locale === "tr" ? "Ürün toplamı" : locale === "ar" ? "إجمالي المنتجات" : "Products subtotal",
+    shipping: locale === "fa" ? "هزینه ارسال" : locale === "tr" ? "Kargo" : locale === "ar" ? "الشحن" : "Shipping",
+    payable: locale === "fa" ? "مبلغ قابل پرداخت" : locale === "tr" ? "Ödenecek tutar" : locale === "ar" ? "المبلغ المستحق" : "Amount payable",
+    safePay: locale === "fa" ? "ثبت سفارش و پرداخت امن" : locale === "tr" ? "Siparişi tamamla ve güvenli öde" : locale === "ar" ? "تأكيد الطلب والدفع الآمن" : "Secure checkout",
+    officialInvoice: locale === "fa" ? "دانلود پیش‌فاکتور رسمی (PDF)" : locale === "tr" ? "Proforma faturayı indir (PDF)" : locale === "ar" ? "تحميل الفاتورة الأولية (PDF)" : "Download proforma invoice (PDF)",
+    originality: locale === "fa" ? "تضمین اصالت کالا" : locale === "tr" ? "Orijinallik garantisi" : locale === "ar" ? "ضمان الأصالة" : "Authenticity guaranteed",
+    support: locale === "fa" ? "پشتیبانی تخصصی" : locale === "tr" ? "Uzman destek" : locale === "ar" ? "دعم متخصص" : "Specialist support",
+    shippingMethod: locale === "fa" ? "روش ارسال" : locale === "tr" ? "Teslimat yöntemi" : locale === "ar" ? "طريقة الشحن" : "Delivery method",
+    standard: locale === "fa" ? "ارسال استاندارد" : locale === "tr" ? "Standart teslimat" : locale === "ar" ? "شحن قياسي" : "Standard delivery",
+    standardSub: locale === "fa" ? "هزینه نهایی در مرحله پرداخت تعیین می‌شود" : locale === "tr" ? "Kesin ücret ödeme adımında belirlenir" : locale === "ar" ? "تحدد التكلفة النهائية عند الدفع" : "Final cost is calculated at checkout",
+    express: locale === "fa" ? "ارسال اکسپرس" : locale === "tr" ? "Ekspres teslimat" : locale === "ar" ? "شحن سريع" : "Express delivery",
+    specialist: locale === "fa" ? "پیک تخصصی پزشکی" : locale === "tr" ? "Uzman medikal kurye" : locale === "ar" ? "توصيل طبي متخصص" : "Specialist medical courier",
+    coupon: locale === "fa" ? "کد تخفیف یا کارت هدیه" : locale === "tr" ? "İndirim veya hediye kodu" : locale === "ar" ? "كود خصم أو بطاقة هدية" : "Discount or gift code",
+    couponHint: locale === "fa" ? "کد خود را وارد کنید..." : locale === "tr" ? "Kodunuzu girin..." : locale === "ar" ? "أدخل الرمز..." : "Enter your code...",
+  };
+
+  if (!hydrated) return null;
 
   return (
-    <main className="flex-1 py-8 sm:py-12">
-      <Container>
-        <div className="vitalis-dark-panel rounded-3xl px-5 py-7 sm:px-8 sm:py-9">
-          <h1 className="text-2xl font-black text-white sm:text-4xl">{t("title")}</h1>
-          <p className="mt-2 text-sm text-navy-muted">
-            {locale === "fa" ? "محصولات، تعداد و اطلاعات سفارش را قبل از پرداخت بررسی کنید." : locale === "tr" ? "Ödeme öncesinde ürünlerinizi ve adetleri kontrol edin." : locale === "ar" ? "راجع المنتجات والكميات قبل إتمام الدفع." : "Review your products and quantities before checkout."}
-          </p>
+    <main className="flex-1 bg-[#f4f7fb] py-6 sm:py-10">
+      <Container className="max-w-[1440px]">
+        <div className="mb-7 flex flex-wrap items-center justify-between gap-4">
+          <h1 className="text-3xl font-black text-[#001736] sm:text-4xl">{copy.title}</h1>
+          <Link href="/shop" className="inline-flex items-center gap-2 text-sm font-bold text-[#43474f] hover:text-[#001736]">
+            <BackArrow className="h-4 w-4" />{t("continueShopping")}
+          </Link>
         </div>
 
-        {!hydrated ? null : lines.length === 0 ? (
-          <div className="vitalis-panel mt-8 flex min-h-64 flex-col items-center justify-center p-10 text-center">
-            <p className="text-sm text-muted">{t("empty")}</p>
-            <LinkButton href="/shop" className="mt-6">{t("continueShopping")}</LinkButton>
-          </div>
+        {lines.length === 0 ? (
+          <section className="flex min-h-[420px] flex-col items-center justify-center rounded-3xl border border-[#dfe4ea] bg-white p-10 text-center shadow-[0_18px_50px_rgba(0,23,54,.05)]">
+            <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#eef3f9] text-[#001736]"><ShoppingBag className="h-8 w-8" /></span>
+            <h2 className="mt-5 text-xl font-black text-[#001736]">{t("empty")}</h2>
+            <Link href="/shop" className="mt-7 inline-flex min-h-12 items-center justify-center rounded-xl bg-[#001736] px-7 text-sm font-black text-white hover:bg-[#002b5b]">{t("continueShopping")}</Link>
+          </section>
         ) : (
-          <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_350px]">
-            <ul className="space-y-3">
+          <div className="grid gap-7 lg:grid-cols-[360px_minmax(0,1fr)] lg:items-start xl:grid-cols-[390px_minmax(0,1fr)]">
+            {/* Final invoice — left on desktop, same as Stitch 37 */}
+            <aside className="order-2 lg:order-1 lg:sticky lg:top-28">
+              <div className="rounded-3xl border border-[#dfe4ea] bg-white p-6 shadow-[0_18px_50px_rgba(0,23,54,.055)]">
+                <div className="flex items-center gap-3 border-b border-[#e0e3e6] pb-5">
+                  <ReceiptText className="h-6 w-6 text-[#001736]" />
+                  <h2 className="text-xl font-black text-[#001736]">{copy.invoice}</h2>
+                </div>
+
+                <dl className="space-y-4 py-6 text-sm">
+                  <div className="flex justify-between gap-4"><dt className="text-[#43474f]">{copy.products} ({lines.reduce((sum, l) => sum + l.quantity, 0)})</dt><dd className="font-bold tabular-nums text-[#001736]">{formatPrice(subtotal, locale)} {c("currency")}</dd></div>
+                  <div className="flex justify-between gap-4"><dt className="text-[#43474f]">{copy.shipping}</dt><dd className="text-xs text-[#747780]">{locale === "fa" ? "مرحله بعد" : "Next step"}</dd></div>
+                </dl>
+
+                <div className="border-t border-[#e0e3e6] pt-6">
+                  <p className="text-sm font-black text-[#001736]">{copy.payable}</p>
+                  <div className="mt-2 flex items-baseline gap-2"><strong className="text-3xl font-black tabular-nums text-[#001736]">{formatPrice(subtotal, locale)}</strong><span className="text-xs text-[#43474f]">{c("currency")}</span></div>
+                  <button type="button" onClick={() => router.push("/checkout")} className="mt-6 flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-[#001f48] px-5 text-sm font-black text-white shadow-[0_12px_28px_rgba(0,31,72,.18)] transition hover:bg-[#00366f]">
+                    <ShieldCheck className="h-5 w-5" />{copy.safePay}
+                  </button>
+                  <button type="button" disabled className="mt-3 flex min-h-12 w-full cursor-not-allowed items-center justify-center gap-2 rounded-xl border border-[#c4c6d0] bg-white px-4 text-xs font-bold text-[#747780]" title={locale === "fa" ? "پس از ثبت سفارش فعال می‌شود" : "Available after order creation"}>
+                    <Download className="h-4 w-4" />{copy.officialInvoice}
+                  </button>
+                </div>
+
+                <div className="mt-6 rounded-2xl bg-[#eef3f9] p-4 text-xs text-[#43474f]">
+                  <div className="flex items-start gap-3"><BadgeCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#001736]" /><div><strong className="block text-[#001736]">{copy.originality}</strong><span>{locale === "fa" ? "تجهیزات از مسیرهای تاییدشده تامین می‌شوند" : "Sourced through verified channels"}</span></div></div>
+                  <div className="mt-4 flex items-start gap-3"><PackageCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#001736]" /><div><strong className="block text-[#001736]">{copy.support}</strong><span>{locale === "fa" ? "راهنمایی قبل و بعد از خرید" : "Guidance before and after purchase"}</span></div></div>
+                </div>
+              </div>
+            </aside>
+
+            <section className="order-1 space-y-5 lg:order-2">
               {lines.map((line) => {
                 const lineName = pickLocalized(locale, { fa: line.nameFa, tr: line.nameTr, en: line.nameEn, ar: line.nameAr });
                 return (
-                  <li key={line.key} className="vitalis-panel flex flex-wrap items-center gap-4 p-4 sm:flex-nowrap sm:p-5">
-                    <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-muted-bg sm:h-24 sm:w-24">
-                      {line.image ? (
-                        <Image src={line.image} alt={lineName} fill className="object-contain p-2" sizes="96px" />
-                      ) : (
-                        <div className="flex h-full items-center justify-center text-muted"><ImageOff className="h-5 w-5" aria-hidden="true" /></div>
-                      )}
+                  <article key={line.key} className="grid gap-5 rounded-3xl border border-[#dfe4ea] bg-white p-5 shadow-[0_14px_40px_rgba(0,23,54,.045)] sm:grid-cols-[150px_1fr] sm:p-6">
+                    <div className="relative aspect-square overflow-hidden rounded-2xl bg-[#e8edf2]">
+                      {line.image ? <Image src={line.image} alt={lineName} fill className="object-contain p-3" sizes="150px" /> : <div className="flex h-full items-center justify-center text-[#747780]"><ImageOff className="h-7 w-7" /></div>}
                     </div>
-
-                    <div className="min-w-0 flex-1">
-                      <p className="line-clamp-2 text-sm font-bold text-foreground sm:text-base">{lineName}</p>
-                      {line.preferredDate ? <p className="mt-1 text-xs text-muted">{line.preferredDate}</p> : null}
-                      <p className="mt-2 text-sm font-black text-primary tabular-nums">
-                        {formatPrice(line.price, locale)} <span className="text-xs font-medium text-muted">{c("currency")}</span>
-                      </p>
+                    <div className="flex min-w-0 flex-col">
+                      <div className="flex items-start justify-between gap-4">
+                        <div><h2 className="text-base font-black leading-7 text-[#001736] sm:text-lg">{lineName}</h2>{line.preferredDate ? <p className="mt-1 text-xs text-[#747780]">{line.preferredDate}</p> : null}</div>
+                        <button type="button" onClick={() => remove(line.key)} aria-label={t("remove")} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-[#747780] transition hover:bg-red-50 hover:text-[#ba0036]"><Trash2 className="h-4 w-4" /></button>
+                      </div>
+                      <div className="mt-auto flex flex-wrap items-end justify-between gap-4 pt-6">
+                        <div className="text-lg font-black tabular-nums text-[#001736]">{formatPrice(line.price, locale)} <span className="text-xs font-medium text-[#747780]">{c("currency")}</span></div>
+                        <div className="flex items-center overflow-hidden rounded-xl border border-[#c4c6d0] bg-[#f7fafd]">
+                          <button type="button" onClick={() => updateQuantity(line.key, line.quantity - 1)} className="flex h-11 w-11 items-center justify-center hover:bg-white" aria-label="Decrease quantity"><Minus className="h-4 w-4" /></button>
+                          <span className="w-10 text-center text-sm font-black tabular-nums">{line.quantity}</span>
+                          <button type="button" onClick={() => updateQuantity(line.key, line.quantity + 1)} className="flex h-11 w-11 items-center justify-center hover:bg-white" aria-label="Increase quantity"><Plus className="h-4 w-4" /></button>
+                        </div>
+                      </div>
                     </div>
-
-                    <div className="flex items-center overflow-hidden rounded-xl border border-border bg-white">
-                      <button type="button" onClick={() => updateQuantity(line.key, line.quantity - 1)} className="vitalis-focus flex h-10 w-10 items-center justify-center text-foreground hover:bg-muted-bg" aria-label="Decrease quantity">
-                        <Minus className="h-3.5 w-3.5" aria-hidden="true" />
-                      </button>
-                      <span className="w-8 text-center text-sm font-bold tabular-nums">{line.quantity}</span>
-                      <button type="button" onClick={() => updateQuantity(line.key, line.quantity + 1)} className="vitalis-focus flex h-10 w-10 items-center justify-center text-foreground hover:bg-muted-bg" aria-label="Increase quantity">
-                        <Plus className="h-3.5 w-3.5" aria-hidden="true" />
-                      </button>
-                    </div>
-
-                    <button type="button" onClick={() => remove(line.key)} aria-label={t("remove")} className="vitalis-focus flex h-10 w-10 items-center justify-center rounded-xl text-muted transition hover:bg-accent/10 hover:text-accent">
-                      <Trash2 className="h-4 w-4" aria-hidden="true" />
-                    </button>
-                  </li>
+                  </article>
                 );
               })}
-            </ul>
 
-            <aside className="lg:sticky lg:top-28 lg:self-start">
-              <div className="vitalis-panel p-6">
-                <h2 className="text-base font-black text-foreground">
-                  {locale === "fa" ? "خلاصه سفارش" : locale === "tr" ? "Sipariş özeti" : locale === "ar" ? "ملخص الطلب" : "Order summary"}
-                </h2>
-                <div className="mt-5 flex justify-between gap-3 text-sm text-muted">
-                  <span>{t("subtotal")}</span>
-                  <span className="font-bold text-foreground tabular-nums">{formatPrice(subtotal, locale)} {c("currency")}</span>
+              <section className="rounded-3xl border border-[#dfe4ea] bg-white p-6 shadow-[0_14px_40px_rgba(0,23,54,.04)]">
+                <div className="mb-5 flex items-center gap-2"><Truck className="h-5 w-5 text-[#009dd8]" /><h2 className="text-base font-black text-[#001736]">{copy.shippingMethod}</h2></div>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-2xl border-2 border-[#001736] bg-[#f5f8fc] p-4"><strong className="text-sm text-[#001736]">{copy.standard}</strong><p className="mt-2 text-xs leading-5 text-[#747780]">{copy.standardSub}</p></div>
+                  <div className="rounded-2xl border border-[#dfe4ea] p-4"><strong className="text-sm text-[#001736]">{copy.express}</strong><p className="mt-2 text-xs leading-5 text-[#747780]">{copy.standardSub}</p></div>
+                  <div className="rounded-2xl border border-[#dfe4ea] p-4"><strong className="text-sm text-[#001736]">{copy.specialist}</strong><p className="mt-2 text-xs leading-5 text-[#747780]">{copy.standardSub}</p></div>
                 </div>
-                <div className="mt-3 flex justify-between gap-3 text-sm text-muted">
-                  <span>{t("shipping")}</span>
-                  <span>{locale === "fa" ? "در مرحله بعد محاسبه می‌شود" : locale === "tr" ? "Sonraki adımda hesaplanır" : locale === "ar" ? "يُحسب في الخطوة التالية" : "Calculated next"}</span>
-                </div>
-                <div className="mt-6 border-t border-border pt-5">
-                  <LinkButton href="/checkout" className="w-full justify-center rounded-xl">{t("checkout")}</LinkButton>
-                </div>
-              </div>
+              </section>
 
-              <div className="mt-4 grid gap-2 text-xs text-muted">
-                <div className="flex items-center gap-2 rounded-xl border border-border bg-white p-3"><ShieldCheck className="h-4 w-4 text-primary-glow" aria-hidden="true" />{locale === "fa" ? "پرداخت امن و حفاظت از اطلاعات" : locale === "tr" ? "Güvenli ödeme ve veri koruması" : locale === "ar" ? "دفع آمن وحماية البيانات" : "Secure payment and data protection"}</div>
-                <div className="flex items-center gap-2 rounded-xl border border-border bg-white p-3"><Truck className="h-4 w-4 text-primary-glow" aria-hidden="true" />{locale === "fa" ? "ارسال ایمن تجهیزات پزشکی" : locale === "tr" ? "Güvenli medikal ürün teslimatı" : locale === "ar" ? "شحن آمن للمعدات الطبية" : "Secure medical-equipment delivery"}</div>
-              </div>
-            </aside>
+              <section className="rounded-3xl border border-[#dfe4ea] bg-white p-6 shadow-[0_14px_40px_rgba(0,23,54,.04)]">
+                <div className="mb-4 flex items-center gap-2"><Gift className="h-5 w-5 text-[#009dd8]" /><h2 className="text-base font-black text-[#001736]">{copy.coupon}</h2></div>
+                <div className="flex gap-3"><input disabled placeholder={copy.couponHint} className="h-12 flex-1 rounded-xl border border-[#c4c6d0] bg-[#f7fafd] px-4 text-sm text-[#747780]" /><button disabled className="rounded-xl bg-[#001736] px-6 text-xs font-bold text-white opacity-60">{locale === "fa" ? "اعمال کد" : "Apply"}</button></div>
+              </section>
+            </section>
           </div>
         )}
       </Container>
