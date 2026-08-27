@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { supabaseRpc } from "@/lib/supabase-rest";
+import { getCustomerToken } from "@/lib/customer-auth";
 
 const schema = z.object({
   requestToken: z.string().uuid(),
@@ -34,6 +35,15 @@ export async function POST(request: Request) {
       p_message: body.message,
       p_locale: body.locale,
     });
+
+    const customerToken = await getCustomerToken();
+    if (customerToken && ticket.publicToken) {
+      await supabaseRpc<boolean>("attach_support_customer", {
+        p_public_token: ticket.publicToken,
+        p_customer_token: customerToken,
+      }).catch(() => false);
+    }
+
     return NextResponse.json({ ok: true, ...ticket });
   } catch (error) {
     console.error("[support] create failed", error);
