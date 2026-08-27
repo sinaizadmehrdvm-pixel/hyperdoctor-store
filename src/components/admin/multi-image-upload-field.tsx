@@ -98,13 +98,13 @@ export function MultiImageUploadField({
         ref={inputRef}
         type="file"
         multiple
-        accept="image/png,image/jpeg,image/webp,image/svg+xml"
+        accept="image/png,image/jpeg,image/webp"
         className="hidden"
         onChange={(event) => event.target.files && uploadFiles(event.target.files)}
       />
 
       <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-muted">
-        <span className="inline-flex items-center gap-1"><Upload className="h-3.5 w-3.5" aria-hidden="true" /> حداکثر {maxImages} تصویر</span>
+        <span className="inline-flex items-center gap-1"><Upload className="h-3.5 w-3.5" aria-hidden="true" /> حداکثر {maxImages} تصویر · JPG/PNG/WebP · حداکثر ۵MB</span>
         <span>تصویر شماره ۱، تصویر اصلی محصول است.</span>
       </div>
       {error ? <p className="mt-2 text-xs font-medium text-accent">{error}</p> : null}
