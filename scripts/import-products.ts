@@ -1,12 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { PrismaClient } from "../src/generated/prisma/client";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
-
-const adapter = new PrismaBetterSqlite3({
-  url: process.env.DATABASE_URL ?? "file:./dev.db",
-});
-const prisma = new PrismaClient({ adapter });
+import { prisma } from "@/lib/prisma";
 
 function parseCsv(input: string): Record<string, string>[] {
   const rows: string[][] = [];
@@ -103,95 +97,58 @@ async function main() {
       if (!category) throw new Error(`Unknown categorySlug: ${row.categorySlug}`);
 
       const existing = await prisma.product.findUnique({ where: { sku: row.sku } });
+      const commonData = {
+        vertical: (row.vertical || category.vertical) as typeof category.vertical,
+        categoryId: category.id,
+        slug: row.slug,
+        nameFa: row.nameFa,
+        nameTr: row.nameTr || "",
+        nameEn: row.nameEn,
+        nameAr: row.nameAr || "",
+        descriptionFa: row.descriptionFa || "",
+        descriptionTr: row.descriptionTr || "",
+        descriptionEn: row.descriptionEn || "",
+        descriptionAr: row.descriptionAr || "",
+        brand: row.brand || "",
+        modelNumber: row.modelNumber || "",
+        barcode: row.barcode || "",
+        gtin: row.gtin || "",
+        manufacturer: row.manufacturer || "",
+        countryOfOrigin: row.countryOfOrigin || "",
+        price: asInt(row.price),
+        compareAtPrice: asOptionalInt(row.compareAtPrice || ""),
+        costPrice: asOptionalInt(row.costPrice || ""),
+        stock: asInt(row.stock),
+        lowStockThreshold: asInt(row.lowStockThreshold || "2", 2),
+        minOrderQty: Math.max(1, asInt(row.minOrderQty || "1", 1)),
+        maxOrderQty: asOptionalInt(row.maxOrderQty || ""),
+        warrantyMonths: asOptionalInt(row.warrantyMonths || ""),
+        specs: jsonOrDefault(row.specs || "", "{}"),
+        tags: jsonOrDefault(row.tags || "", "[]"),
+        isPublished: asBool(row.isPublished, false),
+        isFeatured: asBool(row.isFeatured, false),
+        isNewArrival: asBool(row.isNewArrival, false),
+        seoTitleFa: row.seoTitleFa || "",
+        seoTitleTr: row.seoTitleTr || "",
+        seoTitleEn: row.seoTitleEn || "",
+        seoTitleAr: row.seoTitleAr || "",
+        seoDescriptionFa: row.seoDescriptionFa || "",
+        seoDescriptionTr: row.seoDescriptionTr || "",
+        seoDescriptionEn: row.seoDescriptionEn || "",
+        seoDescriptionAr: row.seoDescriptionAr || "",
+      };
+
       const product = await prisma.product.upsert({
         where: { sku: row.sku },
-        update: {
-          vertical: (row.vertical || category.vertical) as typeof category.vertical,
-          categoryId: category.id,
-          slug: row.slug,
-          nameFa: row.nameFa,
-          nameTr: row.nameTr || "",
-          nameEn: row.nameEn,
-          nameAr: row.nameAr || "",
-          descriptionFa: row.descriptionFa || "",
-          descriptionTr: row.descriptionTr || "",
-          descriptionEn: row.descriptionEn || "",
-          descriptionAr: row.descriptionAr || "",
-          brand: row.brand || "",
-          modelNumber: row.modelNumber || "",
-          barcode: row.barcode || "",
-          gtin: row.gtin || "",
-          manufacturer: row.manufacturer || "",
-          countryOfOrigin: row.countryOfOrigin || "",
-          price: asInt(row.price),
-          compareAtPrice: asOptionalInt(row.compareAtPrice || ""),
-          costPrice: asOptionalInt(row.costPrice || ""),
-          stock: asInt(row.stock),
-          lowStockThreshold: asInt(row.lowStockThreshold || "2", 2),
-          minOrderQty: asInt(row.minOrderQty || "1", 1),
-          maxOrderQty: asOptionalInt(row.maxOrderQty || ""),
-          warrantyMonths: asOptionalInt(row.warrantyMonths || ""),
-          specs: jsonOrDefault(row.specs || "", "{}"),
-          tags: jsonOrDefault(row.tags || "", "[]"),
-          isPublished: asBool(row.isPublished, false),
-          isFeatured: asBool(row.isFeatured, false),
-          isNewArrival: asBool(row.isNewArrival, false),
-          seoTitleFa: row.seoTitleFa || "",
-          seoTitleTr: row.seoTitleTr || "",
-          seoTitleEn: row.seoTitleEn || "",
-          seoTitleAr: row.seoTitleAr || "",
-          seoDescriptionFa: row.seoDescriptionFa || "",
-          seoDescriptionTr: row.seoDescriptionTr || "",
-          seoDescriptionEn: row.seoDescriptionEn || "",
-          seoDescriptionAr: row.seoDescriptionAr || "",
-        },
-        create: {
-          vertical: (row.vertical || category.vertical) as typeof category.vertical,
-          categoryId: category.id,
-          slug: row.slug,
-          sku: row.sku,
-          nameFa: row.nameFa,
-          nameTr: row.nameTr || "",
-          nameEn: row.nameEn,
-          nameAr: row.nameAr || "",
-          descriptionFa: row.descriptionFa || "",
-          descriptionTr: row.descriptionTr || "",
-          descriptionEn: row.descriptionEn || "",
-          descriptionAr: row.descriptionAr || "",
-          brand: row.brand || "",
-          modelNumber: row.modelNumber || "",
-          barcode: row.barcode || "",
-          gtin: row.gtin || "",
-          manufacturer: row.manufacturer || "",
-          countryOfOrigin: row.countryOfOrigin || "",
-          price: asInt(row.price),
-          compareAtPrice: asOptionalInt(row.compareAtPrice || ""),
-          costPrice: asOptionalInt(row.costPrice || ""),
-          stock: asInt(row.stock),
-          lowStockThreshold: asInt(row.lowStockThreshold || "2", 2),
-          minOrderQty: asInt(row.minOrderQty || "1", 1),
-          maxOrderQty: asOptionalInt(row.maxOrderQty || ""),
-          warrantyMonths: asOptionalInt(row.warrantyMonths || ""),
-          specs: jsonOrDefault(row.specs || "", "{}"),
-          tags: jsonOrDefault(row.tags || "", "[]"),
-          isPublished: asBool(row.isPublished, false),
-          isFeatured: asBool(row.isFeatured, false),
-          isNewArrival: asBool(row.isNewArrival, false),
-          seoTitleFa: row.seoTitleFa || "",
-          seoTitleTr: row.seoTitleTr || "",
-          seoTitleEn: row.seoTitleEn || "",
-          seoTitleAr: row.seoTitleAr || "",
-          seoDescriptionFa: row.seoDescriptionFa || "",
-          seoDescriptionTr: row.seoDescriptionTr || "",
-          seoDescriptionEn: row.seoDescriptionEn || "",
-          seoDescriptionAr: row.seoDescriptionAr || "",
-        },
+        update: commonData,
+        create: { ...commonData, sku: row.sku },
       });
 
       const imageUrls = (row.imageUrls || "")
         .split(";")
         .map((value) => value.trim())
-        .filter(Boolean);
+        .filter(Boolean)
+        .slice(0, 12);
       if (imageUrls.length) {
         await prisma.media.deleteMany({ where: { productId: product.id } });
         await prisma.media.createMany({
@@ -202,12 +159,13 @@ async function main() {
             altFa: row.nameFa,
             altTr: row.nameTr || row.nameEn,
             altEn: row.nameEn,
-            altAr: row.nameAr || row.nameEn,
+            altAr: row.nameAr || row.nameFa,
           })),
         });
       }
 
-      if (existing) updated++; else created++;
+      if (existing) updated++;
+      else created++;
       console.log(`✓ line ${line}: ${row.sku}`);
     } catch (error) {
       failed++;
@@ -219,5 +177,4 @@ async function main() {
   if (failed) process.exitCode = 1;
 }
 
-main()
-  .finally(async () => prisma.$disconnect());
+main().finally(async () => prisma.$disconnect());
