@@ -2,56 +2,49 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { adminRpc } from "@/lib/admin-data";
 import { slugify } from "@/lib/slug";
 
-async function requireAdmin() {
-  const session = await auth();
-  if (!session) redirect("/admin/login");
-}
-
 export async function upsertService(formData: FormData) {
-  await requireAdmin();
+  const nameFa = String(formData.get("nameFa") || "").trim();
+  const nameEn = String(formData.get("nameEn") || "").trim();
+  const slug = slugify(String(formData.get("slug") || nameEn || nameFa));
+  if (!nameFa || !nameEn || !slug) throw new Error("نام فارسی، نام انگلیسی و اسلاگ خدمت الزامی است.");
 
-  const id = String(formData.get("id") || "");
-  const data = {
-    vertical: String(formData.get("vertical")) as
-      | "MEDICAL_EQUIPMENT"
-      | "RESPIRATORY_SERVICES"
-      | "DENTAL"
-      | "VETERINARY"
-      | "PHARMACY"
-      | "NURSING",
-    slug: slugify(String(formData.get("slug") || formData.get("nameEn"))),
-    nameFa: String(formData.get("nameFa") || ""),
-    nameEn: String(formData.get("nameEn") || ""),
-    descriptionFa: String(formData.get("descriptionFa") || ""),
-    descriptionEn: String(formData.get("descriptionEn") || ""),
-    image: String(formData.get("image") || "") || null,
-    price: formData.get("price") ? Number(formData.get("price")) : null,
-    priceIsFrom: formData.get("priceIsFrom") === "on",
-    durationMinutes: formData.get("durationMinutes")
-      ? Number(formData.get("durationMinutes"))
-      : null,
-    requiresBooking: formData.get("requiresBooking") === "on",
-    isPublished: formData.get("isPublished") === "on",
-  };
+  const priceValue = String(formData.get("price") || "").trim();
+  const durationValue = String(formData.get("durationMinutes") || "").trim();
 
-  if (id) {
-    await prisma.service.update({ where: { id }, data });
-  } else {
-    await prisma.service.create({ data });
-  }
+  await adminRpc("admin_upsert_service", {
+    p_data: {
+      id: String(formData.get("id") || ""),
+      vertical: String(formData.get("vertical") || "RESPIRATORY_SERVICES"),
+      slug,
+      nameFa,
+      nameTr: String(formData.get("nameTr") || "").trim(),
+      nameEn,
+      nameAr: String(formData.get("nameAr") || "").trim(),
+      descriptionFa: String(formData.get("descriptionFa") || ""),
+      descriptionTr: String(formData.get("descriptionTr") || ""),
+      descriptionEn: String(formData.get("descriptionEn") || ""),
+      descriptionAr: String(formData.get("descriptionAr") || ""),
+      image: String(formData.get("image") || ""),
+      price: priceValue,
+      priceIsFrom: formData.get("priceIsFrom") === "on",
+      durationMinutes: durationValue,
+      requiresBooking: formData.get("requiresBooking") === "on",
+      isPublished: formData.get("isPublished") === "on",
+    },
+  });
 
   revalidatePath("/admin/services");
+  revalidatePath("/services", "layout");
   revalidatePath("/", "layout");
   redirect("/admin/services");
 }
 
 export async function deleteService(id: string) {
-  await requireAdmin();
-  await prisma.service.delete({ where: { id } });
+  await adminRpc<boolean>("admin_archive_service", { p_id: id });
   revalidatePath("/admin/services");
+  revalidatePath("/services", "layout");
   revalidatePath("/", "layout");
 }
