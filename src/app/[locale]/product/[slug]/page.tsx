@@ -12,6 +12,13 @@ import { CheckCircle2, PackageCheck, ShieldCheck, Star, Truck } from "lucide-rea
 
 type LocalizedSpec = string | { fa?: string; tr?: string; en?: string; ar?: string };
 type Specs = Record<string, LocalizedSpec>;
+type ProductReview = {
+  id: string;
+  authorName: string;
+  rating: number;
+  title?: string | null;
+  body?: string | null;
+};
 
 function localizedSpecValue(locale: string, value: LocalizedSpec) {
   if (typeof value === "string") return value;
@@ -46,8 +53,9 @@ export default async function ProductPage({
   const description = localizedDescription(locale, product);
   const categoryName = localizedName(locale, product.category);
   const image = product.images[0];
-  const avgRating = product.reviews.length
-    ? product.reviews.reduce((sum, review) => sum + review.rating, 0) / product.reviews.length
+  const reviews = product.reviews as ProductReview[];
+  const avgRating = reviews.length
+    ? reviews.reduce((sum: number, review: ProductReview) => sum + review.rating, 0) / reviews.length
     : null;
 
   return (
@@ -87,7 +95,7 @@ export default async function ProductPage({
                 <span className="inline-flex items-center gap-1">
                   <Star className="h-4 w-4 fill-amber-400 text-amber-400" aria-hidden="true" />
                   <strong className="text-foreground">{avgRating.toFixed(1)}</strong>
-                  <span>({product.reviews.length})</span>
+                  <span>({reviews.length})</span>
                 </span>
               ) : null}
             </div>
@@ -169,13 +177,13 @@ export default async function ProductPage({
           </section>
         ) : null}
 
-        {product.reviews.length > 0 ? (
+        {reviews.length > 0 ? (
           <section className="mt-12 sm:mt-16">
             <h2 className="text-xl font-black text-foreground sm:text-2xl">
               {locale === "fa" ? "نظر خریداران" : locale === "tr" ? "Müşteri yorumları" : locale === "ar" ? "آراء العملاء" : "Customer reviews"}
             </h2>
             <div className="mt-5 grid gap-4 md:grid-cols-2">
-              {product.reviews.slice(0, 6).map((review) => (
+              {reviews.slice(0, 6).map((review: ProductReview) => (
                 <article key={review.id} className="vitalis-panel p-5">
                   <div className="flex items-center justify-between gap-3">
                     <strong className="text-sm text-foreground">{review.authorName}</strong>
