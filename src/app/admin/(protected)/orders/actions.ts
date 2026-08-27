@@ -1,9 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
-import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { adminRpc } from "@/lib/admin-data";
 
 const VALID_STATUSES = [
   "PENDING_PAYMENT",
@@ -16,17 +14,15 @@ const VALID_STATUSES = [
 ] as const;
 
 export async function updateOrderStatus(orderId: string, formData: FormData) {
-  const session = await auth();
-  if (!session) redirect("/admin/login");
-
   const status = String(formData.get("status"));
   if (!VALID_STATUSES.includes(status as (typeof VALID_STATUSES)[number])) return;
 
-  await prisma.order.update({
-    where: { id: orderId },
-    data: { status: status as (typeof VALID_STATUSES)[number] },
+  await adminRpc<boolean>("admin_update_order_status", {
+    p_id: orderId,
+    p_status: status,
   });
 
   revalidatePath(`/admin/orders/${orderId}`);
   revalidatePath("/admin/orders");
+  revalidatePath("/admin");
 }
