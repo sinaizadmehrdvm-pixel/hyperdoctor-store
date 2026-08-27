@@ -19,20 +19,30 @@ const FALLBACK_SITE_SETTINGS = {
 };
 
 export async function getSiteSettings() {
-  const settings = await prisma.siteSetting.findUnique({ where: { id: 1 } });
-  return settings ?? FALLBACK_SITE_SETTINGS;
+  try {
+    const settings = await prisma.siteSetting.findUnique({ where: { id: 1 } });
+    return settings ?? FALLBACK_SITE_SETTINGS;
+  } catch (error) {
+    console.error("[site-data] site settings database read failed", error);
+    return FALLBACK_SITE_SETTINGS;
+  }
 }
 
 export async function getNavPages() {
-  return prisma.page.findMany({
-    where: { showInNav: true, isPublished: true },
-    orderBy: { navOrder: "asc" },
-    select: {
-      slug: true,
-      titleFa: true,
-      titleTr: true,
-      titleEn: true,
-      titleAr: true,
-    },
-  });
+  try {
+    return await prisma.page.findMany({
+      where: { showInNav: true, isPublished: true },
+      orderBy: { navOrder: "asc" },
+      select: {
+        slug: true,
+        titleFa: true,
+        titleTr: true,
+        titleEn: true,
+        titleAr: true,
+      },
+    });
+  } catch (error) {
+    console.error("[site-data] navigation database read failed", error);
+    return [];
+  }
 }
