@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { KeyRound, MailCheck } from "lucide-react";
-import { forgotPasswordAction } from "../../actions";
+import { forgotPasswordAction } from "../actions";
 
 export default async function ForgotPasswordPage({params,searchParams}:{params:Promise<{locale:string}>;searchParams:Promise<{status?:string}>}){
   const {locale}=await params; const q=await searchParams; const action=forgotPasswordAction.bind(null,locale);
