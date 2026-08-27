@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 enum Vertical {
@@ -113,61 +113,61 @@ model Brand {
 }
 
 model Product {
-  id               String      @id @default(cuid())
-  vertical         Vertical
-  categoryId       String
-  category         Category    @relation(fields: [categoryId], references: [id])
-  brandId          String?
-  brandEntity      Brand?      @relation("ProductBrand", fields: [brandId], references: [id], onDelete: SetNull)
-  slug             String      @unique
-  nameFa           String
-  nameTr           String      @default("")
-  nameEn           String
-  nameAr           String      @default("")
-  descriptionFa    String      @default("")
-  descriptionTr    String      @default("")
-  descriptionEn    String      @default("")
-  descriptionAr    String      @default("")
-  brand            String      @default("")
-  modelNumber      String      @default("")
-  sku              String      @unique
-  barcode          String      @default("")
-  gtin             String      @default("")
-  manufacturer     String      @default("")
-  countryOfOrigin  String      @default("")
-  price            Int
-  compareAtPrice   Int?
-  costPrice        Int?
-  stock            Int         @default(0)
-  lowStockThreshold Int        @default(2)
-  minOrderQty      Int         @default(1)
-  maxOrderQty      Int?
-  weightGrams      Int?
-  lengthMm         Int?
-  widthMm          Int?
-  heightMm         Int?
-  warrantyMonths   Int?
-  specs            String      @default("{}")
-  tags             String      @default("[]")
-  images           Media[]
-  variants         ProductVariant[]
-  isPublished      Boolean     @default(false)
-  isFeatured       Boolean     @default(false)
-  isNewArrival     Boolean     @default(false)
-  seoTitleFa       String      @default("")
-  seoTitleTr       String      @default("")
-  seoTitleEn       String      @default("")
-  seoTitleAr       String      @default("")
-  seoDescriptionFa String      @default("")
-  seoDescriptionTr String      @default("")
-  seoDescriptionEn String      @default("")
-  seoDescriptionAr String      @default("")
-  orderItems       OrderItem[]
-  wishlistItems    WishlistItem[]
-  reviews          Review[]
-  warranties       WarrantyRegistration[]
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
+  id                 String                 @id @default(cuid())
+  vertical           Vertical
+  categoryId         String
+  category           Category               @relation(fields: [categoryId], references: [id])
+  brandId            String?
+  brandEntity        Brand?                 @relation("ProductBrand", fields: [brandId], references: [id], onDelete: SetNull)
+  slug               String                 @unique
+  nameFa             String
+  nameTr             String                 @default("")
+  nameEn             String
+  nameAr             String                 @default("")
+  descriptionFa      String                 @default("")
+  descriptionTr      String                 @default("")
+  descriptionEn      String                 @default("")
+  descriptionAr      String                 @default("")
+  brand              String                 @default("")
+  modelNumber        String                 @default("")
+  sku                String                 @unique
+  barcode            String                 @default("")
+  gtin               String                 @default("")
+  manufacturer       String                 @default("")
+  countryOfOrigin    String                 @default("")
+  price              Int
+  compareAtPrice     Int?
+  costPrice          Int?
+  stock              Int                    @default(0)
+  lowStockThreshold  Int                    @default(2)
+  minOrderQty        Int                    @default(1)
+  maxOrderQty        Int?
+  weightGrams        Int?
+  lengthMm           Int?
+  widthMm            Int?
+  heightMm           Int?
+  warrantyMonths     Int?
+  specs              String                 @default("{}")
+  tags               String                 @default("[]")
+  images             Media[]
+  variants           ProductVariant[]
+  isPublished        Boolean                @default(false)
+  isFeatured         Boolean                @default(false)
+  isNewArrival       Boolean                @default(false)
+  seoTitleFa         String                 @default("")
+  seoTitleTr         String                 @default("")
+  seoTitleEn         String                 @default("")
+  seoTitleAr         String                 @default("")
+  seoDescriptionFa   String                 @default("")
+  seoDescriptionTr   String                 @default("")
+  seoDescriptionEn   String                 @default("")
+  seoDescriptionAr   String                 @default("")
+  orderItems         OrderItem[]
+  wishlistItems      WishlistItem[]
+  reviews            Review[]
+  warranties         WarrantyRegistration[]
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
 
   @@index([vertical])
   @@index([categoryId])
@@ -323,136 +323,136 @@ model Review {
 }
 
 model Coupon {
-  id              String             @id @default(cuid())
-  code            String             @unique
-  type            DiscountType
-  value           Int
-  minOrderAmount  Int?
-  maxDiscount     Int?
-  usageLimit      Int?
+  id                String             @id @default(cuid())
+  code              String             @unique
+  type              DiscountType
+  value             Int
+  minOrderAmount    Int?
+  maxDiscount       Int?
+  usageLimit        Int?
   usageLimitPerUser Int?
-  startsAt        DateTime?
-  expiresAt       DateTime?
-  isActive        Boolean            @default(true)
-  orders          Order[]
-  redemptions     CouponRedemption[]
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
+  startsAt          DateTime?
+  expiresAt         DateTime?
+  isActive          Boolean            @default(true)
+  orders            Order[]
+  redemptions       CouponRedemption[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
 }
 
 model CouponRedemption {
-  id         String   @id @default(cuid())
+  id         String    @id @default(cuid())
   couponId   String
   customerId String?
   orderId    String?
-  coupon     Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  coupon     Coupon    @relation(fields: [couponId], references: [id], onDelete: Cascade)
   customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
-  order      Order?   @relation(fields: [orderId], references: [id], onDelete: SetNull)
-  createdAt  DateTime @default(now())
+  order      Order?    @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  createdAt  DateTime  @default(now())
 
   @@index([couponId])
   @@index([customerId])
 }
 
 model Order {
-  id               String         @id @default(cuid())
-  orderNumber      String         @unique
+  id               String             @id @default(cuid())
+  orderNumber      String             @unique
   customerId       String?
-  customer         Customer?      @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  customer         Customer?          @relation(fields: [customerId], references: [id], onDelete: SetNull)
   couponId         String?
-  coupon           Coupon?        @relation(fields: [couponId], references: [id], onDelete: SetNull)
+  coupon           Coupon?            @relation(fields: [couponId], references: [id], onDelete: SetNull)
   couponRedemption CouponRedemption[]
   customerName     String
   phone            String
   email            String?
   address          String
-  province         String         @default("")
+  province         String             @default("")
   city             String
-  country          String         @default("")
+  country          String             @default("")
   postalCode       String?
-  notes            String         @default("")
-  locale           String         @default("fa")
-  currency         String         @default("IRT")
+  notes            String             @default("")
+  locale           String             @default("fa")
+  currency         String             @default("IRT")
   items            OrderItem[]
   subtotal         Int
-  discountAmount   Int            @default(0)
-  shippingFee      Int            @default(0)
+  discountAmount   Int                @default(0)
+  shippingFee      Int                @default(0)
   total            Int
-  status           OrderStatus    @default(PENDING_PAYMENT)
-  gateway          PaymentGateway @default(ZARINPAL)
-  paymentAuthority String?        @unique
+  status           OrderStatus        @default(PENDING_PAYMENT)
+  gateway          PaymentGateway     @default(ZARINPAL)
+  paymentAuthority String?            @unique
   paymentRefId     String?
-  shippingMethod   String         @default("")
-  trackingCode     String         @default("")
+  shippingMethod   String             @default("")
+  trackingCode     String             @default("")
   shippedAt        DateTime?
   completedAt      DateTime?
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
 
   @@index([customerId])
   @@index([status, createdAt])
 }
 
 model OrderItem {
-  id            String    @id @default(cuid())
+  id            String   @id @default(cuid())
   orderId       String
-  order         Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   productId     String?
-  product       Product?  @relation(fields: [productId], references: [id])
+  product       Product? @relation(fields: [productId], references: [id])
   serviceId     String?
-  service       Service?  @relation(fields: [serviceId], references: [id])
+  service       Service? @relation(fields: [serviceId], references: [id])
   nameSnapshot  String
   priceSnapshot Int
-  quantity      Int       @default(1)
+  quantity      Int      @default(1)
   preferredDate DateTime?
 }
 
 model SupportTicket {
-  id         String         @id @default(cuid())
-  ticketNo   String         @unique
+  id         String          @id @default(cuid())
+  ticketNo   String          @unique
   customerId String?
-  customer   Customer?      @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  customer   Customer?       @relation(fields: [customerId], references: [id], onDelete: SetNull)
   subject    String
-  category   String         @default("")
-  status     TicketStatus   @default(OPEN)
-  priority   TicketPriority @default(NORMAL)
+  category   String          @default("")
+  status     TicketStatus    @default(OPEN)
+  priority   TicketPriority  @default(NORMAL)
   messages   TicketMessage[]
-  createdAt  DateTime       @default(now())
-  updatedAt  DateTime       @updatedAt
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
 
   @@index([status, updatedAt])
 }
 
 model TicketMessage {
-  id         String        @id @default(cuid())
-  ticketId   String
-  ticket     SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  senderType String
-  senderName String         @default("")
-  body       String
-  attachmentUrl String      @default("")
-  createdAt  DateTime       @default(now())
+  id            String        @id @default(cuid())
+  ticketId      String
+  ticket        SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  senderType    String
+  senderName    String        @default("")
+  body          String
+  attachmentUrl String        @default("")
+  createdAt     DateTime      @default(now())
 
   @@index([ticketId, createdAt])
 }
 
 model WarrantyRegistration {
-  id           String         @id @default(cuid())
-  serialNumber String         @unique
+  id           String          @id @default(cuid())
+  serialNumber String          @unique
   customerId   String?
-  customer     Customer?      @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  customer     Customer?       @relation(fields: [customerId], references: [id], onDelete: SetNull)
   productId    String
-  product      Product        @relation(fields: [productId], references: [id])
+  product      Product         @relation(fields: [productId], references: [id])
   orderId      String?
-  orderNumber  String         @default("")
+  orderNumber  String          @default("")
   purchaseDate DateTime?
   startsAt     DateTime
   expiresAt    DateTime
-  status       WarrantyStatus @default(ACTIVE)
-  notes        String         @default("")
+  status       WarrantyStatus  @default(ACTIVE)
+  notes        String          @default("")
   events       WarrantyEvent[]
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
 
   @@index([productId])
   @@index([customerId])
@@ -471,25 +471,25 @@ model WarrantyEvent {
 }
 
 model SiteBanner {
-  id          String   @id @default(cuid())
-  key         String   @unique
-  titleFa     String   @default("")
-  titleTr     String   @default("")
-  titleEn     String   @default("")
-  titleAr     String   @default("")
-  subtitleFa  String   @default("")
-  subtitleTr  String   @default("")
-  subtitleEn  String   @default("")
-  subtitleAr  String   @default("")
-  imageUrl    String   @default("")
-  mobileImageUrl String @default("")
-  linkUrl     String   @default("")
-  isPublished Boolean  @default(true)
-  order       Int      @default(0)
-  startsAt    DateTime?
-  endsAt      DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String   @id @default(cuid())
+  key            String   @unique
+  titleFa        String   @default("")
+  titleTr        String   @default("")
+  titleEn        String   @default("")
+  titleAr        String   @default("")
+  subtitleFa     String   @default("")
+  subtitleTr     String   @default("")
+  subtitleEn     String   @default("")
+  subtitleAr     String   @default("")
+  imageUrl       String   @default("")
+  mobileImageUrl String   @default("")
+  linkUrl        String   @default("")
+  isPublished    Boolean  @default(true)
+  order          Int      @default(0)
+  startsAt       DateTime?
+  endsAt         DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model Article {
@@ -528,19 +528,19 @@ model AdminUser {
 }
 
 model SiteSetting {
-  id              Int      @id @default(1)
-  holdingName     String   @default("VITALIS Group")
-  holdingLogoUrl  String   @default("")
-  subBrandName    String   @default("Hyper Doctor")
-  subBrandLogoUrl String   @default("")
-  contactPhone    String   @default("")
-  contactEmail    String   @default("")
-  address         String   @default("")
-  instagramUrl    String   @default("")
-  telegramUrl     String   @default("")
-  whatsappUrl     String   @default("")
-  defaultLocale   String   @default("fa")
-  supportedLocales String  @default("fa,tr,en,ar")
-  currency        String   @default("IRT")
-  updatedAt       DateTime @updatedAt
+  id               Int      @id @default(1)
+  holdingName      String   @default("VITALIS Group")
+  holdingLogoUrl   String   @default("")
+  subBrandName     String   @default("Hyper Doctor")
+  subBrandLogoUrl  String   @default("")
+  contactPhone     String   @default("")
+  contactEmail     String   @default("")
+  address          String   @default("")
+  instagramUrl     String   @default("")
+  telegramUrl      String   @default("")
+  whatsappUrl      String   @default("")
+  defaultLocale    String   @default("fa")
+  supportedLocales String   @default("fa,tr,en,ar")
+  currency         String   @default("IRT")
+  updatedAt        DateTime @updatedAt
 }
