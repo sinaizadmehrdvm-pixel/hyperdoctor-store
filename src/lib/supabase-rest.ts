@@ -31,6 +31,14 @@ function getConfig() {
   return { baseUrl, apiKey };
 }
 
+function apiHeaders(apiKey: string) {
+  return {
+    apikey: apiKey,
+    Authorization: `Bearer ${apiKey}`,
+    Accept: "application/json",
+  };
+}
+
 export async function supabaseSelect<T>(
   table: string,
   params: Record<string, string> = {},
@@ -44,11 +52,7 @@ export async function supabaseSelect<T>(
 
   const response = await fetch(url, {
     method: "GET",
-    headers: {
-      apikey: apiKey,
-      Authorization: `Bearer ${apiKey}`,
-      Accept: "application/json",
-    },
+    headers: apiHeaders(apiKey),
     cache: "no-store",
   });
 
@@ -60,6 +64,32 @@ export async function supabaseSelect<T>(
   }
 
   return (await response.json()) as T[];
+}
+
+export async function supabaseRpc<T>(
+  fn: string,
+  payload: Record<string, unknown>,
+): Promise<T> {
+  const { baseUrl, apiKey } = getConfig();
+  const response = await fetch(`${baseUrl}/rest/v1/rpc/${encodeURIComponent(fn)}`, {
+    method: "POST",
+    headers: {
+      ...apiHeaders(apiKey),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(
+      `Supabase RPC ${response.status} for ${fn}: ${body.slice(0, 500)}`,
+    );
+  }
+
+  const text = await response.text();
+  return (text ? JSON.parse(text) : null) as T;
 }
 
 export function inFilter(values: string[]) {
