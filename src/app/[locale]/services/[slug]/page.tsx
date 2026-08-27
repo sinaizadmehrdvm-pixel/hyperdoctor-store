@@ -1,93 +1,145 @@
 import { notFound } from "next/navigation";
-import { getLocale, getTranslations } from "next-intl/server";
-import Image from "next/image";
-import { Moon, Clock } from "lucide-react";
+import { getLocale } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
+import {
+  CalendarDays,
+  CheckCircle2,
+  Clock3,
+  Home,
+  MoonStar,
+  ShieldCheck,
+  Stethoscope,
+  Wrench,
+  Wind,
+} from "lucide-react";
 import { Container } from "@/components/ui/container";
-import { Badge } from "@/components/ui/badge";
 import { BookServiceButton } from "@/components/site/book-service-button";
-import { formatPrice } from "@/lib/utils";
 import { getServiceBySlug } from "@/lib/queries";
+import { localizedDescription, localizedName } from "@/lib/i18n-content";
 
-export default async function ServiceDetailPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+function serviceIcon(slug: string) {
+  if (slug.includes("sleep")) return MoonStar;
+  if (slug.includes("titration")) return Wind;
+  if (slug.includes("installation")) return Home;
+  if (slug.includes("repair")) return Wrench;
+  return Stethoscope;
+}
+
+export default async function ServiceDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [locale, t, c] = await Promise.all([
-    getLocale(),
-    getTranslations("services"),
-    getTranslations("common"),
-  ]);
-
-  const service = await getServiceBySlug(slug);
+  const [locale, service] = await Promise.all([getLocale(), getServiceBySlug(slug)]);
   if (!service) notFound();
 
-  const name = locale === "fa" ? service.nameFa : service.nameEn;
-  const description = locale === "fa" ? service.descriptionFa : service.descriptionEn;
+  const name = localizedName(locale, service);
+  const description = localizedDescription(locale, service);
+  const Icon = serviceIcon(service.slug);
+  const copy = locale === "fa"
+    ? {
+        back: "همه خدمات",
+        booking: "رزرو این خدمت",
+        availability: "ثبت درخواست آنلاین فعال است",
+        how: "این خدمت چگونه انجام می‌شود؟",
+        steps: ["ثبت درخواست و زمان ترجیحی", "بررسی درخواست توسط تیم تخصصی", "تأیید زمان و هماهنگی", "ارائه خدمت و پیگیری"],
+        support: "پشتیبانی تخصصی Hyper Doctor",
+        supportBody: "پس از ثبت درخواست، اطلاعات شما در سیستم خدمات ثبت می‌شود و تیم هایپر دکتر برای هماهنگی نهایی با شما تماس می‌گیرد.",
+        duration: "مدت تقریبی",
+      }
+    : locale === "tr"
+      ? {
+          back: "Tüm hizmetler",
+          booking: "Bu hizmeti randevula",
+          availability: "Online talep kaydı aktif",
+          how: "Bu hizmet nasıl ilerler?",
+          steps: ["Talep ve tercih edilen zamanı girin", "Uzman ekip incelemesi", "Zaman onayı ve koordinasyon", "Hizmet ve takip"],
+          support: "Hyper Doctor uzman desteği",
+          supportBody: "Talebiniz sisteme kaydedilir ve Hyper Doctor ekibi son koordinasyon için sizinle iletişime geçer.",
+          duration: "Tahmini süre",
+        }
+      : locale === "ar"
+        ? {
+            back: "جميع الخدمات",
+            booking: "حجز هذه الخدمة",
+            availability: "التسجيل عبر الإنترنت متاح",
+            how: "كيف يتم تنفيذ هذه الخدمة؟",
+            steps: ["تسجيل الطلب والوقت المفضل", "مراجعة الفريق المختص", "تأكيد الموعد والتنسيق", "تنفيذ الخدمة والمتابعة"],
+            support: "دعم Hyper Doctor المتخصص",
+            supportBody: "بعد تسجيل الطلب تتم إضافته إلى نظام الخدمات ويتواصل معك فريق Hyper Doctor للتنسيق النهائي.",
+            duration: "المدة التقريبية",
+          }
+        : {
+            back: "All services",
+            booking: "Book this service",
+            availability: "Online requests are available",
+            how: "How does this service work?",
+            steps: ["Submit request and preferred time", "Specialist team review", "Time confirmation and coordination", "Service delivery and follow-up"],
+            support: "Hyper Doctor specialist support",
+            supportBody: "After submission your request is recorded in the service system and the Hyper Doctor team contacts you for final coordination.",
+            duration: "Estimated duration",
+          };
 
   return (
-    <main className="flex-1 py-12">
+    <main className="flex-1 bg-[#f5f8fb] pb-16 pt-6 sm:pt-10">
       <Container>
-        <div className="grid gap-10 lg:grid-cols-2">
-          <div className="relative aspect-square overflow-hidden rounded-2xl bg-navy">
-            {service.image ? (
-              <Image
-                src={service.image}
-                alt={name}
-                fill
-                className="object-cover"
-                sizes="(min-width: 1024px) 45vw, 90vw"
-                priority
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center">
-                <Moon className="h-16 w-16 text-primary-glow" aria-hidden="true" />
-              </div>
-            )}
+        <Link href="/services" className="mb-5 inline-flex text-xs font-black text-[#5f6570] transition hover:text-[#001736]">← {copy.back}</Link>
+
+        <section className="grid overflow-hidden rounded-[2rem] border border-[#dfe4ea] bg-white shadow-[0_24px_65px_rgba(0,23,54,.08)] lg:grid-cols-[.9fr_1.1fr]">
+          <div className="relative flex min-h-72 items-center justify-center overflow-hidden bg-[#001736] p-10 lg:min-h-[520px]">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(0,157,216,.28),transparent_55%)]" />
+            <div className="relative z-10 text-center text-white">
+              <span className="mx-auto flex h-28 w-28 items-center justify-center rounded-[2rem] border border-white/15 bg-white/10 shadow-2xl backdrop-blur">
+                <Icon className="h-12 w-12 text-[#82cfff]" aria-hidden="true" />
+              </span>
+              <p className="mt-6 text-xs font-black uppercase tracking-[.18em] text-[#82cfff]">Hyper Doctor Care</p>
+            </div>
           </div>
 
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{name}</h1>
+          <div className="p-6 sm:p-9 lg:p-12">
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-black text-emerald-700">
+              <CheckCircle2 className="h-4 w-4" />
+              {copy.availability}
+            </div>
+            <h1 className="mt-5 text-3xl font-black leading-tight text-[#001736] sm:text-4xl">{name}</h1>
+            <p className="mt-5 whitespace-pre-line text-sm leading-8 text-[#5f6570] sm:text-base">{description}</p>
 
-            <div className="mt-4 flex flex-wrap items-center gap-3">
-              {service.price ? (
-                <span className="text-2xl font-bold text-foreground tabular-nums">
-                  {service.priceIsFrom ? `${t("priceFrom")} ` : ""}
-                  {formatPrice(service.price, locale)}{" "}
-                  <span className="text-sm font-medium text-muted">{c("currency")}</span>
+            <div className="mt-7 flex flex-wrap gap-3">
+              {service.durationMinutes ? (
+                <span className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#dfe4ea] bg-[#f7fafd] px-4 text-xs font-black text-[#43474f]">
+                  <Clock3 className="h-4 w-4 text-[#009dd8]" />
+                  {copy.duration}: {service.durationMinutes} min
                 </span>
               ) : null}
-              {service.durationMinutes ? (
-                <Badge variant="muted">
-                  <Clock className="h-3.5 w-3.5" aria-hidden="true" />
-                  {service.durationMinutes} {t("minutes")}
-                </Badge>
-              ) : null}
+              <span className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#dfe4ea] bg-[#f7fafd] px-4 text-xs font-black text-[#43474f]">
+                <ShieldCheck className="h-4 w-4 text-[#009dd8]" />
+                Hyper Doctor · VITALIS Group
+              </span>
             </div>
-
-            {service.requiresBooking ? (
-              <p className="mt-3 text-xs text-muted">{t("requiresBooking")}</p>
-            ) : null}
-
-            {description ? (
-              <p className="mt-6 leading-7 text-muted whitespace-pre-line">
-                {description}
-              </p>
-            ) : null}
 
             <div className="mt-8">
-              <BookServiceButton
-                id={service.id}
-                nameFa={service.nameFa}
-                nameEn={service.nameEn}
-                price={service.price ?? 0}
-                image={service.image}
-                requiresBooking={service.requiresBooking}
-              />
+              <BookServiceButton slug={service.slug} />
             </div>
           </div>
-        </div>
+        </section>
+
+        <section className="mt-8 grid gap-6 lg:grid-cols-[1fr_.75fr]">
+          <div className="rounded-3xl border border-[#dfe4ea] bg-white p-6 shadow-[0_14px_38px_rgba(0,23,54,.045)] sm:p-8">
+            <h2 className="text-xl font-black text-[#001736] sm:text-2xl">{copy.how}</h2>
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              {copy.steps.map((step, index) => (
+                <div key={step} className="rounded-2xl border border-[#e0e3e6] bg-[#f9fbfd] p-5">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#002b5b] text-sm font-black text-white">{index + 1}</span>
+                  <p className="mt-4 text-sm font-bold leading-7 text-[#001736]">{step}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <aside className="rounded-3xl bg-[#001736] p-6 text-white shadow-[0_18px_50px_rgba(0,23,54,.12)] sm:p-8">
+            <CalendarDays className="h-7 w-7 text-[#82cfff]" />
+            <h2 className="mt-5 text-xl font-black">{copy.support}</h2>
+            <p className="mt-3 text-sm leading-7 text-[#d6e3ff]/80">{copy.supportBody}</p>
+            <Link href={`/booking?service=${encodeURIComponent(service.slug)}`} className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-2xl bg-[#ba0036] px-5 text-sm font-black text-white hover:bg-[#e80346]">{copy.booking}</Link>
+          </aside>
+        </section>
       </Container>
     </main>
   );
