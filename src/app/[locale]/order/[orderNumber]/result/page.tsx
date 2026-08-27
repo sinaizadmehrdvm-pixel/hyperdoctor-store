@@ -75,7 +75,7 @@ export default async function OrderResultPage({
             <p className="mt-5 text-sm leading-7 text-[#5f6570]">{copy.next}</p>
             <div className="mt-7 flex flex-wrap gap-3">
               <LinkButton href="/" className="gap-2 rounded-xl"><Home className="h-4 w-4" />{t("backHome")}</LinkButton>
-              <LinkButton href="/contact" variant="secondary" className="gap-2 rounded-xl"><ReceiptText className="h-4 w-4" />Hyper Doctor Support</LinkButton>
+              <LinkButton href="/contact" variant="outline" className="gap-2 rounded-xl"><ReceiptText className="h-4 w-4" />Hyper Doctor Support</LinkButton>
             </div>
           </div>
         </section>
