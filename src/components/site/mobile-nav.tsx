@@ -12,25 +12,25 @@ export function MobileNav({
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="md:hidden">
+    <div className="xl:hidden">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-label="Menu"
-        className="inline-flex h-11 w-11 items-center justify-center rounded-full text-navy-foreground hover:bg-white/10 cursor-pointer"
+        className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-[#c4c6d0]/55 bg-white text-[#001736] transition hover:bg-[#f1f4f7]"
       >
         {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </button>
       {open ? (
-        <div className="absolute inset-x-0 top-full bg-navy-elevated border-t border-navy-border shadow-lg">
-          <nav className="flex flex-col p-4 gap-1">
+        <div className="absolute inset-x-0 top-full border-t border-[#c4c6d0]/35 bg-white/95 shadow-[0_18px_42px_rgba(0,23,54,0.12)] backdrop-blur-xl">
+          <nav className="vitalis-container grid gap-1 py-4">
             {items.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={() => setOpen(false)}
-                className="min-h-11 flex items-center px-3 rounded-lg text-navy-foreground hover:bg-white/10 text-sm font-medium"
+                className="flex min-h-12 items-center rounded-xl px-4 text-sm font-bold text-[#001736] transition hover:bg-[#f1f4f7]"
               >
                 {item.label}
               </Link>
