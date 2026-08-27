@@ -1,31 +1,25 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
-import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { adminRpc } from "@/lib/admin-data";
 
 export async function updateSiteSettings(formData: FormData) {
-  const session = await auth();
-  if (!session) redirect("/admin/login");
-
-  const data = {
-    holdingName: String(formData.get("holdingName") || ""),
-    holdingLogoUrl: String(formData.get("holdingLogoUrl") || ""),
-    subBrandName: String(formData.get("subBrandName") || ""),
-    subBrandLogoUrl: String(formData.get("subBrandLogoUrl") || ""),
-    contactPhone: String(formData.get("contactPhone") || ""),
-    contactEmail: String(formData.get("contactEmail") || ""),
-    address: String(formData.get("address") || ""),
-    instagramUrl: String(formData.get("instagramUrl") || ""),
-    telegramUrl: String(formData.get("telegramUrl") || ""),
-    whatsappUrl: String(formData.get("whatsappUrl") || ""),
-  };
-
-  await prisma.siteSetting.upsert({
-    where: { id: 1 },
-    create: { id: 1, ...data },
-    update: data,
+  await adminRpc("admin_update_site_settings", {
+    p_data: {
+      holdingName: String(formData.get("holdingName") || "").trim(),
+      holdingLogoUrl: String(formData.get("holdingLogoUrl") || "").trim(),
+      subBrandName: String(formData.get("subBrandName") || "").trim(),
+      subBrandLogoUrl: String(formData.get("subBrandLogoUrl") || "").trim(),
+      contactPhone: String(formData.get("contactPhone") || "").trim(),
+      contactEmail: String(formData.get("contactEmail") || "").trim(),
+      address: String(formData.get("address") || "").trim(),
+      instagramUrl: String(formData.get("instagramUrl") || "").trim(),
+      telegramUrl: String(formData.get("telegramUrl") || "").trim(),
+      whatsappUrl: String(formData.get("whatsappUrl") || "").trim(),
+      defaultLocale: String(formData.get("defaultLocale") || "fa"),
+      supportedLocales: "fa,tr,en,ar",
+      currency: String(formData.get("currency") || "IRT"),
+    },
   });
 
   revalidatePath("/admin/settings");
