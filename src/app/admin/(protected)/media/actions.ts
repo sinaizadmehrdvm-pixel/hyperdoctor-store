@@ -1,25 +1,16 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
-import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { adminRpc } from "@/lib/admin-data";
 
-export async function addMedia(formData: FormData) {
-  const session = await auth();
-  if (!session) redirect("/admin/login");
-
-  const url = String(formData.get("url") || "");
-  if (!url) return;
-
-  await prisma.media.create({ data: { url } });
+export async function addMedia(formData: FormData){
+  const url=String(formData.get("url")||"").trim();
+  if(!url) return;
+  await adminRpc<string>("admin_add_media",{p_url:url,p_alt_fa:String(formData.get("altFa")||"")});
   revalidatePath("/admin/media");
 }
 
-export async function deleteMedia(id: string) {
-  const session = await auth();
-  if (!session) redirect("/admin/login");
-
-  await prisma.media.delete({ where: { id } });
+export async function deleteMedia(id:string){
+  await adminRpc<boolean>("admin_delete_media",{p_id:id});
   revalidatePath("/admin/media");
 }
