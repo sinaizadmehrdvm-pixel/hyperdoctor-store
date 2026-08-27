@@ -1,11 +1,26 @@
 import { prisma } from "@/lib/prisma";
 
+const FALLBACK_SITE_SETTINGS = {
+  id: 1,
+  holdingName: "VITALIS Group",
+  holdingLogoUrl: "",
+  subBrandName: "Hyper Doctor",
+  subBrandLogoUrl: "",
+  contactPhone: "",
+  contactEmail: "",
+  address: "",
+  instagramUrl: "",
+  telegramUrl: "",
+  whatsappUrl: "",
+  defaultLocale: "fa",
+  supportedLocales: "fa,tr,en,ar",
+  currency: "IRT",
+  updatedAt: new Date(0),
+};
+
 export async function getSiteSettings() {
-  return prisma.siteSetting.upsert({
-    where: { id: 1 },
-    update: {},
-    create: { id: 1 },
-  });
+  const settings = await prisma.siteSetting.findUnique({ where: { id: 1 } });
+  return settings ?? FALLBACK_SITE_SETTINGS;
 }
 
 export async function getNavPages() {
