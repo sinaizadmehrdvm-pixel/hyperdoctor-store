@@ -13,6 +13,9 @@ import {
   ShoppingBag,
   ImageIcon,
   Settings,
+  Headphones,
+  MessageSquareText,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -23,8 +26,11 @@ const items = [
   { href: "/admin/categories", label: "دسته‌بندی‌ها", icon: FolderTree },
   { href: "/admin/services", label: "خدمات", icon: Stethoscope },
   { href: "/admin/bookings", label: "رزرو خدمات", icon: CalendarCheck2 },
-  { href: "/admin/pages", label: "صفحات", icon: FileText },
   { href: "/admin/orders", label: "سفارش‌ها", icon: ShoppingBag },
+  { href: "/admin/support", label: "پشتیبانی", icon: Headphones },
+  { href: "/admin/contacts", label: "پیام‌های تماس", icon: MessageSquareText },
+  { href: "/admin/warranties", label: "گارانتی", icon: ShieldCheck },
+  { href: "/admin/pages", label: "صفحات", icon: FileText },
   { href: "/admin/media", label: "رسانه‌ها", icon: ImageIcon },
   { href: "/admin/settings", label: "تنظیمات", icon: Settings },
 ];
