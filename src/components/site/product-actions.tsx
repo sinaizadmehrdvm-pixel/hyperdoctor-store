@@ -1,0 +1,46 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useLocale } from "next-intl";
+import { GitCompareArrows, Heart } from "lucide-react";
+
+const COMPARE_KEY = "hd_compare_products";
+const FAVORITE_KEY = "hd_favorite_products";
+
+function readStored(key: string) {
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(key) || "[]");
+    return Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === "string") : [];
+  } catch { return []; }
+}
+function l(locale:string,fa:string,en:string,tr:string,ar:string){if(locale==="en")return en;if(locale==="tr")return tr;if(locale==="ar")return ar;return fa;}
+
+export function ProductActions({ productId }: { productId: string }) {
+  const locale = useLocale();
+  const [favorite,setFavorite]=useState(false);
+  const [compared,setCompared]=useState(false);
+  const [limit,setLimit]=useState(false);
+
+  useEffect(()=>{
+    setFavorite(readStored(FAVORITE_KEY).includes(productId));
+    setCompared(readStored(COMPARE_KEY).includes(productId));
+    const sync=()=>setCompared(readStored(COMPARE_KEY).includes(productId));
+    window.addEventListener("hd-compare-change",sync);
+    return()=>window.removeEventListener("hd-compare-change",sync);
+  },[productId]);
+
+  function toggleFavorite(){const current=readStored(FAVORITE_KEY);const next=current.includes(productId)?current.filter(id=>id!==productId):[...current,productId];localStorage.setItem(FAVORITE_KEY,JSON.stringify(next));setFavorite(next.includes(productId));}
+  function toggleCompare(){const current=readStored(COMPARE_KEY).slice(0,4);let next:string[];if(current.includes(productId)){next=current.filter(id=>id!==productId);setLimit(false);}else if(current.length>=4){setLimit(true);window.setTimeout(()=>setLimit(false),1800);return;}else{next=[...current,productId];setLimit(false);}localStorage.setItem(COMPARE_KEY,JSON.stringify(next));setCompared(next.includes(productId));window.dispatchEvent(new Event("hd-compare-change"));}
+
+  const favoriteLabel=favorite?l(locale,"حذف از علاقه‌مندی‌ها","Remove from favorites","Favorilerden çıkar","إزالة من المفضلة"):l(locale,"افزودن به علاقه‌مندی‌ها","Add to favorites","Favorilere ekle","إضافة إلى المفضلة");
+  const compareLabel=compared?l(locale,"حذف از مقایسه","Remove from comparison","Karşılaştırmadan çıkar","إزالة من المقارنة"):l(locale,"افزودن به مقایسه","Add to comparison","Karşılaştırmaya ekle","إضافة إلى المقارنة");
+  const limitText=l(locale,"حداکثر چهار محصول را می‌توانید مقایسه کنید","You can compare up to four products","En fazla dört ürünü karşılaştırabilirsiniz","يمكنك مقارنة أربعة منتجات كحد أقصى");
+
+  return <div className="space-y-2">
+    <div className="flex gap-2">
+      <button type="button" onClick={toggleFavorite} aria-pressed={favorite} aria-label={favoriteLabel} className={`vitalis-focus flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border bg-white transition ${favorite?"border-[#ba0036] text-[#ba0036]":"border-[#dfe3e8] text-[#747780] hover:border-[#ba0036] hover:text-[#ba0036]"}`}><Heart aria-hidden="true" className={`h-5 w-5 ${favorite?"fill-current":""}`}/></button>
+      <button type="button" onClick={toggleCompare} aria-pressed={compared} className={`vitalis-focus flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl border-2 bg-white px-5 text-sm font-black transition ${compared?"border-[#009dd8] bg-[#edf8ff] text-[#002b5b]":limit?"border-[#ba0036] text-[#ba0036]":"border-[#001736] text-[#001736] hover:bg-[#f1f4f7]"}`}><GitCompareArrows aria-hidden="true" className="h-4.5 w-4.5"/>{compareLabel}</button>
+    </div>
+    <p className={`min-h-5 text-center text-[10px] font-bold text-[#ba0036] ${limit?"opacity-100":"opacity-0"}`} role="status" aria-live="polite">{limit?limitText:""}</p>
+  </div>;
+}
