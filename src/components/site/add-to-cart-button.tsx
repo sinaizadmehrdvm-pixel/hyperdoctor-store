@@ -21,8 +21,10 @@ export function AddToCartButton({ type, id, nameFa, nameTr, nameEn, nameAr, pric
   const { add } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
-  const max = Number.isFinite(maxQuantity) && Number(maxQuantity) > 0 ? Math.floor(Number(maxQuantity)) : null;
-  const unavailable = Boolean(disabled) || max === 0;
+  const rawMax = Number(maxQuantity);
+  const explicitZero = maxQuantity !== null && maxQuantity !== undefined && Number.isFinite(rawMax) && rawMax <= 0;
+  const max = maxQuantity !== null && maxQuantity !== undefined && Number.isFinite(rawMax) && rawMax > 0 ? Math.max(1, Math.floor(rawMax)) : null;
+  const unavailable = Boolean(disabled) || explicitZero;
 
   useEffect(() => {
     if (max !== null) setQuantity((q) => Math.max(1, Math.min(max, q)));
@@ -46,7 +48,7 @@ export function AddToCartButton({ type, id, nameFa, nameTr, nameEn, nameAr, pric
 
       <Button type="button" size="lg" disabled={unavailable} className="min-h-12 min-w-48 rounded-xl bg-primary px-6 font-bold text-white shadow-[0_12px_28px_rgba(0,23,54,0.16)] hover:bg-primary-container" onClick={() => {
         if (unavailable || quantity < 1 || (max !== null && quantity > max)) return;
-        add({ type, id, nameFa, nameTr, nameEn, nameAr, price, image, quantity });
+        add({ type, id, nameFa, nameTr, nameEn, nameAr, price, image, quantity, maxQuantity: type === "service" ? 1 : max });
         setAdded(true);
         window.setTimeout(() => setAdded(false), 1500);
       }}>
