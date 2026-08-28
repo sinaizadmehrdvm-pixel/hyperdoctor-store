@@ -18,6 +18,7 @@ enum Vertical {
 
 enum OrderStatus {
   PENDING_PAYMENT
+  PAYMENT_REVIEW
   PAID
   FAILED
   PROCESSING
