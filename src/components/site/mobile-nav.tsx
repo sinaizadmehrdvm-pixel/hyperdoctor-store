@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { useParams } from "next/navigation";
 import { Link } from "@/i18n/navigation";
@@ -28,19 +28,32 @@ export function MobileNav({
   const params = useParams();
   const locale = (params.locale as string) || "fa";
   const navigationId = "hyperdoctor-mobile-navigation";
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!open) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape") {
+        setOpen(false);
+        requestAnimationFrame(() => triggerRef.current?.focus());
+      }
     };
+
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
   }, [open]);
 
   return (
     <div className="xl:hidden">
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
