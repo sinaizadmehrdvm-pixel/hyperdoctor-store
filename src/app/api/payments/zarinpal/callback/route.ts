@@ -6,6 +6,7 @@ type Locale = "fa" | "tr" | "en" | "ar";
 type PaymentContext = { orderId:string; orderNumber:string; total:number; locale:Locale; status:string; resultToken:string };
 type FinalizedOrder = { orderNumber:string; status:string; locale:Locale; resultToken:string };
 const LOCALES = new Set<Locale>(["fa","tr","en","ar"]);
+const FAILURE_STATUSES=new Set(["FAILED","CANCELLED","REFUNDED"]);
 const safe = (value:string|null,max:number) => typeof value === "string" ? value.trim().slice(0,max) : "";
 
 function siteOrigin(requestUrl:URL){
@@ -15,6 +16,12 @@ function siteOrigin(requestUrl:URL){
 function redirect(origin:string,locale:Locale,order:string,status:"success"|"fail"|"pending",token?:string){
   const target=new URL(`/${locale}/order/${encodeURIComponent(order)}/result`,origin);target.searchParams.set("status",status);if(token)target.searchParams.set("token",token);
   return NextResponse.redirect(target,{status:303,headers:{"Cache-Control":"no-store","X-Content-Type-Options":"nosniff"}});
+}
+function stateFromFinalized(finalized:FinalizedOrder|null){
+  if(!finalized?.resultToken)return "pending" as const;
+  if(finalized.status==="PAID")return "success" as const;
+  if(FAILURE_STATUSES.has(finalized.status))return "fail" as const;
+  return "pending" as const;
 }
 
 export async function GET(request:Request){
@@ -26,25 +33,25 @@ export async function GET(request:Request){
   if(!context||!LOCALES.has(context.locale)||!context.orderNumber||!context.resultToken||!Number.isSafeInteger(context.total)||context.total<=0)return redirect(origin,"fa",orderNumber,"fail");
   const result=(status:"success"|"fail"|"pending",token=context!.resultToken)=>redirect(origin,context!.locale,context!.orderNumber,status,token);
   if(context.status==="PAID")return result("success");
-  if(["FAILED","CANCELLED","REFUNDED"].includes(context.status))return result("fail");
+  if(FAILURE_STATUSES.has(context.status))return result("fail");
   if(context.status!=="PENDING_PAYMENT")return result("pending");
 
   if(gatewayStatus!=="OK"){
     const finalized=await supabaseRpc<FinalizedOrder|null>("finalize_order_payment",{p_order_number:orderNumber,p_checkout_token:checkoutToken,p_authority:authority,p_success:false,p_ref_id:null}).catch(error=>{console.error("[zarinpal-callback] failure finalization failed",error);return null;});
-    return result("fail",finalized?.resultToken||context.resultToken);
+    const finalState=stateFromFinalized(finalized);
+    return result(finalState,finalized?.resultToken||context.resultToken);
   }
 
   const verification=await verifyZarinpalPayment({amountToman:context.total,authority});
   if(verification.status==="unavailable")return result("pending");
   if(verification.status==="rejected"){
     const finalized=await supabaseRpc<FinalizedOrder|null>("finalize_order_payment",{p_order_number:orderNumber,p_checkout_token:checkoutToken,p_authority:authority,p_success:false,p_ref_id:null}).catch(error=>{console.error("[zarinpal-callback] rejection finalization failed",error);return null;});
-    return result("fail",finalized?.resultToken||context.resultToken);
+    const finalState=stateFromFinalized(finalized);
+    return result(finalState,finalized?.resultToken||context.resultToken);
   }
 
   let finalized:FinalizedOrder|null=null;
   try{finalized=await supabaseRpc<FinalizedOrder|null>("finalize_order_payment",{p_order_number:orderNumber,p_checkout_token:checkoutToken,p_authority:authority,p_success:true,p_ref_id:verification.refId});}catch(error){console.error("[zarinpal-callback] success finalization failed",error);return result("pending");}
-  if(!finalized||!finalized.resultToken)return result("pending");
-  if(finalized.status==="PAID")return result("success",finalized.resultToken);
-  if(["FAILED","CANCELLED","REFUNDED"].includes(finalized.status))return result("fail",finalized.resultToken);
-  return result("pending",finalized.resultToken);
+  const finalState=stateFromFinalized(finalized);
+  return result(finalState,finalized?.resultToken||context.resultToken);
 }
