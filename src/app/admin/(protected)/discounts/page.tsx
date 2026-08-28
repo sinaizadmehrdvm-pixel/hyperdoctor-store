@@ -1,47 +1,21 @@
-import { BadgePercent, TicketPercent } from "lucide-react";
+import { BadgePercent, CalendarClock, TicketPercent, UsersRound } from "lucide-react";
 import { adminRpc } from "@/lib/admin-data";
 import { upsertCoupon } from "./actions";
 
-type Coupon = {
-  id: string;
-  code: string;
-  type: "PERCENT" | "FIXED";
-  value: number;
-  minOrderAmount?: number | null;
-  maxDiscount?: number | null;
-  usageLimit?: number | null;
-  usageLimitPerUser?: number | null;
-  startsAt?: string | null;
-  expiresAt?: string | null;
-  isActive: boolean;
-  usageCount: number;
-};
+type Coupon={id:string;code:string;type:"PERCENT"|"FIXED";value:number;minOrderAmount?:number|null;maxDiscount?:number|null;usageLimit?:number|null;usageLimitPerUser?:number|null;startsAt?:string|null;expiresAt?:string|null;isActive:boolean;usageCount:number};
+const n=(v:number)=>new Intl.NumberFormat("fa-IR").format(v);
 
-export default async function AdminDiscountsPage() {
-  const coupons = await adminRpc<Coupon[]>("admin_coupons");
-  return <div>
-    <div><p className="text-xs font-black uppercase tracking-[.16em] text-muted">Promotions</p><h1 className="mt-2 text-2xl font-black text-foreground">تخفیف و کدهای تخفیف</h1></div>
-    <form action={upsertCoupon} className="mt-6 grid gap-3 rounded-2xl border border-border bg-card p-5 md:grid-cols-2 xl:grid-cols-4">
-      <input name="code" required placeholder="کد تخفیف" className="h-11 rounded-xl border border-border bg-background px-3 text-sm uppercase" dir="ltr" />
-      <select name="type" className="h-11 rounded-xl border border-border bg-background px-3 text-sm"><option value="PERCENT">درصدی</option><option value="FIXED">مبلغ ثابت</option></select>
-      <input name="value" required type="number" min="0" placeholder="مقدار" className="h-11 rounded-xl border border-border bg-background px-3 text-sm" />
-      <input name="minOrderAmount" type="number" min="0" placeholder="حداقل مبلغ سفارش" className="h-11 rounded-xl border border-border bg-background px-3 text-sm" />
-      <input name="maxDiscount" type="number" min="0" placeholder="حداکثر تخفیف" className="h-11 rounded-xl border border-border bg-background px-3 text-sm" />
-      <input name="usageLimit" type="number" min="1" placeholder="سقف کل استفاده" className="h-11 rounded-xl border border-border bg-background px-3 text-sm" />
-      <input name="usageLimitPerUser" type="number" min="1" placeholder="سقف هر کاربر" className="h-11 rounded-xl border border-border bg-background px-3 text-sm" />
-      <label className="flex h-11 items-center gap-2 rounded-xl border border-border bg-background px-3 text-sm"><input type="checkbox" name="isActive" defaultChecked /> فعال</label>
-      <input name="startsAt" type="datetime-local" className="h-11 rounded-xl border border-border bg-background px-3 text-sm" />
-      <input name="expiresAt" type="datetime-local" className="h-11 rounded-xl border border-border bg-background px-3 text-sm" />
-      <button className="h-11 rounded-xl bg-primary px-5 text-sm font-black text-white md:col-span-2">ایجاد کد تخفیف</button>
-    </form>
-
-    <div className="mt-6 grid gap-4 xl:grid-cols-2">
-      {coupons.map(c => <article key={c.id} className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-        <div className="flex items-start justify-between gap-4"><div><div className="flex items-center gap-2 text-primary"><TicketPercent className="h-4 w-4"/><span className="font-black" dir="ltr">{c.code}</span></div><div className="mt-3 text-2xl font-black text-foreground">{c.type === "PERCENT" ? `${new Intl.NumberFormat("fa-IR").format(c.value)}٪` : `${new Intl.NumberFormat("fa-IR").format(c.value)} تومان`}</div></div><span className={`rounded-lg px-2 py-1 text-xs font-black ${c.isActive?"bg-emerald-50 text-emerald-700":"bg-muted-bg text-muted"}`}>{c.isActive?"فعال":"غیرفعال"}</span></div>
-        <div className="mt-4 grid gap-3 sm:grid-cols-3 text-sm"><div className="rounded-xl bg-muted-bg p-3"><span className="block text-xs text-muted">استفاده</span><b>{new Intl.NumberFormat("fa-IR").format(c.usageCount)}{c.usageLimit ? ` / ${new Intl.NumberFormat("fa-IR").format(c.usageLimit)}` : ""}</b></div><div className="rounded-xl bg-muted-bg p-3"><span className="block text-xs text-muted">حداقل سفارش</span><b>{c.minOrderAmount ? `${new Intl.NumberFormat("fa-IR").format(c.minOrderAmount)} تومان` : "—"}</b></div><div className="rounded-xl bg-muted-bg p-3"><span className="block text-xs text-muted">حداکثر تخفیف</span><b>{c.maxDiscount ? `${new Intl.NumberFormat("fa-IR").format(c.maxDiscount)} تومان` : "—"}</b></div></div>
-        <div className="mt-4 text-xs text-muted">{c.startsAt ? `شروع: ${new Date(c.startsAt).toLocaleString("fa-IR")}` : "شروع بدون محدودیت"} · {c.expiresAt ? `پایان: ${new Date(c.expiresAt).toLocaleString("fa-IR")}` : "بدون تاریخ انقضا"}</div>
-      </article>)}
-      {coupons.length===0?<div className="xl:col-span-2 rounded-2xl border border-dashed border-border bg-card p-12 text-center text-sm text-muted"><BadgePercent className="mx-auto mb-3 h-6 w-6"/>هنوز کد تخفیفی ساخته نشده است.</div>:null}
-    </div>
+export default async function AdminDiscountsPage(){
+  const coupons=await adminRpc<Coupon[]>("admin_coupons");
+  const active=coupons.filter(c=>c.isActive).length;
+  const used=coupons.reduce((a,c)=>a+c.usageCount,0);
+  return <div className="mx-auto max-w-[1450px] space-y-6">
+    <div><p className="text-xs font-black uppercase tracking-[.18em] text-[#e80346]">Promotions</p><h1 className="mt-2 text-3xl font-black text-[#001736]">مدیریت کدهای تخفیف</h1><p className="mt-2 text-sm text-[#747780]">ساخت و پایش کدهای درصدی یا مبلغ ثابت با محدودیت زمانی و تعداد استفاده</p></div>
+    <div className="grid gap-4 md:grid-cols-3"><Metric label="کدهای فعال" value={n(active)} icon={BadgePercent}/><Metric label="کل استفاده" value={n(used)} icon={UsersRound}/><Metric label="کدهای ساخته‌شده" value={n(coupons.length)} icon={TicketPercent}/></div>
+    <section className="grid gap-5 xl:grid-cols-[.72fr_1.28fr]">
+      <form action={upsertCoupon} className="rounded-[1.6rem] border border-[#e2e6eb] bg-white p-5 shadow-sm"><div className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#001736] text-white"><TicketPercent className="h-5 w-5"/></span><div><h2 className="font-black text-[#001736]">ایجاد کد جدید</h2><p className="text-[11px] text-[#8a8e96]">تنظیمات کد تخفیف</p></div></div><div className="mt-5 grid gap-3 sm:grid-cols-2"><input name="code" required placeholder="کد تخفیف" className="h-11 rounded-xl border border-[#dfe4ea] bg-[#f7fafd] px-3 text-sm uppercase outline-none" dir="ltr"/><select name="type" className="h-11 rounded-xl border border-[#dfe4ea] bg-[#f7fafd] px-3 text-sm"><option value="PERCENT">درصدی</option><option value="FIXED">مبلغ ثابت</option></select><input name="value" required type="number" min="0" placeholder="مقدار" className="h-11 rounded-xl border border-[#dfe4ea] bg-[#f7fafd] px-3 text-sm"/><input name="minOrderAmount" type="number" min="0" placeholder="حداقل مبلغ سفارش" className="h-11 rounded-xl border border-[#dfe4ea] bg-[#f7fafd] px-3 text-sm"/><input name="maxDiscount" type="number" min="0" placeholder="حداکثر تخفیف" className="h-11 rounded-xl border border-[#dfe4ea] bg-[#f7fafd] px-3 text-sm"/><input name="usageLimit" type="number" min="1" placeholder="سقف کل استفاده" className="h-11 rounded-xl border border-[#dfe4ea] bg-[#f7fafd] px-3 text-sm"/><input name="usageLimitPerUser" type="number" min="1" placeholder="سقف هر کاربر" className="h-11 rounded-xl border border-[#dfe4ea] bg-[#f7fafd] px-3 text-sm"/><label className="flex h-11 items-center gap-2 rounded-xl border border-[#dfe4ea] bg-[#f7fafd] px-3 text-sm"><input type="checkbox" name="isActive" defaultChecked/> فعال</label><label className="space-y-1"><span className="text-[10px] font-black text-[#747780]">شروع</span><input name="startsAt" type="datetime-local" className="h-11 w-full rounded-xl border border-[#dfe4ea] bg-[#f7fafd] px-3 text-sm"/></label><label className="space-y-1"><span className="text-[10px] font-black text-[#747780]">پایان</span><input name="expiresAt" type="datetime-local" className="h-11 w-full rounded-xl border border-[#dfe4ea] bg-[#f7fafd] px-3 text-sm"/></label></div><button className="mt-4 h-11 w-full rounded-xl bg-[#e80346] px-5 text-sm font-black text-white">ایجاد کد تخفیف</button></form>
+      <section className="rounded-[1.6rem] border border-[#e2e6eb] bg-white p-5 shadow-sm"><div className="flex items-center justify-between"><div><h2 className="font-black text-[#001736]">کدهای فعال و اخیر</h2><p className="mt-1 text-[11px] text-[#8a8e96]">نمایش وضعیت و میزان استفاده</p></div><BadgePercent className="h-5 w-5 text-[#009dd8]"/></div><div className="mt-5 space-y-3">{coupons.map(c=><article key={c.id} className="rounded-2xl border border-[#edf0f2] bg-[#fafcff] p-4"><div className="flex flex-wrap items-start justify-between gap-3"><div><div className="flex items-center gap-2"><span dir="ltr" className="font-mono text-sm font-black text-[#002b5b]">{c.code}</span><span className={`rounded-full px-2 py-1 text-[10px] font-black ${c.isActive?"bg-emerald-50 text-emerald-700":"bg-[#edf0f2] text-[#747780]"}`}>{c.isActive?"فعال":"غیرفعال"}</span></div><p className="mt-2 text-xl font-black text-[#001736]">{c.type==="PERCENT"?`${n(c.value)}٪`:`${n(c.value)} تومان`}</p></div><div className="text-end text-xs text-[#747780]"><p>استفاده: <b>{n(c.usageCount)}{c.usageLimit?` / ${n(c.usageLimit)}`:""}</b></p>{c.expiresAt?<p className="mt-1 flex items-center gap-1"><CalendarClock className="h-3.5 w-3.5"/>{new Date(c.expiresAt).toLocaleString("fa-IR")}</p>:null}</div></div><div className="mt-3 grid gap-2 sm:grid-cols-2 text-xs"><div className="rounded-xl bg-white px-3 py-2 text-[#5f6570]">حداقل سفارش: <b>{c.minOrderAmount?`${n(c.minOrderAmount)} تومان`:"—"}</b></div><div className="rounded-xl bg-white px-3 py-2 text-[#5f6570]">حداکثر تخفیف: <b>{c.maxDiscount?`${n(c.maxDiscount)} تومان`:"—"}</b></div></div></article>)}{coupons.length===0?<div className="rounded-2xl border border-dashed border-[#cfd5dc] p-10 text-center text-sm text-[#8a8e96]">هنوز کد تخفیفی ساخته نشده است.</div>:null}</div></section>
+    </section>
   </div>;
 }
+function Metric({label,value,icon:Icon}:{label:string;value:string;icon:typeof BadgePercent}){return <article className="rounded-[1.5rem] border border-[#e2e6eb] bg-white p-5 shadow-sm"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#edf4ff] text-[#002b5b]"><Icon className="h-5 w-5"/></span><p className="mt-4 text-xs font-black text-[#747780]">{label}</p><p className="mt-1 text-2xl font-black text-[#001736]">{value}</p></article>}
