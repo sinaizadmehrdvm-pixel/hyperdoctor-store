@@ -3,15 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { adminRpc } from "@/lib/admin-data";
 
-const VALID_STATUSES = [
-  "PENDING_PAYMENT",
-  "FAILED",
-  "PROCESSING",
-  "SHIPPED",
-  "COMPLETED",
-  "CANCELLED",
-] as const;
-const REVIEW_RESOLUTIONS = ["FULFILL", "REFUND"] as const;
+const VALID_STATUSES = ["PENDING_PAYMENT","FAILED","PROCESSING","SHIPPED","COMPLETED","CANCELLED"] as const;
+const REVIEW_RESOLUTIONS = ["FULFILL", "REFUNDED"] as const;
 
 function refreshOrder(orderId: string) {
   revalidatePath(`/admin/orders/${orderId}`);
@@ -29,6 +22,8 @@ export async function updateOrderStatus(orderId: string, formData: FormData) {
 export async function resolvePaymentReview(orderId: string, formData: FormData) {
   const resolution = String(formData.get("resolution") || "").trim().toUpperCase();
   if (!REVIEW_RESOLUTIONS.includes(resolution as (typeof REVIEW_RESOLUTIONS)[number])) return;
-  await adminRpc("admin_resolve_payment_review", { p_id: orderId, p_resolution: resolution });
+  const note = String(formData.get("note") || "").trim().slice(0, 500);
+  if (resolution === "REFUNDED" && !note) return;
+  await adminRpc("admin_resolve_payment_review", { p_id: orderId, p_resolution: resolution, p_note: note || null });
   refreshOrder(orderId);
 }
