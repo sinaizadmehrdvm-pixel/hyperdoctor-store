@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { LockKeyhole, ShieldCheck, UserRound } from "lucide-react";
+import { ShieldCheck, UserRound } from "lucide-react";
 import { getCustomerSession } from "@/lib/customer-auth";
 import { loginAction } from "../actions";
 import { PasswordField } from "@/components/site/password-field";
