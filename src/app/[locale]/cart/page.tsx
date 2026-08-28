@@ -2,149 +2,17 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
-import {
-  ArrowLeft,
-  ArrowRight,
-  BadgeCheck,
-  Download,
-  Gift,
-  ImageOff,
-  Minus,
-  PackageCheck,
-  Plus,
-  ReceiptText,
-  ShieldCheck,
-  ShoppingBag,
-  Trash2,
-  Truck,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, BadgeCheck, Download, Gift, ImageOff, Minus, PackageCheck, Plus, ReceiptText, ShieldCheck, ShoppingBag, Trash2, Truck } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useCart } from "@/lib/cart-context";
 import { formatPrice } from "@/lib/utils";
 import { pickLocalized } from "@/lib/i18n-content";
 
-export default function CartPage() {
-  const t = useTranslations("cart");
-  const c = useTranslations("common");
-  const locale = useLocale();
-  const router = useRouter();
-  const { lines, updateQuantity, remove, subtotal, hydrated } = useCart();
-  const BackArrow = locale === "fa" || locale === "ar" ? ArrowLeft : ArrowRight;
-
-  const copy = {
-    title: locale === "fa" ? "سبد خرید شما" : locale === "tr" ? "Sepetiniz" : locale === "ar" ? "سلة التسوق" : "Your shopping cart",
-    invoice: locale === "fa" ? "فاکتور نهایی" : locale === "tr" ? "Sipariş özeti" : locale === "ar" ? "الفاتورة النهائية" : "Final invoice",
-    products: locale === "fa" ? "مبلغ کل کالاها" : locale === "tr" ? "Ürün toplamı" : locale === "ar" ? "إجمالي المنتجات" : "Products subtotal",
-    shipping: locale === "fa" ? "هزینه ارسال" : locale === "tr" ? "Kargo" : locale === "ar" ? "الشحن" : "Shipping",
-    payable: locale === "fa" ? "مبلغ قابل پرداخت" : locale === "tr" ? "Ödenecek tutar" : locale === "ar" ? "المبلغ المستحق" : "Amount payable",
-    safePay: locale === "fa" ? "ثبت سفارش و پرداخت امن" : locale === "tr" ? "Siparişi tamamla ve güvenli öde" : locale === "ar" ? "تأكيد الطلب والدفع الآمن" : "Secure checkout",
-    officialInvoice: locale === "fa" ? "دانلود پیش‌فاکتور رسمی (PDF)" : locale === "tr" ? "Proforma faturayı indir (PDF)" : locale === "ar" ? "تحميل الفاتورة الأولية (PDF)" : "Download proforma invoice (PDF)",
-    originality: locale === "fa" ? "تضمین اصالت کالا" : locale === "tr" ? "Orijinallik garantisi" : locale === "ar" ? "ضمان الأصالة" : "Authenticity guaranteed",
-    support: locale === "fa" ? "پشتیبانی تخصصی" : locale === "tr" ? "Uzman destek" : locale === "ar" ? "دعم متخصص" : "Specialist support",
-    shippingMethod: locale === "fa" ? "روش ارسال" : locale === "tr" ? "Teslimat yöntemi" : locale === "ar" ? "طريقة الشحن" : "Delivery method",
-    standard: locale === "fa" ? "ارسال استاندارد" : locale === "tr" ? "Standart teslimat" : locale === "ar" ? "شحن قياسي" : "Standard delivery",
-    standardSub: locale === "fa" ? "هزینه نهایی در مرحله پرداخت تعیین می‌شود" : locale === "tr" ? "Kesin ücret ödeme adımında belirlenir" : locale === "ar" ? "تحدد التكلفة النهائية عند الدفع" : "Final cost is calculated at checkout",
-    express: locale === "fa" ? "ارسال اکسپرس" : locale === "tr" ? "Ekspres teslimat" : locale === "ar" ? "شحن سريع" : "Express delivery",
-    specialist: locale === "fa" ? "پیک تخصصی پزشکی" : locale === "tr" ? "Uzman medikal kurye" : locale === "ar" ? "توصيل طبي متخصص" : "Specialist medical courier",
-    coupon: locale === "fa" ? "کد تخفیف یا کارت هدیه" : locale === "tr" ? "İndirim veya hediye kodu" : locale === "ar" ? "كود خصم أو بطاقة هدية" : "Discount or gift code",
-    couponHint: locale === "fa" ? "کد خود را وارد کنید..." : locale === "tr" ? "Kodunuzu girin..." : locale === "ar" ? "أدخل الرمز..." : "Enter your code...",
-  };
-
-  if (!hydrated) return null;
-
-  return (
-    <main className="flex-1 bg-[#f4f7fb] py-6 sm:py-10">
-      <Container className="max-w-[1440px]">
-        <div className="mb-7 flex flex-wrap items-center justify-between gap-4">
-          <h1 className="text-3xl font-black text-[#001736] sm:text-4xl">{copy.title}</h1>
-          <Link href="/shop" className="inline-flex items-center gap-2 text-sm font-bold text-[#43474f] hover:text-[#001736]">
-            <BackArrow className="h-4 w-4" />{t("continueShopping")}
-          </Link>
-        </div>
-
-        {lines.length === 0 ? (
-          <section className="flex min-h-[420px] flex-col items-center justify-center rounded-3xl border border-[#dfe4ea] bg-white p-10 text-center shadow-[0_18px_50px_rgba(0,23,54,.05)]">
-            <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#eef3f9] text-[#001736]"><ShoppingBag className="h-8 w-8" /></span>
-            <h2 className="mt-5 text-xl font-black text-[#001736]">{t("empty")}</h2>
-            <Link href="/shop" className="mt-7 inline-flex min-h-12 items-center justify-center rounded-xl bg-[#001736] px-7 text-sm font-black text-white hover:bg-[#002b5b]">{t("continueShopping")}</Link>
-          </section>
-        ) : (
-          <div className="grid gap-7 lg:grid-cols-[360px_minmax(0,1fr)] lg:items-start xl:grid-cols-[390px_minmax(0,1fr)]">
-            {/* Final invoice — left on desktop, same as Stitch 37 */}
-            <aside className="order-2 lg:order-1 lg:sticky lg:top-28">
-              <div className="rounded-3xl border border-[#dfe4ea] bg-white p-6 shadow-[0_18px_50px_rgba(0,23,54,.055)]">
-                <div className="flex items-center gap-3 border-b border-[#e0e3e6] pb-5">
-                  <ReceiptText className="h-6 w-6 text-[#001736]" />
-                  <h2 className="text-xl font-black text-[#001736]">{copy.invoice}</h2>
-                </div>
-
-                <dl className="space-y-4 py-6 text-sm">
-                  <div className="flex justify-between gap-4"><dt className="text-[#43474f]">{copy.products} ({lines.reduce((sum, l) => sum + l.quantity, 0)})</dt><dd className="font-bold tabular-nums text-[#001736]">{formatPrice(subtotal, locale)} {c("currency")}</dd></div>
-                  <div className="flex justify-between gap-4"><dt className="text-[#43474f]">{copy.shipping}</dt><dd className="text-xs text-[#747780]">{locale === "fa" ? "مرحله بعد" : "Next step"}</dd></div>
-                </dl>
-
-                <div className="border-t border-[#e0e3e6] pt-6">
-                  <p className="text-sm font-black text-[#001736]">{copy.payable}</p>
-                  <div className="mt-2 flex items-baseline gap-2"><strong className="text-3xl font-black tabular-nums text-[#001736]">{formatPrice(subtotal, locale)}</strong><span className="text-xs text-[#43474f]">{c("currency")}</span></div>
-                  <button type="button" onClick={() => router.push("/checkout")} className="mt-6 flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-[#001f48] px-5 text-sm font-black text-white shadow-[0_12px_28px_rgba(0,31,72,.18)] transition hover:bg-[#00366f]">
-                    <ShieldCheck className="h-5 w-5" />{copy.safePay}
-                  </button>
-                  <button type="button" disabled className="mt-3 flex min-h-12 w-full cursor-not-allowed items-center justify-center gap-2 rounded-xl border border-[#c4c6d0] bg-white px-4 text-xs font-bold text-[#747780]" title={locale === "fa" ? "پس از ثبت سفارش فعال می‌شود" : "Available after order creation"}>
-                    <Download className="h-4 w-4" />{copy.officialInvoice}
-                  </button>
-                </div>
-
-                <div className="mt-6 rounded-2xl bg-[#eef3f9] p-4 text-xs text-[#43474f]">
-                  <div className="flex items-start gap-3"><BadgeCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#001736]" /><div><strong className="block text-[#001736]">{copy.originality}</strong><span>{locale === "fa" ? "تجهیزات از مسیرهای تاییدشده تامین می‌شوند" : "Sourced through verified channels"}</span></div></div>
-                  <div className="mt-4 flex items-start gap-3"><PackageCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#001736]" /><div><strong className="block text-[#001736]">{copy.support}</strong><span>{locale === "fa" ? "راهنمایی قبل و بعد از خرید" : "Guidance before and after purchase"}</span></div></div>
-                </div>
-              </div>
-            </aside>
-
-            <section className="order-1 space-y-5 lg:order-2">
-              {lines.map((line) => {
-                const lineName = pickLocalized(locale, { fa: line.nameFa, tr: line.nameTr, en: line.nameEn, ar: line.nameAr });
-                return (
-                  <article key={line.key} className="grid gap-5 rounded-3xl border border-[#dfe4ea] bg-white p-5 shadow-[0_14px_40px_rgba(0,23,54,.045)] sm:grid-cols-[150px_1fr] sm:p-6">
-                    <div className="relative aspect-square overflow-hidden rounded-2xl bg-[#e8edf2]">
-                      {line.image ? <Image src={line.image} alt={lineName} fill className="object-contain p-3" sizes="150px" /> : <div className="flex h-full items-center justify-center text-[#747780]"><ImageOff className="h-7 w-7" /></div>}
-                    </div>
-                    <div className="flex min-w-0 flex-col">
-                      <div className="flex items-start justify-between gap-4">
-                        <div><h2 className="text-base font-black leading-7 text-[#001736] sm:text-lg">{lineName}</h2>{line.preferredDate ? <p className="mt-1 text-xs text-[#747780]">{line.preferredDate}</p> : null}</div>
-                        <button type="button" onClick={() => remove(line.key)} aria-label={t("remove")} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-[#747780] transition hover:bg-red-50 hover:text-[#ba0036]"><Trash2 className="h-4 w-4" /></button>
-                      </div>
-                      <div className="mt-auto flex flex-wrap items-end justify-between gap-4 pt-6">
-                        <div className="text-lg font-black tabular-nums text-[#001736]">{formatPrice(line.price, locale)} <span className="text-xs font-medium text-[#747780]">{c("currency")}</span></div>
-                        <div className="flex items-center overflow-hidden rounded-xl border border-[#c4c6d0] bg-[#f7fafd]">
-                          <button type="button" onClick={() => updateQuantity(line.key, line.quantity - 1)} className="flex h-11 w-11 items-center justify-center hover:bg-white" aria-label="Decrease quantity"><Minus className="h-4 w-4" /></button>
-                          <span className="w-10 text-center text-sm font-black tabular-nums">{line.quantity}</span>
-                          <button type="button" onClick={() => updateQuantity(line.key, line.quantity + 1)} className="flex h-11 w-11 items-center justify-center hover:bg-white" aria-label="Increase quantity"><Plus className="h-4 w-4" /></button>
-                        </div>
-                      </div>
-                    </div>
-                  </article>
-                );
-              })}
-
-              <section className="rounded-3xl border border-[#dfe4ea] bg-white p-6 shadow-[0_14px_40px_rgba(0,23,54,.04)]">
-                <div className="mb-5 flex items-center gap-2"><Truck className="h-5 w-5 text-[#009dd8]" /><h2 className="text-base font-black text-[#001736]">{copy.shippingMethod}</h2></div>
-                <div className="grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-2xl border-2 border-[#001736] bg-[#f5f8fc] p-4"><strong className="text-sm text-[#001736]">{copy.standard}</strong><p className="mt-2 text-xs leading-5 text-[#747780]">{copy.standardSub}</p></div>
-                  <div className="rounded-2xl border border-[#dfe4ea] p-4"><strong className="text-sm text-[#001736]">{copy.express}</strong><p className="mt-2 text-xs leading-5 text-[#747780]">{copy.standardSub}</p></div>
-                  <div className="rounded-2xl border border-[#dfe4ea] p-4"><strong className="text-sm text-[#001736]">{copy.specialist}</strong><p className="mt-2 text-xs leading-5 text-[#747780]">{copy.standardSub}</p></div>
-                </div>
-              </section>
-
-              <section className="rounded-3xl border border-[#dfe4ea] bg-white p-6 shadow-[0_14px_40px_rgba(0,23,54,.04)]">
-                <div className="mb-4 flex items-center gap-2"><Gift className="h-5 w-5 text-[#009dd8]" /><h2 className="text-base font-black text-[#001736]">{copy.coupon}</h2></div>
-                <div className="flex gap-3"><input disabled placeholder={copy.couponHint} className="h-12 flex-1 rounded-xl border border-[#c4c6d0] bg-[#f7fafd] px-4 text-sm text-[#747780]" /><button disabled className="rounded-xl bg-[#001736] px-6 text-xs font-bold text-white opacity-60">{locale === "fa" ? "اعمال کد" : "Apply"}</button></div>
-              </section>
-            </section>
-          </div>
-        )}
-      </Container>
-    </main>
-  );
+const pick=(locale:string,fa:string,en:string,tr:string,ar:string)=>locale==="fa"?fa:locale==="tr"?tr:locale==="ar"?ar:en;
+export default function CartPage(){
+ const t=useTranslations("cart");const c=useTranslations("common");const locale=useLocale();const router=useRouter();const {lines,updateQuantity,remove,subtotal,hydrated}=useCart();const BackArrow=locale==="fa"||locale==="ar"?ArrowLeft:ArrowRight;
+ const copy={title:pick(locale,"سبد خرید شما","Your shopping cart","Sepetiniz","سلة التسوق"),invoice:pick(locale,"فاکتور نهایی","Final invoice","Sipariş özeti","الفاتورة النهائية"),products:pick(locale,"مبلغ کل کالاها","Products subtotal","Ürün toplamı","إجمالي المنتجات"),shipping:pick(locale,"هزینه ارسال","Shipping","Kargo","الشحن"),payable:pick(locale,"مبلغ قابل پرداخت","Amount payable","Ödenecek tutar","المبلغ المستحق"),safePay:pick(locale,"ثبت سفارش و پرداخت امن","Secure checkout","Siparişi tamamla ve güvenli öde","تأكيد الطلب والدفع الآمن"),officialInvoice:pick(locale,"دانلود پیش‌فاکتور رسمی (PDF)","Download proforma invoice (PDF)","Proforma faturayı indir (PDF)","تحميل الفاتورة الأولية (PDF)"),invoiceHint:pick(locale,"پس از ثبت سفارش فعال می‌شود","Available after order creation","Sipariş oluşturulduktan sonra kullanılabilir","بعد إنشاء الطلب يصبح متاحاً"),originality:pick(locale,"تضمین اصالت کالا","Authenticity guaranteed","Orijinallik garantisi","ضمان الأصالة"),originalityBody:pick(locale,"تجهیزات از مسیرهای تاییدشده تامین می‌شوند","Sourced through verified channels","Ürünler doğrulanmış tedarik kanallarından sağlanır","يتم توفير المعدات عبر قنوات توريد موثوقة"),support:pick(locale,"پشتیبانی تخصصی","Specialist support","Uzman destek","دعم متخصص"),supportBody:pick(locale,"راهنمایی قبل و بعد از خرید","Guidance before and after purchase","Satın alma öncesi ve sonrası rehberlik","إرشاد قبل الشراء وبعده"),shippingMethod:pick(locale,"روش ارسال","Delivery method","Teslimat yöntemi","طريقة الشحن"),standard:pick(locale,"ارسال استاندارد","Standard delivery","Standart teslimat","شحن قياسي"),standardSub:pick(locale,"هزینه نهایی در مرحله پرداخت تعیین می‌شود","Final cost is calculated at checkout","Kesin ücret ödeme adımında belirlenir","تحدد التكلفة النهائية عند الدفع"),express:pick(locale,"ارسال اکسپرس","Express delivery","Ekspres teslimat","شحن سريع"),specialist:pick(locale,"پیک تخصصی پزشکی","Specialist medical courier","Uzman medikal kurye","توصيل طبي متخصص"),coupon:pick(locale,"کد تخفیف یا کارت هدیه","Discount or gift code","İndirim veya hediye kodu","كود خصم أو بطاقة هدية"),couponHint:pick(locale,"کد خود را وارد کنید...","Enter your code...","Kodunuzu girin...","أدخل الرمز..."),apply:pick(locale,"اعمال کد","Apply","Uygula","تطبيق"),nextStep:pick(locale,"مرحله بعد","Next step","Sonraki adım","الخطوة التالية"),decrease:pick(locale,"کاهش تعداد","Decrease quantity","Adedi azalt","تقليل الكمية"),increase:pick(locale,"افزایش تعداد","Increase quantity","Adedi artır","زيادة الكمية")};
+ if(!hydrated)return null;
+ return <main className="flex-1 bg-[#f4f7fb] py-6 sm:py-10"><Container className="max-w-[1440px]"><div className="mb-7 flex flex-wrap items-center justify-between gap-4"><h1 className="text-3xl font-black text-[#001736] sm:text-4xl">{copy.title}</h1><Link href="/shop" className="inline-flex items-center gap-2 text-sm font-bold text-[#43474f] hover:text-[#001736]"><BackArrow className="h-4 w-4"/>{t("continueShopping")}</Link></div>{lines.length===0?<section className="flex min-h-[420px] flex-col items-center justify-center rounded-3xl border border-[#dfe4ea] bg-white p-10 text-center shadow-[0_18px_50px_rgba(0,23,54,.05)]"><span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#eef3f9] text-[#001736]"><ShoppingBag className="h-8 w-8"/></span><h2 className="mt-5 text-xl font-black text-[#001736]">{t("empty")}</h2><Link href="/shop" className="mt-7 inline-flex min-h-12 items-center justify-center rounded-xl bg-[#001736] px-7 text-sm font-black text-white hover:bg-[#002b5b]">{t("continueShopping")}</Link></section>:<div className="grid gap-7 lg:grid-cols-[360px_minmax(0,1fr)] lg:items-start xl:grid-cols-[390px_minmax(0,1fr)]"><aside className="order-2 lg:order-1 lg:sticky lg:top-28"><div className="rounded-3xl border border-[#dfe4ea] bg-white p-6 shadow-[0_18px_50px_rgba(0,23,54,.055)]"><div className="flex items-center gap-3 border-b border-[#e0e3e6] pb-5"><ReceiptText className="h-6 w-6 text-[#001736]"/><h2 className="text-xl font-black text-[#001736]">{copy.invoice}</h2></div><dl className="space-y-4 py-6 text-sm"><div className="flex justify-between gap-4"><dt className="text-[#43474f]">{copy.products} ({new Intl.NumberFormat(locale).format(lines.reduce((sum,l)=>sum+l.quantity,0))})</dt><dd className="font-bold tabular-nums text-[#001736]">{formatPrice(subtotal,locale)} {c("currency")}</dd></div><div className="flex justify-between gap-4"><dt className="text-[#43474f]">{copy.shipping}</dt><dd className="text-xs text-[#747780]">{copy.nextStep}</dd></div></dl><div className="border-t border-[#e0e3e6] pt-6"><p className="text-sm font-black text-[#001736]">{copy.payable}</p><div className="mt-2 flex items-baseline gap-2"><strong className="text-3xl font-black tabular-nums text-[#001736]">{formatPrice(subtotal,locale)}</strong><span className="text-xs text-[#43474f]">{c("currency")}</span></div><button type="button" onClick={()=>router.push("/checkout")} className="mt-6 flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-[#001f48] px-5 text-sm font-black text-white shadow-[0_12px_28px_rgba(0,31,72,.18)] transition hover:bg-[#00366f]"><ShieldCheck className="h-5 w-5"/>{copy.safePay}</button><button type="button" disabled className="mt-3 flex min-h-12 w-full cursor-not-allowed items-center justify-center gap-2 rounded-xl border border-[#c4c6d0] bg-white px-4 text-xs font-bold text-[#747780]" title={copy.invoiceHint}><Download className="h-4 w-4"/>{copy.officialInvoice}</button></div><div className="mt-6 rounded-2xl bg-[#eef3f9] p-4 text-xs text-[#43474f]"><div className="flex items-start gap-3"><BadgeCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#001736]"/><div><strong className="block text-[#001736]">{copy.originality}</strong><span>{copy.originalityBody}</span></div></div><div className="mt-4 flex items-start gap-3"><PackageCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#001736]"/><div><strong className="block text-[#001736]">{copy.support}</strong><span>{copy.supportBody}</span></div></div></div></div></aside><section className="order-1 space-y-5 lg:order-2">{lines.map(line=>{const lineName=pickLocalized(locale,{fa:line.nameFa,tr:line.nameTr,en:line.nameEn,ar:line.nameAr});return <article key={line.key} className="grid gap-5 rounded-3xl border border-[#dfe4ea] bg-white p-5 shadow-[0_14px_40px_rgba(0,23,54,.045)] sm:grid-cols-[150px_1fr] sm:p-6"><div className="relative aspect-square overflow-hidden rounded-2xl bg-[#e8edf2]">{line.image?<Image src={line.image} alt={lineName} fill className="object-contain p-3" sizes="150px"/>:<div className="flex h-full items-center justify-center text-[#747780]"><ImageOff className="h-7 w-7"/></div>}</div><div className="flex min-w-0 flex-col"><div className="flex items-start justify-between gap-4"><div><h2 className="text-base font-black leading-7 text-[#001736] sm:text-lg">{lineName}</h2>{line.preferredDate?<p className="mt-1 text-xs text-[#747780]">{new Date(`${line.preferredDate}T00:00:00`).toLocaleDateString(locale)}</p>:null}</div><button type="button" onClick={()=>remove(line.key)} aria-label={t("remove")} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-[#747780] transition hover:bg-red-50 hover:text-[#ba0036]"><Trash2 className="h-4 w-4"/></button></div><div className="mt-auto flex flex-wrap items-end justify-between gap-4 pt-6"><div className="text-lg font-black tabular-nums text-[#001736]">{formatPrice(line.price,locale)} <span className="text-xs font-medium text-[#747780]">{c("currency")}</span></div><div className="flex items-center overflow-hidden rounded-xl border border-[#c4c6d0] bg-[#f7fafd]"><button type="button" onClick={()=>updateQuantity(line.key,line.quantity-1)} className="flex h-11 w-11 items-center justify-center hover:bg-white" aria-label={copy.decrease}><Minus className="h-4 w-4"/></button><span className="w-10 text-center text-sm font-black tabular-nums">{new Intl.NumberFormat(locale).format(line.quantity)}</span><button type="button" onClick={()=>updateQuantity(line.key,line.quantity+1)} className="flex h-11 w-11 items-center justify-center hover:bg-white" aria-label={copy.increase}><Plus className="h-4 w-4"/></button></div></div></div></article>})}<section className="rounded-3xl border border-[#dfe4ea] bg-white p-6 shadow-[0_14px_40px_rgba(0,23,54,.04)]"><div className="mb-5 flex items-center gap-2"><Truck className="h-5 w-5 text-[#009dd8]"/><h2 className="text-base font-black text-[#001736]">{copy.shippingMethod}</h2></div><div className="grid gap-3 sm:grid-cols-3"><div className="rounded-2xl border-2 border-[#001736] bg-[#f5f8fc] p-4"><strong className="text-sm text-[#001736]">{copy.standard}</strong><p className="mt-2 text-xs leading-5 text-[#747780]">{copy.standardSub}</p></div><div className="rounded-2xl border border-[#dfe4ea] p-4"><strong className="text-sm text-[#001736]">{copy.express}</strong><p className="mt-2 text-xs leading-5 text-[#747780]">{copy.standardSub}</p></div><div className="rounded-2xl border border-[#dfe4ea] p-4"><strong className="text-sm text-[#001736]">{copy.specialist}</strong><p className="mt-2 text-xs leading-5 text-[#747780]">{copy.standardSub}</p></div></div></section><section className="rounded-3xl border border-[#dfe4ea] bg-white p-6 shadow-[0_14px_40px_rgba(0,23,54,.04)]"><div className="mb-4 flex items-center gap-2"><Gift className="h-5 w-5 text-[#009dd8]"/><h2 className="text-base font-black text-[#001736]">{copy.coupon}</h2></div><div className="flex gap-3"><input disabled placeholder={copy.couponHint} className="h-12 flex-1 rounded-xl border border-[#c4c6d0] bg-[#f7fafd] px-4 text-sm text-[#747780]"/><button disabled className="rounded-xl bg-[#001736] px-6 text-xs font-bold text-white opacity-60">{copy.apply}</button></div></section></section></div>}</Container></main>;
 }
