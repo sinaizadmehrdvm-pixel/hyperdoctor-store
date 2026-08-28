@@ -27,6 +27,7 @@ export function MobileNav({
   const [open, setOpen] = useState(false);
   const params = useParams();
   const locale = (params.locale as string) || "fa";
+  const navigationId = "hyperdoctor-mobile-navigation";
 
   return (
     <div className="xl:hidden">
@@ -34,6 +35,7 @@ export function MobileNav({
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
+        aria-controls={navigationId}
         aria-label={menuLabel(locale, open)}
         className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-[#c4c6d0]/55 bg-white text-[#001736] transition hover:bg-[#f1f4f7]"
       >
@@ -41,7 +43,7 @@ export function MobileNav({
       </button>
       {open ? (
         <div className="absolute inset-x-0 top-full border-t border-[#c4c6d0]/35 bg-white/95 shadow-[0_18px_42px_rgba(0,23,54,0.12)] backdrop-blur-xl">
-          <nav className="vitalis-container grid gap-1 py-4" aria-label={navigationLabel(locale)}>
+          <nav id={navigationId} className="vitalis-container grid gap-1 py-4" aria-label={navigationLabel(locale)}>
             {items.map((item) => (
               <Link
                 key={item.href}
