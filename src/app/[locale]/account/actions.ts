@@ -49,8 +49,12 @@ export async function changePasswordAction(locale:string,formData:FormData){
   const confirm=String(formData.get("confirmPassword")||"");
   if(next!==confirm) redirect(`/${locale}/account/security?status=mismatch`);
   if(next.length<8||next.length>128) redirect(`/${locale}/account/security?status=short`);
-  const ok=await customerRpc<boolean>("customer_change_password",{p_current_password:current,p_new_password:next}).catch(()=>false);
-  redirect(`/${locale}/account/security?status=${ok?"changed":"invalid"}`);
+  try{
+    const ok=await customerRpc<boolean>("customer_change_password",{p_current_password:current,p_new_password:next});
+    redirect(`/${locale}/account/security?status=${ok?"changed":"invalid"}`);
+  }catch{
+    redirect(`/${locale}/account/security?status=failed`);
+  }
 }
 
 export async function forgotPasswordAction(locale:string,_formData:FormData){
