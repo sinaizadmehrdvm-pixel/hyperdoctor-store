@@ -1,5 +1,6 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
-import { LogOut, ShieldCheck } from "lucide-react";
+import { Bell, LogOut, Search, ShieldCheck } from "lucide-react";
 import { AdminSidebar } from "@/components/admin/sidebar";
 import { HyperDoctorLogo } from "@/components/site/logo";
 import { logoutAdmin, requireAdminSession } from "@/lib/admin-auth";
@@ -8,30 +9,41 @@ export default async function AdminProtectedLayout({ children }: { children: Rea
   const session = await requireAdminSession();
 
   return (
-    <div className="flex min-h-screen bg-[#f5f8fb] text-[#001736]" dir="rtl">
-      <aside className="hidden w-72 shrink-0 border-e border-white/10 bg-[#001736] text-white shadow-[12px_0_35px_rgba(0,23,54,.08)] md:block">
-        <div className="flex h-20 items-center border-b border-white/10 px-5">
-          <div className="rounded-2xl bg-white p-2 text-[#001736]"><HyperDoctorLogo /></div>
+    <div className="min-h-screen bg-[#f4f7fb] text-[#001736]" dir="rtl">
+      <aside className="fixed inset-y-0 end-0 z-40 hidden w-[246px] border-s border-[#e4e8ed] bg-white shadow-[-10px_0_35px_rgba(0,23,54,.035)] lg:flex lg:flex-col">
+        <div className="flex h-[82px] items-center justify-center border-b border-[#edf0f2] px-5">
+          <div className="rounded-xl bg-white text-[#001736]"><HyperDoctorLogo /></div>
         </div>
-        <div className="px-3 py-5"><AdminSidebar /></div>
+        <div className="flex-1 overflow-y-auto py-2"><AdminSidebar /></div>
+        <div className="border-t border-[#edf0f2] p-4">
+          <Link href="/fa" className="flex min-h-10 items-center justify-center rounded-xl bg-[#f1f4f7] px-3 text-xs font-black text-[#5f6570] transition hover:bg-[#e8edf3] hover:text-[#001736]">مشاهده سایت</Link>
+        </div>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex min-h-20 items-center justify-between gap-4 border-b border-[#dfe4ea] bg-white/90 px-5 shadow-[0_8px_30px_rgba(0,23,54,.04)] backdrop-blur-xl sm:px-7">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 text-xs font-black text-[#009dd8]"><ShieldCheck className="h-4 w-4" />VITALIS · Hyper Doctor Admin</div>
-            <p className="mt-1 truncate text-sm font-black text-[#001736]">{session.name || session.email}</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="hidden rounded-full border border-[#dfe4ea] bg-[#f7fafd] px-3 py-1.5 text-[11px] font-black text-[#5f6570] sm:inline-flex">{session.role}</span>
-            <form action={async () => { "use server"; await logoutAdmin(); redirect("/admin/login"); }}>
-              <button type="submit" className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#dfe4ea] bg-white px-3 text-xs font-black text-[#5f6570] transition hover:border-[#ba0036]/40 hover:text-[#ba0036]">
-                <LogOut className="h-4 w-4" aria-hidden="true" />خروج
-              </button>
-            </form>
+      <div className="min-h-screen lg:pe-[246px]">
+        <header className="sticky top-0 z-30 border-b border-[#e4e8ed] bg-white/95 backdrop-blur-xl">
+          <div className="flex min-h-[82px] items-center gap-4 px-4 sm:px-6 xl:px-8">
+            <div className="hidden min-w-0 flex-1 md:block">
+              <label className="relative block max-w-md">
+                <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9a9da5]" />
+                <input readOnly aria-label="Admin search" placeholder="جستجو در پنل مدیریت" className="h-11 w-full rounded-full border border-[#e0e3e6] bg-[#f7fafd] ps-10 pe-4 text-xs text-[#5f6570] outline-none" />
+              </label>
+            </div>
+            <div className="me-auto flex items-center gap-2 md:me-0">
+              <button type="button" aria-label="اعلان‌ها" className="relative flex h-10 w-10 items-center justify-center rounded-full border border-[#e0e3e6] bg-white text-[#5f6570]"><Bell className="h-4 w-4" /><span className="absolute -end-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-[#e80346]" /></button>
+              <div className="hidden h-10 w-px bg-[#edf0f2] sm:block" />
+              <div className="hidden min-w-0 sm:block">
+                <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[.14em] text-[#009dd8]"><ShieldCheck className="h-3.5 w-3.5" />Hyper Doctor Admin</div>
+                <p className="mt-1 max-w-[220px] truncate text-xs font-black text-[#001736]">{session.name || session.email}</p>
+              </div>
+              <span className="hidden rounded-full border border-[#e0e3e6] bg-[#f7fafd] px-3 py-1.5 text-[10px] font-black text-[#747780] xl:inline-flex">{session.role}</span>
+              <form action={async () => { "use server"; await logoutAdmin(); redirect("/admin/login"); }}>
+                <button type="submit" className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#e0e3e6] bg-white px-3 text-xs font-black text-[#747780] transition hover:border-[#e80346]/30 hover:text-[#e80346]"><LogOut className="h-4 w-4" />خروج</button>
+              </form>
+            </div>
           </div>
         </header>
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
+        <main className="p-4 sm:p-6 xl:p-8">{children}</main>
       </div>
     </div>
   );
