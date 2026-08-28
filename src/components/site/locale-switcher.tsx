@@ -2,7 +2,7 @@
 
 import { usePathname } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const locales = [
@@ -21,8 +21,11 @@ function selectorLabel(locale: string) {
 
 export function LocaleSwitcher({ className }: { className?: string }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const params = useParams();
   const current = params.locale as string;
+  const query = searchParams.toString();
+  const href = query ? `${pathname}?${query}` : pathname;
 
   return (
     <div
@@ -35,7 +38,7 @@ export function LocaleSwitcher({ className }: { className?: string }) {
       {locales.map((l) => (
         <Link
           key={l.code}
-          href={pathname}
+          href={href}
           locale={l.code}
           title={l.title}
           className={cn(
