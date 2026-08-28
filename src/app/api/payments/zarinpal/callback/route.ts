@@ -6,6 +6,7 @@ type Locale = "fa" | "tr" | "en" | "ar";
 type PaymentContext = { orderId:string; orderNumber:string; total:number; locale:Locale; status:string; resultToken:string };
 type FinalizedOrder = { orderNumber:string; status:string; locale:Locale; resultToken:string };
 const LOCALES = new Set<Locale>(["fa","tr","en","ar"]);
+const SUCCESS_STATUSES=new Set(["PAID","PROCESSING","SHIPPED","COMPLETED"]);
 const FAILURE_STATUSES=new Set(["FAILED","CANCELLED","REFUNDED"]);
 const safe = (value:string|null,max:number) => typeof value === "string" ? value.trim().slice(0,max) : "";
 
@@ -19,7 +20,7 @@ function redirect(origin:string,locale:Locale,order:string,status:"success"|"fai
 }
 function stateFromFinalized(finalized:FinalizedOrder|null){
   if(!finalized?.resultToken)return "pending" as const;
-  if(finalized.status==="PAID")return "success" as const;
+  if(SUCCESS_STATUSES.has(finalized.status))return "success" as const;
   if(FAILURE_STATUSES.has(finalized.status))return "fail" as const;
   return "pending" as const;
 }
@@ -32,7 +33,7 @@ export async function GET(request:Request){
   try{context=await supabaseRpc<PaymentContext|null>("get_order_payment_context",{p_order_number:orderNumber,p_checkout_token:checkoutToken,p_authority:authority});}catch(error){console.error("[zarinpal-callback] context lookup failed",error);}
   if(!context||!LOCALES.has(context.locale)||!context.orderNumber||!context.resultToken||!Number.isSafeInteger(context.total)||context.total<=0)return redirect(origin,"fa",orderNumber,"fail");
   const result=(status:"success"|"fail"|"pending",token=context!.resultToken)=>redirect(origin,context!.locale,context!.orderNumber,status,token);
-  if(context.status==="PAID")return result("success");
+  if(SUCCESS_STATUSES.has(context.status))return result("success");
   if(FAILURE_STATUSES.has(context.status))return result("fail");
   if(context.status!=="PENDING_PAYMENT")return result("pending");
 
