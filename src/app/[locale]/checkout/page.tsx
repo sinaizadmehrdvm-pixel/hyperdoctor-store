@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import Image from "next/image";
@@ -12,17 +12,19 @@ import { formatPrice } from "@/lib/utils";
 import { pickLocalized } from "@/lib/i18n-content";
 
 const pick=(locale:string,fa:string,en:string,tr:string,ar:string)=>locale==="fa"?fa:locale==="tr"?tr:locale==="ar"?ar:en;
+const createRequestToken=()=>globalThis.crypto?.randomUUID?.()??`${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
 
 export default function CheckoutPage(){
  const t=useTranslations("checkout"); const cartT=useTranslations("cart"); const c=useTranslations("common"); const locale=useLocale(); const router=useRouter(); const {lines,subtotal,hydrated}=useCart();
- const [submitting,setSubmitting]=useState(false); const [error,setError]=useState<string|null>(null);
+ const [submitting,setSubmitting]=useState(false); const [error,setError]=useState<string|null>(null); const requestTokenRef=useRef<string>("");
  const labels={
   province:pick(locale,"استان","Province / Region","İl / Bölge","المحافظة / المنطقة"),country:pick(locale,"کشور","Country","Ülke","الدولة"),summary:pick(locale,"خلاصه سفارش","Order summary","Sipariş özeti","ملخص الطلب"),payment:pick(locale,"روش پرداخت","Payment method","Ödeme yöntemi","طريقة الدفع"),gateway:pick(locale,"پرداخت اینترنتی","Online payment","Online ödeme","الدفع عبر الإنترنت"),gatewaySub:pick(locale,"پس از ثبت سفارش به درگاه پرداخت منتقل می‌شوید.","You will be redirected to the payment gateway after the order is created.","Sipariş oluşturulduktan sonra ödeme ağ geçidine yönlendirileceksiniz.","سيتم تحويلك إلى بوابة الدفع بعد إنشاء الطلب."),verified:pick(locale,"موجودی، تعداد و مبلغ سفارش پیش از ایجاد پرداخت در سرور دوباره بررسی می‌شود.","Stock, quantities and the order total are revalidated on the server before payment is created.","Stok, adet ve sipariş toplamı ödeme oluşturulmadan önce sunucuda yeniden doğrulanır.","تتم إعادة التحقق من المخزون والكميات وإجمالي الطلب على الخادم قبل إنشاء الدفع."),items:pick(locale,"کالا","items","ürün","عنصر"),serverTotal:pick(locale,"مبلغ نهایی پس از بررسی سفارش در سرور تعیین می‌شود.","The final payable amount is determined after server-side order validation.","Nihai ödeme tutarı sunucu tarafındaki sipariş doğrulamasından sonra belirlenir.","يتم تحديد المبلغ النهائي بعد التحقق من الطلب على الخادم."),cartStep:pick(locale,"سبد خرید","Cart","Sepet","السلة"),deliveryStep:pick(locale,"اطلاعات ارسال","Delivery details","Teslimat bilgileri","معلومات الشحن"),paymentStep:pick(locale,"پرداخت","Payment","Ödeme","الدفع"),genericError:pick(locale,"ثبت سفارش انجام نشد. لطفاً دوباره تلاش کنید.","Checkout failed. Please try again.","Sipariş tamamlanamadı. Lütfen tekrar deneyin.","تعذر إكمال الطلب. يرجى المحاولة مرة أخرى.")
  };
  async function handleSubmit(event:React.FormEvent<HTMLFormElement>){
   event.preventDefault(); if(submitting)return; setError(null); setSubmitting(true); const form=new FormData(event.currentTarget);
+  if(!requestTokenRef.current)requestTokenRef.current=createRequestToken();
   try{
-   const response=await fetch("/api/checkout",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({locale,customerName:form.get("customerName"),phone:form.get("phone"),email:form.get("email")||undefined,address:form.get("address"),province:form.get("province")||undefined,city:form.get("city"),country:form.get("country")||undefined,postalCode:form.get("postalCode")||undefined,notes:form.get("notes")||undefined,lines:lines.map(line=>({type:line.type,id:line.id,quantity:line.quantity,preferredDate:line.preferredDate}))})});
+   const response=await fetch("/api/checkout",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({locale,requestToken:requestTokenRef.current,customerName:form.get("customerName"),phone:form.get("phone"),email:form.get("email")||undefined,address:form.get("address"),province:form.get("province")||undefined,city:form.get("city"),country:form.get("country")||undefined,postalCode:form.get("postalCode")||undefined,notes:form.get("notes")||undefined,lines:lines.map(line=>({type:line.type,id:line.id,quantity:line.quantity,preferredDate:line.preferredDate}))})});
    const data:unknown=await response.json().catch(()=>null); const redirectUrl=data&&typeof data==="object"&&"redirectUrl" in data?(data as {redirectUrl?:unknown}).redirectUrl:null;
    if(!response.ok||typeof redirectUrl!=="string"||!redirectUrl){throw new Error("checkout_failed");}
    window.location.assign(redirectUrl);
