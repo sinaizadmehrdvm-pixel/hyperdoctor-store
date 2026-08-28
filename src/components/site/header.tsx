@@ -24,7 +24,6 @@ export async function Header() {
   const navItems = [
     { href: "/", label: t("home") },
     { href: "/shop", label: t("shop") },
-    { href: "/shop/respiratory", label: l(locale, "تجهیزات تخصصی", "Specialist Equipment", "Uzman Ekipman", "معدات متخصصة") },
     { href: "/services", label: t("services") },
     { href: "/club", label: l(locale, "باشگاه مشتریان", "Customer Club", "Müşteri Kulübü", "نادي العملاء") },
     { href: "/articles", label: l(locale, "مقالات", "Articles", "Makaleler", "المقالات") },
@@ -71,7 +70,7 @@ export async function Header() {
             href="/contact"
             className="vitalis-focus hidden min-h-10 items-center rounded-full border border-[#c4c6d0]/60 bg-white px-3 text-xs font-bold text-[#001736] shadow-sm transition hover:border-[#9aa0aa] hover:bg-[#f1f4f7] 2xl:flex"
           >
-            {l(locale, "مشاوره رایگان", "Free consultation", "Ücretsiz danışmanlık", "استشارة مجانية")}
+            {l(locale, "مشاوره تخصصی", "Specialist advice", "Uzman danışmanlık", "استشارة متخصصة")}
           </Link>
           <Link
             href={customer ? "/account" : "/account/login"}
