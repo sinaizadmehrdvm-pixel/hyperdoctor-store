@@ -1,56 +1,20 @@
-import { Mail, Phone, UserRound, WalletCards } from "lucide-react";
+import { Mail, Phone, Search, ShieldCheck, UserRound, UsersRound, WalletCards } from "lucide-react";
 import { adminRpc } from "@/lib/admin-data";
 import { updateCustomer } from "./actions";
 
-type Customer = {
-  id: string;
-  fullName: string;
-  email?: string | null;
-  phone?: string | null;
-  locale: string;
-  isActive: boolean;
-  marketingConsent: boolean;
-  createdAt: string;
-  orderCount: number;
-  lifetimeValue: number;
-};
+type Customer={id:string;fullName:string;email?:string|null;phone?:string|null;locale:string;isActive:boolean;marketingConsent:boolean;createdAt:string;orderCount:number;lifetimeValue:number};
+const money=(n:number)=>new Intl.NumberFormat("fa-IR").format(n);
 
-export default async function AdminCustomersPage() {
-  const customers = await adminRpc<Customer[]>("admin_customers", { p_search: "" });
-  return (
-    <div>
-      <div className="flex items-end justify-between gap-4">
-        <div><p className="text-xs font-black uppercase tracking-[.16em] text-muted">CRM</p><h1 className="mt-2 text-2xl font-black text-foreground">مشتریان</h1></div>
-        <span className="rounded-xl border border-border bg-card px-3 py-2 text-xs font-bold text-muted">{new Intl.NumberFormat("fa-IR").format(customers.length)} مشتری</span>
-      </div>
-      <div className="mt-6 grid gap-4 xl:grid-cols-2">
-        {customers.map((c) => {
-          const action = updateCustomer.bind(null, c.id);
-          return <article key={c.id} className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-            <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
-              <div>
-                <div className="flex items-center gap-2 text-primary"><UserRound className="h-4 w-4"/><span className="text-xs font-black uppercase">{c.locale}</span></div>
-                <h2 className="mt-2 text-lg font-black text-foreground">{c.fullName || "بدون نام"}</h2>
-                <p className="mt-1 text-xs text-muted">عضویت: {new Date(c.createdAt).toLocaleDateString("fa-IR")}</p>
-              </div>
-              <form action={action} className="space-y-2 rounded-xl border border-border bg-background p-3 text-xs">
-                <label className="flex items-center gap-2"><input type="checkbox" name="isActive" defaultChecked={c.isActive}/> حساب فعال</label>
-                <label className="flex items-center gap-2"><input type="checkbox" name="marketingConsent" defaultChecked={c.marketingConsent}/> رضایت بازاریابی</label>
-                <button className="h-9 w-full rounded-lg bg-primary px-3 font-black text-white">ذخیره</button>
-              </form>
-            </div>
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-xl bg-muted-bg p-3"><span className="text-xs text-muted">تعداد سفارش</span><div className="mt-1 text-lg font-black text-foreground">{new Intl.NumberFormat("fa-IR").format(c.orderCount)}</div></div>
-              <div className="rounded-xl bg-muted-bg p-3"><span className="text-xs text-muted">ارزش خرید</span><div className="mt-1 flex items-center gap-2 text-lg font-black text-foreground"><WalletCards className="h-4 w-4 text-primary"/>{new Intl.NumberFormat("fa-IR").format(c.lifetimeValue)} تومان</div></div>
-            </div>
-            <div className="mt-4 space-y-2 text-sm text-muted">
-              {c.phone ? <p className="flex items-center gap-2"><Phone className="h-4 w-4"/><span dir="ltr">{c.phone}</span></p> : null}
-              {c.email ? <p className="flex items-center gap-2"><Mail className="h-4 w-4"/><span dir="ltr">{c.email}</span></p> : null}
-            </div>
-          </article>;
-        })}
-        {customers.length === 0 ? <div className="xl:col-span-2 rounded-2xl border border-dashed border-border bg-card p-12 text-center text-sm text-muted">هنوز مشتری ثبت‌شده‌ای وجود ندارد.</div> : null}
-      </div>
-    </div>
-  );
+export default async function AdminCustomersPage({searchParams}:{searchParams:Promise<{q?:string}>}){
+  const {q=""}=await searchParams;
+  const customers=await adminRpc<Customer[]>("admin_customers",{p_search:q});
+  const active=customers.filter(c=>c.isActive).length;
+  const totalValue=customers.reduce((a,c)=>a+c.lifetimeValue,0);
+  return <div className="mx-auto max-w-[1450px] space-y-6">
+    <div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-[.18em] text-[#e80346]">Customer CRM</p><h1 className="mt-2 text-3xl font-black text-[#001736]">مدیریت کاربران</h1><p className="mt-2 text-sm text-[#747780]">وضعیت حساب، ارزش خرید و اطلاعات تماس مشتریان</p></div></div>
+    <div className="grid gap-4 md:grid-cols-3"><Metric label="کاربران نمایش‌داده‌شده" value={money(customers.length)} icon={UsersRound}/><Metric label="حساب فعال" value={money(active)} icon={ShieldCheck}/><Metric label="ارزش خرید" value={`${money(totalValue)} تومان`} icon={WalletCards}/></div>
+    <form className="flex gap-3 rounded-[1.5rem] border border-[#e2e6eb] bg-white p-4 shadow-sm"><label className="relative flex-1"><Search className="pointer-events-none absolute start-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9a9da5]"/><input name="q" defaultValue={q} placeholder="جستجو با نام، موبایل یا ایمیل..." className="h-11 w-full rounded-xl border border-[#dfe4ea] bg-[#f7fafd] ps-11 pe-4 text-sm outline-none focus:border-[#009dd8]"/></label><button className="rounded-xl bg-[#001736] px-5 text-xs font-black text-white">جستجو</button></form>
+    <section className="overflow-hidden rounded-[1.6rem] border border-[#e2e6eb] bg-white shadow-sm"><div className="overflow-x-auto"><table className="w-full min-w-[1050px] text-sm"><thead className="bg-[#f7fafd] text-[11px] font-black text-[#747780]"><tr><th className="px-5 py-3 text-start">کاربر</th><th className="px-5 py-3 text-start">تماس</th><th className="px-5 py-3 text-start">سفارش</th><th className="px-5 py-3 text-start">ارزش خرید</th><th className="px-5 py-3 text-start">عضویت</th><th className="px-5 py-3 text-start">وضعیت</th><th className="px-5 py-3 text-end">مدیریت</th></tr></thead><tbody className="divide-y divide-[#edf0f2]">{customers.map(c=>{const action=updateCustomer.bind(null,c.id);return <tr key={c.id} className="align-top hover:bg-[#fafcff]"><td className="px-5 py-4"><div className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#edf4ff] text-[#002b5b]"><UserRound className="h-4.5 w-4.5"/></span><div><p className="font-black text-[#001736]">{c.fullName||"بدون نام"}</p><p className="mt-1 text-[10px] font-black uppercase text-[#009dd8]">{c.locale}</p></div></div></td><td className="px-5 py-4"><div className="space-y-1.5 text-xs text-[#5f6570]">{c.phone?<p className="flex items-center gap-2"><Phone className="h-3.5 w-3.5"/><span dir="ltr">{c.phone}</span></p>:null}{c.email?<p className="flex items-center gap-2"><Mail className="h-3.5 w-3.5"/><span dir="ltr">{c.email}</span></p>:null}{!c.phone&&!c.email?"—":null}</div></td><td className="px-5 py-4 font-black text-[#001736]">{money(c.orderCount)}</td><td className="px-5 py-4 font-black tabular-nums text-[#001736]">{money(c.lifetimeValue)} تومان</td><td className="px-5 py-4 text-xs text-[#747780]">{new Date(c.createdAt).toLocaleDateString("fa-IR")}</td><td className="px-5 py-4"><span className={`rounded-full px-2.5 py-1 text-[10px] font-black ${c.isActive?"bg-emerald-50 text-emerald-700":"bg-red-50 text-red-700"}`}>{c.isActive?"فعال":"غیرفعال"}</span></td><td className="px-5 py-4"><form action={action} className="ms-auto w-44 space-y-2 rounded-xl border border-[#edf0f2] bg-[#fafcff] p-3 text-[11px]"><label className="flex items-center gap-2"><input type="checkbox" name="isActive" defaultChecked={c.isActive}/> حساب فعال</label><label className="flex items-center gap-2"><input type="checkbox" name="marketingConsent" defaultChecked={c.marketingConsent}/> رضایت بازاریابی</label><button className="h-8 w-full rounded-lg bg-[#e80346] px-3 font-black text-white">ذخیره</button></form></td></tr>})}{customers.length===0?<tr><td colSpan={7} className="px-5 py-14 text-center text-[#8a8e96]">کاربری با این معیار پیدا نشد.</td></tr>:null}</tbody></table></div></section>
+  </div>;
 }
+function Metric({label,value,icon:Icon}:{label:string;value:string;icon:typeof UsersRound}){return <article className="rounded-[1.5rem] border border-[#e2e6eb] bg-white p-5 shadow-sm"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#edf4ff] text-[#002b5b]"><Icon className="h-5 w-5"/></span><p className="mt-4 text-xs font-black text-[#747780]">{label}</p><p className="mt-1 text-2xl font-black text-[#001736]">{value}</p></article>}
