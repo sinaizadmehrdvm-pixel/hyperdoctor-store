@@ -7,7 +7,8 @@ const STATUS={OPEN:"باز",IN_PROGRESS:"در حال بررسی",WAITING_CUSTOME
 const PRIORITY={LOW:"کم",NORMAL:"عادی",HIGH:"بالا",URGENT:"فوری"} as const;
 
 export default async function AdminSupportPage({searchParams}:{searchParams:Promise<{q?:string;status?:string}>}){
-  const [{q="",status=""},all]=await Promise.all([searchParams,adminRpc<Ticket[]>("admin_support_tickets",{p_search:q})]);
+  const {q="",status=""}=await searchParams;
+  const all=await adminRpc<Ticket[]>("admin_support_tickets",{p_search:q});
   const tickets=all.filter(t=>!status||t.status===status);
   const open=all.filter(t=>t.status==="OPEN"||t.status==="IN_PROGRESS").length;
   const urgent=all.filter(t=>t.priority==="URGENT").length;
