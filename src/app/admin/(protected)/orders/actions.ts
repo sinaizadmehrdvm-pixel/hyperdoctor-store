@@ -5,7 +5,6 @@ import { adminRpc } from "@/lib/admin-data";
 
 const VALID_STATUSES = [
   "PENDING_PAYMENT",
-  "PAID",
   "FAILED",
   "PROCESSING",
   "SHIPPED",
