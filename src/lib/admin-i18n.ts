@@ -1,10 +1,10 @@
 export type AdminLocale = "fa" | "ar" | "en" | "tr";
-export const adminLocales: AdminLocale[] = ["fa","ar","en","tr"];
-export function getAdminLocale(value?: string | null): AdminLocale { return value === "ar" || value === "en" || value === "tr" ? value : "fa"; }
+export const adminLocales: AdminLocale[]=["fa","ar","en","tr"];
+export function getAdminLocale(value?:string|null):AdminLocale{return value==="ar"||value==="en"||value==="tr"?value:"fa"}
 export const adminDir=(l:AdminLocale)=>l==="fa"||l==="ar"?"rtl":"ltr";
 export const adminIntlLocale:Record<AdminLocale,string>={fa:"fa-IR",ar:"ar",en:"en-US",tr:"tr-TR"};
 export const adminCurrency:Record<AdminLocale,string>={fa:"تومان",ar:"تومان",en:"Toman",tr:"Toman"};
 export const adminStatus:Record<AdminLocale,Record<string,string>>={fa:{PENDING_PAYMENT:"در انتظار پرداخت",PAID:"پرداخت‌شده",PROCESSING:"در حال پردازش",SHIPPED:"ارسال‌شده",COMPLETED:"تکمیل‌شده",CANCELLED:"لغوشده",FAILED:"ناموفق",OPEN:"باز",CLOSED:"بسته",PENDING:"در انتظار",ACTIVE:"فعال",INACTIVE:"غیرفعال",APPROVED:"تأییدشده",REJECTED:"ردشده",DRAFT:"پیش‌نویس",PUBLISHED:"منتشرشده"},ar:{PENDING_PAYMENT:"بانتظار الدفع",PAID:"مدفوع",PROCESSING:"قيد المعالجة",SHIPPED:"تم الشحن",COMPLETED:"مكتمل",CANCELLED:"ملغي",FAILED:"فشل",OPEN:"مفتوح",CLOSED:"مغلق",PENDING:"قيد الانتظار",ACTIVE:"نشط",INACTIVE:"غير نشط",APPROVED:"معتمد",REJECTED:"مرفوض",DRAFT:"مسودة",PUBLISHED:"منشور"},en:{PENDING_PAYMENT:"Pending payment",PAID:"Paid",PROCESSING:"Processing",SHIPPED:"Shipped",COMPLETED:"Completed",CANCELLED:"Cancelled",FAILED:"Failed",OPEN:"Open",CLOSED:"Closed",PENDING:"Pending",ACTIVE:"Active",INACTIVE:"Inactive",APPROVED:"Approved",REJECTED:"Rejected",DRAFT:"Draft",PUBLISHED:"Published"},tr:{PENDING_PAYMENT:"Ödeme bekliyor",PAID:"Ödendi",PROCESSING:"İşleniyor",SHIPPED:"Gönderildi",COMPLETED:"Tamamlandı",CANCELLED:"İptal edildi",FAILED:"Başarısız",OPEN:"Açık",CLOSED:"Kapalı",PENDING:"Bekliyor",ACTIVE:"Aktif",INACTIVE:"Pasif",APPROVED:"Onaylandı",REJECTED:"Reddedildi",DRAFT:"Taslak",PUBLISHED:"Yayında"}};
 export function adminNumber(v:number,l:AdminLocale){return new Intl.NumberFormat(adminIntlLocale[l]).format(v)}
-export function adminDate(v:string|Date,l:AdminLocale){return new Date(v).toLocaleDateString(adminIntlLocale[l])}
+export function adminDate(v:string|number|Date,l:AdminLocale){return new Date(v).toLocaleDateString(adminIntlLocale[l])}
 export function adminStatusText(v:string,l:AdminLocale){return adminStatus[l][v]||v.replaceAll("_"," ")}
