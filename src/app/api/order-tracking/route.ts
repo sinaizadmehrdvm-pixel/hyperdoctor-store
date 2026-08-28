@@ -18,7 +18,7 @@ type Tracking={
   items:Array<{name:string;quantity:number}>;
 };
 
-const allowedStatuses=new Set(["PENDING_PAYMENT","PAID","PROCESSING","SHIPPED","COMPLETED","FAILED","CANCELLED","REFUNDED"]);
+const allowedStatuses=new Set(["PENDING_PAYMENT","PAYMENT_REVIEW","PAID","PROCESSING","SHIPPED","COMPLETED","FAILED","CANCELLED","REFUNDED"]);
 function json(body:unknown,status=200){return NextResponse.json(body,{status,headers:{"Cache-Control":"no-store","X-Content-Type-Options":"nosniff"}})}
 function normalizeOrderNumber(value:string){return value.trim().toUpperCase()}
 function sanitize(result:Tracking):Tracking|null{
