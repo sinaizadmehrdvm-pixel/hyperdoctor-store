@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { useParams } from "next/navigation";
 import { Link } from "@/i18n/navigation";
@@ -28,6 +28,15 @@ export function MobileNav({
   const params = useParams();
   const locale = (params.locale as string) || "fa";
   const navigationId = "hyperdoctor-mobile-navigation";
+
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open]);
 
   return (
     <div className="xl:hidden">
