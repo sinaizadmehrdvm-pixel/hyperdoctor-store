@@ -15,6 +15,7 @@ type ResultState="success"|"pending"|"failure";
 const pick=(locale:string,fa:string,en:string,tr:string,ar:string)=>locale==="en"?en:locale==="tr"?tr:locale==="ar"?ar:fa;
 const ORDER_RE=/^[A-Za-z0-9_-]{1,160}$/;
 const TOKEN_RE=/^[A-Za-z0-9._~-]{16,512}$/;
+const SUCCESS_STATUSES=new Set(["PAID","PROCESSING","SHIPPED","COMPLETED"]);
 const FAILURE_STATUSES=new Set(["FAILED","CANCELLED","REFUNDED"]);
 export const metadata:Metadata={robots:{index:false,follow:false,noarchive:true,nosnippet:true}};
 
@@ -26,7 +27,7 @@ function currencyLabel(currency:string,locale:string){
 }
 
 function resolveState(status:string):ResultState{
-  if(status==="PAID")return "success";
+  if(SUCCESS_STATUSES.has(status))return "success";
   if(FAILURE_STATUSES.has(status))return "failure";
   return "pending";
 }
@@ -56,7 +57,7 @@ export default async function OrderResultPage({params,searchParams}:{params:Prom
     ref:pick(locale,"کد مرجع پرداخت","Payment reference","Ödeme referansı","مرجع الدفع"),
     amount:pick(locale,"مبلغ سفارش","Order amount","Sipariş tutarı","قيمة الطلب"),
     nextTitle:pick(locale,"مرحله بعدی چیست؟","What happens next?","Sırada ne var?","ما الخطوة التالية؟"),
-    thanks:pick(locale,"پرداخت سفارش تأیید شد.","Your order payment has been confirmed.","Sipariş ödemeniz onaylandı.","تم تأكيد دفع الطلب."),
+    thanks:pick(locale,"پرداخت سفارش تأیید شده است.","Your order payment has been confirmed.","Sipariş ödemeniz onaylandı.","تم تأكيد دفع الطلب."),
     failed:pick(locale,"پرداخت این سفارش تأیید نشد.","Payment for this order was not confirmed.","Bu siparişin ödemesi onaylanmadı.","لم يتم تأكيد دفع هذا الطلب."),
     pendingTitle:pick(locale,"تأیید پرداخت در حال بررسی است","Payment confirmation is pending","Ödeme onayı bekleniyor","تأكيد الدفع قيد المراجعة"),
     pendingBody:pick(locale,"نتیجه نهایی پرداخت هنوز تأیید نشده است. سفارش شما ناموفق علامت‌گذاری نشده؛ کمی بعد وضعیت را دوباره بررسی کنید.","The final payment result has not been confirmed yet. Your order has not been marked failed; check its status again shortly.","Nihai ödeme sonucu henüz doğrulanmadı. Siparişiniz başarısız olarak işaretlenmedi; kısa süre sonra durumu tekrar kontrol edin.","لم يتم تأكيد نتيجة الدفع النهائية بعد. لم يتم اعتبار طلبك فاشلاً؛ تحقق من الحالة مرة أخرى بعد قليل."),
