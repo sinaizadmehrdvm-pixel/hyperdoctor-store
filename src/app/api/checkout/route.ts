@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { requestZarinpalPayment } from "@/lib/payments/zarinpal";
+import {
+  getZarinpalStartPayUrl,
+  requestZarinpalPayment,
+} from "@/lib/payments/zarinpal";
 import { supabaseRpc } from "@/lib/supabase-rest";
 import { getCustomerToken } from "@/lib/customer-auth";
 
@@ -39,6 +42,11 @@ type CreatedOrder = {
   status: string;
 };
 
+type CheckoutPaymentState = {
+  status: string;
+  paymentAuthority?: string | null;
+};
+
 function expectedPaymentHost() {
   return process.env.ZARINPAL_SANDBOX === "false"
     ? "payment.zarinpal.com"
@@ -72,6 +80,33 @@ function jsonError(error: string, status: number) {
   );
 }
 
+function successResponse(redirectUrl: string, orderNumber: string) {
+  if (!isSafePaymentRedirect(redirectUrl)) {
+    throw new Error("Invalid payment session response");
+  }
+  return NextResponse.json(
+    { redirectUrl, orderNumber },
+    {
+      headers: {
+        "Cache-Control": "no-store",
+        "X-Content-Type-Options": "nosniff",
+      },
+    },
+  );
+}
+
+async function getPaymentState(order: CreatedOrder) {
+  return supabaseRpc<CheckoutPaymentState | null>("get_order_checkout_payment_state", {
+    p_order_number: order.orderNumber,
+    p_checkout_token: order.checkoutToken,
+  });
+}
+
+function existingPaymentUrl(state: CheckoutPaymentState | null) {
+  if (!state?.paymentAuthority) return null;
+  return getZarinpalStartPayUrl(state.paymentAuthority);
+}
+
 export async function POST(request: Request) {
   let raw: unknown;
   try {
@@ -85,7 +120,7 @@ export async function POST(request: Request) {
 
   const body = parsed.data;
   let order: CreatedOrder | null = null;
-  let paymentAuthorityAttached = false;
+  let paymentSessionExists = false;
 
   try {
     order = await supabaseRpc<CreatedOrder>("create_guest_order", {
@@ -116,6 +151,17 @@ export async function POST(request: Request) {
       throw new Error("Order is not available for payment");
     }
 
+    const currentState = await getPaymentState(order);
+    if (!currentState || currentState.status !== "PENDING_PAYMENT") {
+      throw new Error("Order is not available for payment");
+    }
+
+    const currentPaymentUrl = existingPaymentUrl(currentState);
+    if (currentPaymentUrl) {
+      paymentSessionExists = true;
+      return successResponse(currentPaymentUrl, order.orderNumber);
+    }
+
     const customerToken = await getCustomerToken();
     if (customerToken) {
       await supabaseRpc<boolean>("attach_order_customer", {
@@ -143,24 +189,32 @@ export async function POST(request: Request) {
       p_checkout_token: order.checkoutToken,
       p_authority: payment.authority,
     });
-    if (!attached) {
-      throw new Error("Payment session could not be attached to the order");
-    }
-    paymentAuthorityAttached = true;
 
-    return NextResponse.json(
-      { redirectUrl: payment.redirectUrl, orderNumber: order.orderNumber },
-      {
-        headers: {
-          "Cache-Control": "no-store",
-          "X-Content-Type-Options": "nosniff",
-        },
-      },
-    );
+    if (attached) {
+      paymentSessionExists = true;
+      return successResponse(payment.redirectUrl, order.orderNumber);
+    }
+
+    // A concurrent retry may have attached the first authority while this
+    // request was creating another gateway session. Always prefer the authority
+    // already bound to the order and never overwrite it.
+    const racedState = await getPaymentState(order);
+    const racedPaymentUrl = existingPaymentUrl(racedState);
+    if (racedState?.status === "PENDING_PAYMENT" && racedPaymentUrl) {
+      paymentSessionExists = true;
+      return successResponse(racedPaymentUrl, order.orderNumber);
+    }
+
+    throw new Error("Payment session could not be attached to the order");
   } catch (error) {
-    // Once a payment authority is attached, never cancel the order from this
-    // request path. The gateway callback owns the terminal payment decision.
-    if (order?.orderNumber && order.checkoutToken && !paymentAuthorityAttached) {
+    if (order?.orderNumber && order.checkoutToken && !paymentSessionExists) {
+      const state = await getPaymentState(order).catch(() => null);
+      if (state?.paymentAuthority) {
+        paymentSessionExists = true;
+      }
+    }
+
+    if (order?.orderNumber && order.checkoutToken && !paymentSessionExists) {
       await supabaseRpc<boolean>("cancel_guest_order", {
         p_order_number: order.orderNumber,
         p_checkout_token: order.checkoutToken,
