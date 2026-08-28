@@ -48,39 +48,41 @@ export async function Header() {
     : l(locale, "ورود", "Sign in", "Giriş", "تسجيل الدخول");
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[#c4c6d0]/35 bg-white/85 text-[#001736] shadow-[0_6px_24px_rgba(0,23,54,0.06)] backdrop-blur-xl">
-      <div className="vitalis-container flex min-h-18 items-center justify-between gap-3 py-2.5">
-        <Link href="/" className="shrink-0 rounded-xl vitalis-focus">
+    <header className="sticky top-0 z-50 border-b border-[#c4c6d0]/35 bg-white/88 text-[#001736] shadow-[0_6px_24px_rgba(0,23,54,0.06)] backdrop-blur-xl supports-[backdrop-filter]:bg-white/78">
+      <div className="vitalis-container flex min-h-18 items-center justify-between gap-2 py-2.5 xl:gap-3">
+        <Link href="/" className="vitalis-focus shrink-0 rounded-xl" aria-label={settings.subBrandName || "Hyper Doctor"}>
           <HyperDoctorLogo tagline={brandT("tagline")} name={settings.subBrandName} logoUrl={settings.subBrandLogoUrl} />
         </Link>
-        <nav className="hidden 2xl:flex items-center gap-0.5" aria-label={primaryNavLabel}>
+
+        <nav className="hidden min-w-0 flex-1 items-center justify-center gap-0.5 xl:flex" aria-label={primaryNavLabel}>
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="min-h-10 flex items-center rounded-full px-3 text-xs font-bold text-[#43474f] transition-colors hover:bg-[#f1f4f7] hover:text-[#001736] vitalis-focus"
+              className="vitalis-focus flex min-h-10 min-w-0 items-center rounded-full px-2.5 text-[11px] font-bold text-[#43474f] transition-colors hover:bg-[#f1f4f7] hover:text-[#001736] 2xl:px-3 2xl:text-xs"
             >
-              {item.label}
+              <span className="truncate">{item.label}</span>
             </Link>
           ))}
         </nav>
-        <div className="flex items-center gap-1.5">
+
+        <div className="flex shrink-0 items-center gap-1.5">
           <Link
             href="/contact"
-            className="hidden min-h-10 items-center rounded-full border border-[#c4c6d0]/60 bg-white px-3 text-xs font-bold text-[#001736] transition hover:bg-[#f1f4f7] xl:flex"
+            className="vitalis-focus hidden min-h-10 items-center rounded-full border border-[#c4c6d0]/60 bg-white px-3 text-xs font-bold text-[#001736] shadow-sm transition hover:border-[#9aa0aa] hover:bg-[#f1f4f7] 2xl:flex"
           >
             {l(locale, "مشاوره رایگان", "Free consultation", "Ücretsiz danışmanlık", "استشارة مجانية")}
           </Link>
           <Link
             href={customer ? "/account" : "/account/login"}
             aria-label={accountLabel}
-            className="hidden h-10 items-center gap-2 rounded-full border border-[#c4c6d0]/60 bg-white px-3 text-xs font-black text-[#001736] transition hover:bg-[#f1f4f7] sm:flex"
+            className="vitalis-focus hidden h-10 items-center gap-2 rounded-full border border-[#c4c6d0]/60 bg-white px-3 text-xs font-black text-[#001736] shadow-sm transition hover:border-[#9aa0aa] hover:bg-[#f1f4f7] sm:flex"
           >
-            <UserRound className="h-4 w-4" />
+            <UserRound className="h-4 w-4" aria-hidden="true" />
             {customer ? (
-              <span className="hidden lg:inline">{customer.fullName}</span>
+              <span className="hidden max-w-28 truncate 2xl:inline">{customer.fullName}</span>
             ) : (
-              <span className="hidden lg:inline">{l(locale, "ورود", "Sign in", "Giriş", "دخول")}</span>
+              <span className="hidden 2xl:inline">{l(locale, "ورود", "Sign in", "Giriş", "دخول")}</span>
             )}
           </Link>
           <LocaleSwitcher className="hidden md:flex" />
