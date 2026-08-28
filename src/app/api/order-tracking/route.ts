@@ -1,16 +1,7 @@
-import { NextResponse } from "next/server";
-import { z } from "zod";
-import { supabaseRpc } from "@/lib/supabase-rest";
-
-const schema=z.object({orderNumber:z.string().trim().min(4).max(80),phone:z.string().trim().min(8).max(24)});
+import {NextResponse} from "next/server";import {z} from "zod";import {supabaseRpc} from "@/lib/supabase-rest";
+const schema=z.object({orderNumber:z.string().trim().min(4).max(80).regex(/^[A-Za-z0-9-]+$/),phone:z.string().trim().min(8).max(24).regex(/^[+0-9()\s-]+$/)}).strict();
 type Tracking={orderNumber:string;status:string;total:number;currency:string;shippingMethod:string;trackingCode:string;createdAt:string;shippedAt?:string|null;completedAt?:string|null;items:Array<{name:string;quantity:number}>};
-
-export async function POST(request:Request){
-  const parsed=schema.safeParse(await request.json().catch(()=>null));
-  if(!parsed.success)return NextResponse.json({error:"Invalid tracking data"},{status:400});
-  try{
-    const result=await supabaseRpc<Tracking|null>("track_order_public",{p_order_number:parsed.data.orderNumber,p_phone:parsed.data.phone});
-    if(!result)return NextResponse.json({error:"Order not found"},{status:404});
-    return NextResponse.json(result);
-  }catch(error){console.error("[order-tracking] failed",error);return NextResponse.json({error:"Tracking is temporarily unavailable"},{status:503});}
-}
+const allowedStatuses=new Set(["PENDING_PAYMENT","PAID","PROCESSING","SHIPPED","COMPLETED","FAILED","CANCELLED","REFUNDED"]);
+function json(body:unknown,status=200){return NextResponse.json(body,{status,headers:{"Cache-Control":"no-store","X-Content-Type-Options":"nosniff"}})}
+function sanitize(result:Tracking):Tracking|null{if(!result||typeof result!=="object")return null;const orderNumber=String(result.orderNumber||"").trim().slice(0,80),status=String(result.status||"").trim().toUpperCase(),currency=String(result.currency||"").trim().slice(0,12),shippingMethod=String(result.shippingMethod||"").trim().slice(0,120),trackingCode=String(result.trackingCode||"").trim().slice(0,120),createdAt=String(result.createdAt||"").trim();if(!orderNumber||!allowedStatuses.has(status)||!Number.isFinite(new Date(createdAt).getTime()))return null;const total=Number(result.total);if(!Number.isFinite(total)||total<0)return null;const cleanItems=Array.isArray(result.items)?result.items.slice(0,100).map(item=>({name:String(item?.name||"").trim().slice(0,240),quantity:Number(item?.quantity)})).filter(item=>item.name&&Number.isInteger(item.quantity)&&item.quantity>0&&item.quantity<=50):[];const cleanDate=(v?:string|null)=>{if(!v)return null;const s=String(v).trim();return Number.isFinite(new Date(s).getTime())?s:null};return{orderNumber,status,total,currency,shippingMethod,trackingCode,createdAt,shippedAt:cleanDate(result.shippedAt),completedAt:cleanDate(result.completedAt),items:cleanItems};}
+export async function POST(request:Request){let raw:unknown=null;try{raw=await request.json();}catch{return json({error:"Invalid tracking data"},400)}const parsed=schema.safeParse(raw);if(!parsed.success)return json({error:"Invalid tracking data"},400);try{const result=await supabaseRpc<Tracking|null>("track_order_public",{p_order_number:parsed.data.orderNumber,p_phone:parsed.data.phone});if(!result)return json({error:"Order not found"},404);const safe=sanitize(result);if(!safe){console.error("[order-tracking] invalid backend payload");return json({error:"Tracking is temporarily unavailable"},503)}return json(safe);}catch(error){console.error("[order-tracking] failed",error);return json({error:"Tracking is temporarily unavailable"},503)}}
