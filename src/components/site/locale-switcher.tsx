@@ -2,7 +2,7 @@
 
 import { usePathname } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const locales = [
@@ -21,33 +21,46 @@ function selectorLabel(locale: string) {
 
 export function LocaleSwitcher({ className }: { className?: string }) {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const params = useParams();
   const current = params.locale as string;
-  const query = searchParams.toString();
-  const href = query ? `${pathname}?${query}` : pathname;
+
+  function preserveQuery() {
+    if (typeof window === "undefined") return pathname;
+    return `${pathname}${window.location.search}`;
+  }
 
   return (
     <div
       className={cn(
-        "flex items-center gap-1 rounded-full border border-white/15 bg-white/5 p-1 backdrop-blur",
+        "flex items-center gap-1 rounded-full border border-[#c4c6d0]/60 bg-white/80 p-1 shadow-sm backdrop-blur",
         className,
       )}
       aria-label={selectorLabel(current)}
+      role="group"
     >
       {locales.map((l) => (
         <Link
           key={l.code}
-          href={href}
+          href={pathname}
           locale={l.code}
           title={l.title}
+          onClick={(event) => {
+            const href = preserveQuery();
+            if (href === pathname) return;
+            event.preventDefault();
+            const localePrefix = `/${current}`;
+            const localizedPath = href.startsWith(localePrefix)
+              ? `/${l.code}${href.slice(localePrefix.length)}`
+              : `/${l.code}${href.startsWith("/") ? href : `/${href}`}`;
+            window.location.assign(localizedPath);
+          }}
           className={cn(
-            "min-h-8 min-w-9 px-2 rounded-full text-xs font-semibold flex items-center justify-center transition-colors",
+            "vitalis-focus flex min-h-9 min-w-10 items-center justify-center rounded-full px-2 text-xs font-bold transition-colors",
             current === l.code
-              ? "bg-white text-navy shadow-sm"
-              : "text-navy-muted hover:text-white hover:bg-white/10",
+              ? "bg-[#001736] text-white shadow-sm"
+              : "text-[#43474f] hover:bg-[#f1f4f7] hover:text-[#001736]",
           )}
-          aria-current={current === l.code ? "true" : undefined}
+          aria-current={current === l.code ? "page" : undefined}
         >
           {l.label}
         </Link>
