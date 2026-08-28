@@ -5,13 +5,29 @@ import { updateOrderStatus } from "../actions";
 
 const STATUS_ORDER = [
   "PENDING_PAYMENT",
+  "PAYMENT_REVIEW",
   "PAID",
   "PROCESSING",
   "SHIPPED",
   "COMPLETED",
   "FAILED",
   "CANCELLED",
+  "REFUNDED",
 ] as const;
+
+type OrderStatus = (typeof STATUS_ORDER)[number];
+
+const NEXT_STATUSES: Record<OrderStatus, readonly OrderStatus[]> = {
+  PENDING_PAYMENT: ["PENDING_PAYMENT", "FAILED", "CANCELLED"],
+  PAYMENT_REVIEW: ["PAYMENT_REVIEW"],
+  PAID: ["PAID", "PROCESSING"],
+  PROCESSING: ["PROCESSING", "SHIPPED"],
+  SHIPPED: ["SHIPPED", "COMPLETED"],
+  COMPLETED: ["COMPLETED"],
+  FAILED: ["FAILED"],
+  CANCELLED: ["CANCELLED"],
+  REFUNDED: ["REFUNDED"],
+};
 
 type OrderItem = {
   id: string;
@@ -40,7 +56,7 @@ type AdminOrderDetail = {
   subtotal: number;
   shippingFee: number;
   total: number;
-  status: (typeof STATUS_ORDER)[number];
+  status: OrderStatus;
   gateway: string;
   paymentAuthority?: string | null;
   paymentRefId?: string | null;
@@ -52,9 +68,11 @@ type AdminOrderDetail = {
 export default async function AdminOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const order = await adminRpc<AdminOrderDetail | null>("admin_order_detail", { p_id: id });
-  if (!order) notFound();
+  if (!order || !STATUS_ORDER.includes(order.status)) notFound();
 
   const boundUpdate = updateOrderStatus.bind(null, order.id);
+  const nextStatuses = NEXT_STATUSES[order.status];
+  const canUpdate = nextStatuses.length > 1;
 
   return (
     <div className="max-w-5xl">
@@ -62,12 +80,17 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
         <div>
           <p className="text-xs font-black uppercase tracking-[.16em] text-muted">Order Detail</p>
           <h1 className="mt-2 text-2xl font-black text-foreground" dir="ltr">{order.orderNumber}</h1>
+          {order.status === "PAYMENT_REVIEW" ? (
+            <p className="mt-2 max-w-2xl rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-bold text-amber-900">
+              پرداخت تأیید شده اما سفارش به‌دلیل تعارض موجودی نیازمند بررسی اختصاصی است. وضعیت این سفارش با تغییر عادی قابل عبور نیست.
+            </p>
+          ) : null}
         </div>
         <form action={boundUpdate} className="flex items-center gap-2">
-          <select name="status" defaultValue={order.status} className="h-11 cursor-pointer rounded-xl border border-border bg-card px-3 text-sm font-bold">
-            {STATUS_ORDER.map((s) => <option key={s} value={s}>{ORDER_STATUS_LABELS[s]}</option>)}
+          <select name="status" defaultValue={order.status} disabled={!canUpdate} className="h-11 cursor-pointer rounded-xl border border-border bg-card px-3 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-70">
+            {nextStatuses.map((s) => <option key={s} value={s}>{ORDER_STATUS_LABELS[s]}</option>)}
           </select>
-          <button type="submit" className="min-h-11 cursor-pointer rounded-xl bg-primary px-4 text-sm font-black text-white hover:bg-primary/90">به‌روزرسانی وضعیت</button>
+          {canUpdate ? <button type="submit" className="min-h-11 cursor-pointer rounded-xl bg-primary px-4 text-sm font-black text-white hover:bg-primary/90">به‌روزرسانی وضعیت</button> : null}
         </form>
       </div>
 
@@ -90,6 +113,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
         <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
           <h2 className="mb-4 text-sm font-black text-foreground">پرداخت و جمع‌بندی</h2>
           <dl className="space-y-2.5 text-sm">
+            <Row label="وضعیت" value={ORDER_STATUS_LABELS[order.status] || order.status} />
             <Row label="درگاه" value={order.gateway} dir="ltr" />
             <Row label="Authority" value={order.paymentAuthority || "—"} dir="ltr" />
             <Row label="کد مرجع" value={order.paymentRefId || "—"} dir="ltr" />
@@ -122,5 +146,5 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
 }
 
 function Row({ label, value, dir }: { label: string; value: string; dir?: "ltr" | "rtl" }) {
-  return <div className="flex justify-between gap-4 border-b border-border/60 pb-2 last:border-0"><dt className="text-muted">{label}</dt><dd className="max-w-[65%] text-end font-bold text-foreground" dir={dir}>{value}</dd></div>;
+  return <div className="flex justify-between gap-4 border-b border-border/60 pb-2 last:border-0"><dt className="text-muted">{label}</dt><dd className="max-w-[65%] break-words text-end font-bold text-foreground" dir={dir}>{value}</dd></div>;
 }
