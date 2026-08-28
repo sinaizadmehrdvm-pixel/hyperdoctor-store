@@ -1,56 +1,117 @@
 const SANDBOX = process.env.ZARINPAL_SANDBOX !== "false";
 const MERCHANT_ID = process.env.ZARINPAL_MERCHANT_ID ?? "";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-const API_BASE = SANDBOX ? "https://sandbox.zarinpal.com/pg/v4/payment" : "https://payment.zarinpal.com/pg/v4/payment";
-const STARTPAY_BASE = SANDBOX ? "https://sandbox.zarinpal.com/pg/StartPay" : "https://payment.zarinpal.com/pg/StartPay";
+const API_BASE = SANDBOX
+  ? "https://sandbox.zarinpal.com/pg/v4/payment"
+  : "https://payment.zarinpal.com/pg/v4/payment";
+const STARTPAY_BASE = SANDBOX
+  ? "https://sandbox.zarinpal.com/pg/StartPay"
+  : "https://payment.zarinpal.com/pg/StartPay";
 const TIMEOUT_MS = 12_000;
 
-type GatewayResponse = { data?: { authority?: unknown; code?: unknown; ref_id?: unknown } };
+type GatewayResponse = {
+  data?: { authority?: unknown; code?: unknown; ref_id?: unknown };
+};
+
 export type ZarinpalVerification =
   | { status: "verified"; refId: string }
   | { status: "rejected" }
   | { status: "unavailable" };
 
 function tomanToRial(amountToman: number) {
-  if (!Number.isSafeInteger(amountToman) || amountToman <= 0 || amountToman > Number.MAX_SAFE_INTEGER / 10) throw new Error("Invalid payment amount");
+  if (
+    !Number.isSafeInteger(amountToman) ||
+    amountToman <= 0 ||
+    amountToman > Number.MAX_SAFE_INTEGER / 10
+  ) {
+    throw new Error("Invalid payment amount");
+  }
   return amountToman * 10;
 }
 
 async function postJson(path: string, body: unknown): Promise<GatewayResponse> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
   try {
-    const response = await fetch(`${API_BASE}/${path}`, { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(body), signal: controller.signal, cache: "no-store" });
+    const response = await fetch(`${API_BASE}/${path}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+      cache: "no-store",
+    });
     const text = await response.text();
     let data: unknown;
-    try { data = text ? JSON.parse(text) : null; } catch { throw new Error("Invalid payment gateway response"); }
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch {
+      throw new Error("Invalid payment gateway response");
+    }
     if (!response.ok) throw new Error(`Payment gateway HTTP ${response.status}`);
     if (!data || typeof data !== "object") throw new Error("Invalid payment gateway response");
     return data as GatewayResponse;
-  } finally { clearTimeout(timer); }
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
-function safeText(value: unknown, max: number) { return typeof value === "string" ? value.trim().slice(0, max) : ""; }
+function safeText(value: unknown, max: number) {
+  return typeof value === "string" ? value.trim().slice(0, max) : "";
+}
 
-export async function requestZarinpalPayment(opts: { amountToman: number; description: string; orderNumber: string; checkoutToken: string; mobile?: string; email?: string }): Promise<{ authority: string; redirectUrl: string }> {
+export function getZarinpalStartPayUrl(authorityValue: unknown) {
+  const authority = safeText(authorityValue, 128);
+  if (authority.length < 5) throw new Error("Invalid payment authority");
+  return `${STARTPAY_BASE}/${encodeURIComponent(authority)}`;
+}
+
+export async function requestZarinpalPayment(opts: {
+  amountToman: number;
+  description: string;
+  orderNumber: string;
+  checkoutToken: string;
+  mobile?: string;
+  email?: string;
+}): Promise<{ authority: string; redirectUrl: string }> {
   if (!MERCHANT_ID) throw new Error("ZARINPAL_MERCHANT_ID is not configured");
   const amount = tomanToRial(opts.amountToman);
   const callback = new URL(`${SITE_URL}/api/payments/zarinpal/callback`);
   callback.searchParams.set("order", safeText(opts.orderNumber, 160));
   callback.searchParams.set("ct", safeText(opts.checkoutToken, 256));
-  const data = await postJson("request.json", { merchant_id: MERCHANT_ID, amount, description: safeText(opts.description, 255), callback_url: callback.toString(), metadata: { mobile: safeText(opts.mobile, 24) || undefined, email: safeText(opts.email, 254) || undefined } });
+
+  const data = await postJson("request.json", {
+    merchant_id: MERCHANT_ID,
+    amount,
+    description: safeText(opts.description, 255),
+    callback_url: callback.toString(),
+    metadata: {
+      mobile: safeText(opts.mobile, 24) || undefined,
+      email: safeText(opts.email, 254) || undefined,
+    },
+  });
+
   const authority = safeText(data.data?.authority, 128);
   const code = Number(data.data?.code);
   if (!authority || code !== 100) throw new Error("Payment gateway rejected payment request");
-  return { authority, redirectUrl: `${STARTPAY_BASE}/${encodeURIComponent(authority)}` };
+  return { authority, redirectUrl: getZarinpalStartPayUrl(authority) };
 }
 
-export async function verifyZarinpalPayment(opts: { amountToman: number; authority: string }): Promise<ZarinpalVerification> {
+export async function verifyZarinpalPayment(opts: {
+  amountToman: number;
+  authority: string;
+}): Promise<ZarinpalVerification> {
   if (!MERCHANT_ID) return { status: "unavailable" };
   const authority = safeText(opts.authority, 128);
   if (!authority) return { status: "rejected" };
+
   let amount: number;
-  try { amount = tomanToRial(opts.amountToman); } catch { return { status: "rejected" }; }
+  try {
+    amount = tomanToRial(opts.amountToman);
+  } catch {
+    return { status: "rejected" };
+  }
+
   try {
     const data = await postJson("verify.json", { merchant_id: MERCHANT_ID, amount, authority });
     const code = Number(data.data?.code);
