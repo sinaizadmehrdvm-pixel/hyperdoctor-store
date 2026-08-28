@@ -1,59 +1,22 @@
-import { AlertTriangle, Boxes, PackageCheck } from "lucide-react";
+import { AlertTriangle, Boxes, PackageCheck, Search, Warehouse } from "lucide-react";
 import { adminRpc } from "@/lib/admin-data";
 import { adjustStock } from "./actions";
 
-type Movement = { delta: number; reason: string; note: string; createdAt: string };
-type ProductStock = {
-  id: string;
-  sku: string;
-  nameFa: string;
-  nameEn: string;
-  brand: string;
-  stock: number;
-  lowStockThreshold: number;
-  isPublished: boolean;
-  movements: Movement[];
-};
-type InventoryBundle = { products: ProductStock[]; totalStock: number; lowStock: number };
+type Movement={delta:number;reason:string;note:string;createdAt:string};
+type ProductStock={id:string;sku:string;nameFa:string;nameEn:string;brand:string;stock:number;lowStockThreshold:number;isPublished:boolean;movements:Movement[]};
+type InventoryBundle={products:ProductStock[];totalStock:number;lowStock:number};
+const n=(v:number)=>new Intl.NumberFormat("fa-IR").format(v);
 
-export default async function AdminInventoryPage() {
-  const data = await adminRpc<InventoryBundle>("admin_inventory", { p_search: "" });
-  return (
-    <div>
-      <div className="flex items-end justify-between gap-4">
-        <div><p className="text-xs font-black uppercase tracking-[.16em] text-muted">Inventory Control</p><h1 className="mt-2 text-2xl font-black text-foreground">مدیریت موجودی</h1></div>
-      </div>
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
-        <div className="rounded-2xl border border-border bg-card p-5"><Boxes className="h-5 w-5 text-primary"/><div className="mt-3 text-2xl font-black">{new Intl.NumberFormat("fa-IR").format(data.totalStock)}</div><div className="text-sm text-muted">کل موجودی ثبت‌شده</div></div>
-        <div className="rounded-2xl border border-border bg-card p-5"><AlertTriangle className="h-5 w-5 text-accent"/><div className="mt-3 text-2xl font-black">{new Intl.NumberFormat("fa-IR").format(data.lowStock)}</div><div className="text-sm text-muted">کالاهای کم‌موجودی</div></div>
-      </div>
-
-      <div className="mt-6 space-y-4">
-        {data.products.map((p) => {
-          const action = adjustStock.bind(null, p.id);
-          const low = p.stock <= p.lowStockThreshold;
-          return <article key={p.id} className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-            <div className="flex flex-col justify-between gap-4 xl:flex-row xl:items-start">
-              <div>
-                <div className="flex items-center gap-2 text-primary"><PackageCheck className="h-4 w-4"/><span className="text-xs font-black" dir="ltr">{p.sku}</span></div>
-                <h2 className="mt-2 text-lg font-black text-foreground">{p.nameFa || p.nameEn}</h2>
-                <p className="mt-1 text-xs text-muted">{p.brand || "بدون برند"} · آستانه هشدار {new Intl.NumberFormat("fa-IR").format(p.lowStockThreshold)}</p>
-              </div>
-              <div className={`rounded-xl px-4 py-3 text-center ${low ? "bg-accent/10 text-accent" : "bg-primary/10 text-primary"}`}><div className="text-2xl font-black">{new Intl.NumberFormat("fa-IR").format(p.stock)}</div><div className="text-xs font-bold">موجودی فعلی</div></div>
-            </div>
-
-            <form action={action} className="mt-5 grid gap-3 md:grid-cols-[120px_160px_1fr_auto]">
-              <input name="delta" type="number" step="1" required placeholder="+10 / -2" className="h-11 rounded-xl border border-border bg-background px-3 text-sm" />
-              <select name="reason" className="h-11 rounded-xl border border-border bg-background px-3 text-sm"><option value="PURCHASE">خرید/ورود</option><option value="SALE_ADJUSTMENT">اصلاح فروش</option><option value="RETURN">مرجوعی</option><option value="DAMAGED">آسیب‌دیده</option><option value="MANUAL">اصلاح دستی</option></select>
-              <input name="note" placeholder="یادداشت اختیاری" className="h-11 rounded-xl border border-border bg-background px-3 text-sm" />
-              <button className="h-11 rounded-xl bg-primary px-5 text-sm font-black text-white">اعمال</button>
-            </form>
-
-            {p.movements.length ? <div className="mt-4 overflow-x-auto rounded-xl border border-border"><table className="w-full text-xs"><thead><tr className="bg-muted-bg text-muted"><th className="px-3 py-2 text-start">تغییر</th><th className="px-3 py-2 text-start">علت</th><th className="px-3 py-2 text-start">یادداشت</th><th className="px-3 py-2 text-start">زمان</th></tr></thead><tbody>{p.movements.map((m,i)=><tr key={`${m.createdAt}-${i}`} className="border-t border-border"><td className={`px-3 py-2 font-black ${m.delta>0?"text-primary":"text-accent"}`} dir="ltr">{m.delta>0?`+${m.delta}`:m.delta}</td><td className="px-3 py-2">{m.reason}</td><td className="px-3 py-2">{m.note || "—"}</td><td className="px-3 py-2">{new Date(m.createdAt).toLocaleString("fa-IR")}</td></tr>)}</tbody></table></div> : null}
-          </article>;
-        })}
-        {data.products.length === 0 ? <div className="rounded-2xl border border-dashed border-border bg-card p-12 text-center text-sm text-muted">هنوز محصولی برای مدیریت موجودی وجود ندارد.</div> : null}
-      </div>
-    </div>
-  );
+export default async function AdminInventoryPage({searchParams}:{searchParams:Promise<{q?:string}>}){
+  const {q=""}=await searchParams;
+  const data=await adminRpc<InventoryBundle>("admin_inventory",{p_search:q});
+  const healthy=data.products.filter(p=>p.stock>p.lowStockThreshold).length;
+  return <div className="mx-auto max-w-[1450px] space-y-6">
+    <div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-[.18em] text-[#e80346]">Inventory Control</p><h1 className="mt-2 text-3xl font-black text-[#001736]">مدیریت موجودی تجهیزات</h1><p className="mt-2 text-sm text-[#747780]">کنترل موجودی، هشدار کمبود و ثبت گردش انبار بر اساس داده واقعی</p></div></div>
+    <div className="grid gap-4 md:grid-cols-3"><Metric label="کل موجودی" value={n(data.totalStock)} icon={Boxes}/><Metric label="کم‌موجود" value={n(data.lowStock)} icon={AlertTriangle}/><Metric label="موجودی سالم" value={n(healthy)} icon={Warehouse}/></div>
+    <form className="flex gap-3 rounded-[1.5rem] border border-[#e2e6eb] bg-white p-4 shadow-sm"><label className="relative flex-1"><Search className="pointer-events-none absolute start-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9a9da5]"/><input name="q" defaultValue={q} placeholder="جستجو با نام، SKU یا برند..." className="h-11 w-full rounded-xl border border-[#dfe4ea] bg-[#f7fafd] ps-11 pe-4 text-sm outline-none focus:border-[#009dd8]"/></label><button className="rounded-xl bg-[#001736] px-5 text-xs font-black text-white">جستجو</button></form>
+    <div className="space-y-4">{data.products.map(p=>{const action=adjustStock.bind(null,p.id);const low=p.stock<=p.lowStockThreshold;return <article key={p.id} className="overflow-hidden rounded-[1.6rem] border border-[#e2e6eb] bg-white shadow-sm"><div className="flex flex-col justify-between gap-4 border-b border-[#edf0f2] p-5 xl:flex-row xl:items-center"><div className="flex items-start gap-3"><span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${low?"bg-red-50 text-[#e80346]":"bg-[#edf4ff] text-[#002b5b]"}`}><PackageCheck className="h-5 w-5"/></span><div><p dir="ltr" className="font-mono text-[10px] font-black text-[#009dd8]">{p.sku}</p><h2 className="mt-1 text-lg font-black text-[#001736]">{p.nameFa||p.nameEn}</h2><p className="mt-1 text-xs text-[#747780]">{p.brand||"بدون برند"} · آستانه هشدار {n(p.lowStockThreshold)}</p></div></div><div className="flex items-center gap-3"><span className={`rounded-full px-3 py-1.5 text-[10px] font-black ${p.isPublished?"bg-emerald-50 text-emerald-700":"bg-[#f1f4f7] text-[#747780]"}`}>{p.isPublished?"منتشرشده":"پیش‌نویس"}</span><div className={`min-w-28 rounded-xl px-4 py-3 text-center ${low?"bg-red-50 text-red-700":"bg-emerald-50 text-emerald-700"}`}><div className="text-2xl font-black">{n(p.stock)}</div><div className="text-[10px] font-black">موجودی فعلی</div></div></div></div>
+      <div className="p-5"><form action={action} className="grid gap-3 md:grid-cols-[120px_170px_1fr_auto]"><input name="delta" type="number" step="1" required placeholder="+10 / -2" className="h-11 rounded-xl border border-[#dfe4ea] bg-[#f7fafd] px-3 text-sm outline-none focus:border-[#009dd8]"/><select name="reason" className="h-11 rounded-xl border border-[#dfe4ea] bg-[#f7fafd] px-3 text-sm"><option value="PURCHASE">خرید/ورود</option><option value="SALE_ADJUSTMENT">اصلاح فروش</option><option value="RETURN">مرجوعی</option><option value="DAMAGED">آسیب‌دیده</option><option value="MANUAL">اصلاح دستی</option></select><input name="note" placeholder="یادداشت اختیاری" className="h-11 rounded-xl border border-[#dfe4ea] bg-[#f7fafd] px-3 text-sm outline-none focus:border-[#009dd8]"/><button className="h-11 rounded-xl bg-[#e80346] px-5 text-xs font-black text-white">ثبت تغییر</button></form>{p.movements.length?<div className="mt-5 overflow-x-auto rounded-2xl border border-[#edf0f2]"><table className="w-full min-w-[620px] text-xs"><thead className="bg-[#f7fafd] text-[#747780]"><tr><th className="px-4 py-3 text-start">تغییر</th><th className="px-4 py-3 text-start">علت</th><th className="px-4 py-3 text-start">یادداشت</th><th className="px-4 py-3 text-start">زمان</th></tr></thead><tbody className="divide-y divide-[#edf0f2]">{p.movements.map((m,i)=><tr key={`${m.createdAt}-${i}`}><td className={`px-4 py-3 font-black ${m.delta>0?"text-emerald-700":"text-red-700"}`} dir="ltr">{m.delta>0?`+${m.delta}`:m.delta}</td><td className="px-4 py-3">{m.reason}</td><td className="px-4 py-3 text-[#747780]">{m.note||"—"}</td><td className="px-4 py-3 text-[#747780]">{new Date(m.createdAt).toLocaleString("fa-IR")}</td></tr>)}</tbody></table></div>:null}</div></article>})}{data.products.length===0?<div className="rounded-[1.6rem] border border-dashed border-[#cfd5dc] bg-white p-12 text-center text-sm text-[#8a8e96]">هنوز محصولی برای مدیریت موجودی وجود ندارد.</div>:null}</div>
+  </div>;
 }
+function Metric({label,value,icon:Icon}:{label:string;value:string;icon:typeof Boxes}){return <article className="rounded-[1.5rem] border border-[#e2e6eb] bg-white p-5 shadow-sm"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#edf4ff] text-[#002b5b]"><Icon className="h-5 w-5"/></span><p className="mt-4 text-xs font-black text-[#747780]">{label}</p><p className="mt-1 text-2xl font-black text-[#001736]">{value}</p></article>}
