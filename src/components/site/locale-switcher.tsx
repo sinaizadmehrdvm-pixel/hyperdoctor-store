@@ -12,6 +12,13 @@ const locales = [
   { code: "ar", label: "عر", title: "العربية" },
 ] as const;
 
+function selectorLabel(locale: string) {
+  if (locale === "fa") return "انتخاب زبان";
+  if (locale === "tr") return "Dil seçici";
+  if (locale === "ar") return "اختيار اللغة";
+  return "Language selector";
+}
+
 export function LocaleSwitcher({ className }: { className?: string }) {
   const pathname = usePathname();
   const params = useParams();
@@ -23,7 +30,7 @@ export function LocaleSwitcher({ className }: { className?: string }) {
         "flex items-center gap-1 rounded-full border border-white/15 bg-white/5 p-1 backdrop-blur",
         className,
       )}
-      aria-label="Language selector"
+      aria-label={selectorLabel(current)}
     >
       {locales.map((l) => (
         <Link
