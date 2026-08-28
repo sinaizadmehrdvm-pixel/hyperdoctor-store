@@ -1,93 +1,85 @@
 # Hyper Doctor Store
 
-Bilingual (Persian/English) storefront for **Hyper Doctor** — the medical
-equipment distribution and respiratory-services arm of **Vetrix Holding** —
-with a self-serve admin panel for managing products, services, and pages.
+Production storefront and operations platform for **Hyper Doctor**, the medical-equipment and respiratory-services brand under **VITALIS Group**.
 
-This is an independent product with no code dependency on Vetrix's internal
-ERP system.
+The application combines a four-language public storefront, customer workflows, and a protected admin panel for products, services, orders, inventory, content, support, warranties, reports, customers, discounts, media, banners, and site settings.
+
+## Languages
+
+The application supports:
+
+- Persian (`fa`, RTL)
+- Arabic (`ar`, RTL)
+- English (`en`, LTR)
+- Turkish (`tr`, LTR)
+
+Public and admin interfaces are designed to switch both language and text direction correctly.
 
 ## Stack
 
-- **Next.js 16** (App Router, TypeScript) — public storefront + admin panel in one app
-- **Tailwind CSS v4** + a small hand-rolled UI kit (buttons, badges, forms) in the spirit of shadcn/ui
-- **Prisma 7** + SQLite (dev) via the `better-sqlite3` driver adapter — swap the datasource for Postgres in production without touching the schema
-- **next-intl** — `/fa` (default, RTL) and `/en` (LTR) routing, self-hosted Vazirmatn + Inter fonts
-- **Auth.js (NextAuth v5)** — credentials-based single-admin login for `/admin/*`
-- **Tiptap** — WYSIWYG editor for CMS pages
-- **Zarinpal** — payment gateway (sandbox by default; IDPay is a documented follow-up, not built yet)
+- **Next.js 16** (App Router, TypeScript)
+- **Tailwind CSS v4**
+- **Supabase / PostgreSQL** for production data and RPC-backed workflows
+- **Prisma** for compatible database-backed application areas
+- **next-intl** for localized public routing
+- **Tiptap** for rich-text content editing
+- **Vercel** for production deployment
 
-## Getting Started
+## Production Data Model
+
+The production application includes data and workflows for:
+
+- Products, categories, pricing, publication state and inventory
+- Orders and payment records
+- Customers and customer sessions
+- Service bookings
+- Support tickets and replies
+- Warranty registrations and events
+- Coupons and discount usage
+- CMS pages, articles, banners and media
+- Site settings and navigation
+- Admin authentication and protected admin operations
+
+Product prices are stored in Toman where applicable.
+
+## Admin Security
+
+Admin access is protected by server-side session validation. No production credentials are stored in this repository or documented here.
+
+Never commit passwords, API keys, Supabase secrets, payment credentials, or production connection strings. Configure production secrets only through the deployment environment.
+
+## Deployment
+
+The `main` branch is the production source branch. Vercel builds and deploys production from this repository.
+
+Before considering a release complete:
+
+1. Confirm the latest `main` commit is the commit deployed to production.
+2. Confirm the Vercel build is `READY`.
+3. Check production runtime errors.
+4. Smoke-test Persian, Arabic, English and Turkish routes.
+5. Smoke-test admin login and critical admin sections.
+6. Verify database-backed actions such as inventory, orders, content and settings.
+
+## Current QA Focus
+
+Current release work prioritizes:
+
+- Four-language parity across public, account and admin interfaces
+- Correct RTL/LTR behavior
+- Production-safe Supabase RPC behavior
+- Stable Vercel builds and runtime
+- Real database-backed admin operations
+- Removal of stale VETRIX naming in favor of VITALIS Group
+
+## Local Development
+
+Use the environment template as the reference for required local variables:
 
 ```bash
 npm install
-cp .env.example .env        # then edit values as needed
-npx prisma migrate dev      # creates dev.db and applies the schema
-npm run seed                # sample bilingual categories/products/services/pages + admin user
+cp .env.example .env
 npm run dev
 ```
 
-Visit `http://localhost:3000/fa` (or `/en`) for the storefront, and
-`http://localhost:3000/admin/login` for the admin panel.
-
-**Seeded admin login:** `admin@hyperdoctor.ir` / `HyperDoctor@2026`
-— change this password (or create a new `AdminUser` and delete the seeded
-one) before deploying anywhere reachable by the public.
-
-## Environment Variables
-
-See `.env.example` for the full list. Notable ones:
-
-- `DATABASE_URL` — SQLite file path for dev; point at Postgres in production
-- `AUTH_SECRET` — required by Auth.js; generate with `openssl rand -base64 32`
-- `AUTH_TRUST_HOST` — keep `true` when self-hosting behind a reverse proxy or non-default port
-- `ZARINPAL_SANDBOX` / `ZARINPAL_MERCHANT_ID` — set `ZARINPAL_SANDBOX=false` and a real merchant ID before going live
-- `NEXT_PUBLIC_SITE_URL` — used to build the Zarinpal callback URL; must match your real deployment URL in production
-
-## Brand Assets
-
-The header/footer logo falls back to a placeholder mark until real files are
-uploaded. To set the real Vetrix holding logo and Hyper Doctor logo, log into
-`/admin/settings` and upload them there (stored as `SiteSetting.holdingLogoUrl`
-/ `subBrandLogoUrl`) — no code changes needed.
-
-## Data Model Notes
-
-- `Category`, `Product`, and `Service` all carry a `vertical` field
-  (`MEDICAL_EQUIPMENT`, `RESPIRATORY_SERVICES`, `DENTAL`, `VETERINARY`,
-  `PHARMACY`, `NURSING`). Only the first two have real content today; the
-  rest exist so future verticals can be added without a schema migration.
-- Product prices are stored in **Toman**; the Zarinpal integration converts
-  to Rial (×10) when calling their API, since that's what their API expects.
-- CMS page slugs may not collide with the reserved top-level routes (`shop`,
-  `product`, `services`, `cart`, `checkout`, `order`, `admin`, `api`) — the
-  admin page form rejects those.
-
-## Known v1 Limitations (documented, not silent gaps)
-
-- **Single image per product/service.** The schema supports a full `Media`
-  gallery, but the admin form only wires up one image today. Extending the
-  form to multiple images is straightforward if needed.
-- **Local disk media storage** (`public/uploads`). Fine for a single-server
-  deployment; on ephemeral/serverless hosts (e.g. Vercel) this needs to move
-  to object storage (S3-compatible) before uploads survive a redeploy.
-- **IDPay is not implemented** — only Zarinpal. Add a second
-  `PaymentGateway` implementation alongside `src/lib/payments/zarinpal.ts`
-  when needed.
-- **No automated tests yet.** Verified manually end-to-end (see below).
-- `npm audit` reports a handful of high/moderate advisories, all in
-  transitive dev-tooling (Prisma's dev CLI, Next's vendored PostCSS/Sharp
-  copies) — not exploitable at runtime. Worth re-checking as dependencies
-  update, but `npm audit fix --force` would downgrade Next/Prisma to
-  ancient majors and should not be run blindly.
-
-## Verification Performed
-
-- `npm run build` passes (type-check + lint clean) with all storefront,
-  admin, and API routes registered.
-- Walked both locales end-to-end in a real browser: home → shop → category →
-  product → add to cart → cart → checkout → order creation (re-priced
-  server-side from the DB) → Zarinpal request → graceful `FAILED` state and
-  error surfaced to the user when the gateway is unreachable.
-- Logged into `/admin`, confirmed the dashboard, and created/edited a
-  product, category, service, and bilingual CMS page through the UI.
+Do not copy production secrets into source-controlled files.
