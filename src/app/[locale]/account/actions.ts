@@ -19,11 +19,16 @@ export async function loginAction(locale:string,formData:FormData){
 
 export async function registerAction(locale:string,formData:FormData){
   locale=safeLocale(locale);
-  const fullName=String(formData.get("fullName")||"").trim();
+  const firstName=String(formData.get("firstName")||"").trim();
+  const lastName=String(formData.get("lastName")||"").trim();
+  const legacyFullName=String(formData.get("fullName")||"").trim();
+  const fullName=[firstName,lastName].filter(Boolean).join(" ").trim()||legacyFullName;
   const email=String(formData.get("email")||"").trim();
   const phone=String(formData.get("phone")||"").trim();
   const password=String(formData.get("password")||"");
   const confirm=String(formData.get("confirmPassword")||"");
+  if(fullName.length<2) redirect(`/${locale}/account/register?error=required`);
+  if(!email&&!phone) redirect(`/${locale}/account/register?error=contact_required`);
   if(password!==confirm) redirect(`/${locale}/account/register?error=password_mismatch`);
   try{await registerCustomer({fullName,email,phone,password,locale});}catch(error){const msg=String(error);redirect(`/${locale}/account/register?error=${msg.includes("account_exists")?"exists":msg.includes("invalid_password")?"short":"failed"}`)}
   redirect(`/${locale}/account`);
