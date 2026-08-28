@@ -14,6 +14,7 @@ const items = [
   { href: "/admin", label: "داشبورد", icon: LayoutDashboard },
   { href: "/admin/reports", label: "گزارش فروش", icon: BarChart3 },
   { href: "/admin/transactions", label: "تراکنش‌های مالی", icon: CreditCard },
+  { href: "/admin/content", label: "محتوا و محصولات", icon: PanelsTopLeft },
   { href: "/admin/products", label: "محصولات", icon: Package },
   { href: "/admin/products/import", label: "ورود گروهی کالا", icon: FileUp },
   { href: "/admin/inventory", label: "موجودی و انبار", icon: Boxes },
@@ -46,16 +47,7 @@ export function AdminSidebar() {
             : pathname.startsWith(item.href);
         const Icon = item.icon;
         return (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={cn(
-              "group flex min-h-11 items-center gap-3 rounded-xl px-3 text-[13px] font-bold transition-all",
-              active
-                ? "bg-[#e80346] text-white shadow-[0_8px_22px_rgba(232,3,70,.20)]"
-                : "text-[#5f6570] hover:bg-[#f1f4f7] hover:text-[#001736]"
-            )}
-          >
+          <Link key={item.href} href={item.href} className={cn("group flex min-h-11 items-center gap-3 rounded-xl px-3 text-[13px] font-bold transition-all", active ? "bg-[#e80346] text-white shadow-[0_8px_22px_rgba(232,3,70,.20)]" : "text-[#5f6570] hover:bg-[#f1f4f7] hover:text-[#001736]")}>
             <Icon className="h-4.5 w-4.5 shrink-0" aria-hidden="true" />
             <span className="flex-1">{item.label}</span>
             <ChevronLeft className={cn("h-3.5 w-3.5 opacity-0 transition", active ? "opacity-100" : "group-hover:opacity-40")} />
