@@ -355,42 +355,47 @@ model CouponRedemption {
 }
 
 model Order {
-  id               String             @id @default(cuid())
-  orderNumber      String             @unique
-  customerId       String?
-  customer         Customer?          @relation(fields: [customerId], references: [id], onDelete: SetNull)
-  couponId         String?
-  coupon           Coupon?            @relation(fields: [couponId], references: [id], onDelete: SetNull)
-  couponRedemption CouponRedemption[]
-  customerName     String
-  phone            String
-  email            String?
-  address          String
-  province         String             @default("")
-  city             String
-  country          String             @default("")
-  postalCode       String?
-  notes            String             @default("")
-  locale           String             @default("fa")
-  currency         String             @default("IRT")
-  items            OrderItem[]
-  subtotal         Int
-  discountAmount   Int                @default(0)
-  shippingFee      Int                @default(0)
-  total            Int
-  status           OrderStatus        @default(PENDING_PAYMENT)
-  gateway          PaymentGateway     @default(ZARINPAL)
-  paymentAuthority String?            @unique
-  paymentRefId     String?
-  shippingMethod   String             @default("")
-  trackingCode     String             @default("")
-  shippedAt        DateTime?
-  completedAt      DateTime?
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
+  id                   String             @id @default(cuid())
+  orderNumber          String             @unique
+  customerId           String?
+  customer             Customer?          @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  couponId             String?
+  coupon               Coupon?            @relation(fields: [couponId], references: [id], onDelete: SetNull)
+  couponRedemption     CouponRedemption[]
+  customerName         String
+  phone                String
+  email                String?
+  address              String
+  province             String             @default("")
+  city                 String
+  country              String             @default("")
+  postalCode           String?
+  notes                String             @default("")
+  locale               String             @default("fa")
+  currency             String             @default("IRT")
+  items                OrderItem[]
+  subtotal             Int
+  discountAmount       Int                @default(0)
+  shippingFee          Int                @default(0)
+  total                Int
+  status               OrderStatus        @default(PENDING_PAYMENT)
+  gateway              PaymentGateway     @default(ZARINPAL)
+  paymentAuthority     String?            @unique
+  paymentRefId         String?
+  requestToken         String?            @db.Uuid
+  checkoutToken        String?            @db.Uuid
+  resultToken          String?            @db.Uuid
+  reservationExpiresAt DateTime?
+  shippingMethod       String             @default("")
+  trackingCode         String             @default("")
+  shippedAt            DateTime?
+  completedAt          DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
 
   @@index([customerId])
   @@index([status, createdAt])
+  @@index([status, reservationExpiresAt])
 }
 
 model OrderItem {
