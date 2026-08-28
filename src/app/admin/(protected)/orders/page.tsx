@@ -1,79 +1,9 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { ORDER_STATUS_LABELS, ORDER_STATUS_BADGE } from "@/lib/order-status";
+import { ORDER_STATUS_BADGE } from "@/lib/order-status";
 import { adminRpc } from "@/lib/admin-data";
-
-type OrderStatus = keyof typeof ORDER_STATUS_LABELS;
-type AdminOrder = {
-  id: string;
-  orderNumber: string;
-  customerName: string;
-  phone: string;
-  email?: string | null;
-  total: number;
-  currency: string;
-  status: OrderStatus;
-  createdAt: string;
-  itemCount: number;
-};
-
-export default async function AdminOrdersPage() {
-  const orders = await adminRpc<AdminOrder[]>("admin_orders_bundle");
-
-  return (
-    <div>
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <p className="text-xs font-black uppercase tracking-[.16em] text-muted">Sales & Fulfillment</p>
-          <h1 className="mt-2 text-2xl font-black text-foreground">سفارش‌ها</h1>
-        </div>
-        <span className="rounded-xl border border-border bg-card px-3 py-2 text-xs font-bold text-muted">
-          {new Intl.NumberFormat("fa-IR").format(orders.length)} سفارش
-        </span>
-      </div>
-
-      <div className="mt-6 overflow-x-auto rounded-2xl border border-border bg-card shadow-sm">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border bg-muted-bg/50 text-xs text-muted">
-              <th className="px-4 py-3 text-start">شماره سفارش</th>
-              <th className="px-4 py-3 text-start">مشتری</th>
-              <th className="px-4 py-3 text-start">اقلام</th>
-              <th className="px-4 py-3 text-start">مبلغ</th>
-              <th className="px-4 py-3 text-start">وضعیت</th>
-              <th className="px-4 py-3 text-start">تاریخ</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orders.map((o) => (
-              <tr key={o.id} className="border-b border-border last:border-0 hover:bg-muted-bg/30">
-                <td className="px-4 py-3">
-                  <Link href={`/admin/orders/${o.id}`} className="font-black text-primary hover:underline" dir="ltr">
-                    {o.orderNumber}
-                  </Link>
-                </td>
-                <td className="px-4 py-3">
-                  <div className="font-bold text-foreground">{o.customerName}</div>
-                  <div className="mt-1 text-xs text-muted" dir="ltr">{o.phone}</div>
-                </td>
-                <td className="px-4 py-3 tabular-nums text-muted">{new Intl.NumberFormat("fa-IR").format(o.itemCount)}</td>
-                <td className="px-4 py-3 tabular-nums font-bold text-foreground">
-                  {new Intl.NumberFormat("fa-IR").format(o.total)} تومان
-                </td>
-                <td className="px-4 py-3">
-                  <Badge variant={ORDER_STATUS_BADGE[o.status]}>{ORDER_STATUS_LABELS[o.status]}</Badge>
-                </td>
-                <td className="px-4 py-3 text-muted tabular-nums">
-                  {new Date(o.createdAt).toLocaleDateString("fa-IR")}
-                </td>
-              </tr>
-            ))}
-            {orders.length === 0 ? (
-              <tr><td colSpan={6} className="px-4 py-12 text-center text-muted">هنوز سفارشی ثبت نشده است.</td></tr>
-            ) : null}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
+import { currentAdminLocale } from "@/lib/admin-locale-server";
+import { adminCurrency,adminDate,adminNumber,adminStatusText,type AdminLocale } from "@/lib/admin-i18n";
+type AdminOrder={id:string;orderNumber:string;customerName:string;phone:string;email?:string|null;total:number;currency:string;status:any;createdAt:string;itemCount:number};
+const c:Record<AdminLocale,Record<string,string>>={fa:{eyebrow:"فروش و ارسال",title:"سفارش‌ها",count:"سفارش",number:"شماره سفارش",customer:"مشتری",items:"اقلام",amount:"مبلغ",status:"وضعیت",date:"تاریخ",empty:"هنوز سفارشی ثبت نشده است."},ar:{eyebrow:"المبيعات والتنفيذ",title:"الطلبات",count:"طلب",number:"رقم الطلب",customer:"العميل",items:"العناصر",amount:"المبلغ",status:"الحالة",date:"التاريخ",empty:"لا توجد طلبات مسجلة بعد."},en:{eyebrow:"Sales & Fulfillment",title:"Orders",count:"orders",number:"Order number",customer:"Customer",items:"Items",amount:"Amount",status:"Status",date:"Date",empty:"No orders have been registered yet."},tr:{eyebrow:"Satış ve teslimat",title:"Siparişler",count:"sipariş",number:"Sipariş no",customer:"Müşteri",items:"Ürünler",amount:"Tutar",status:"Durum",date:"Tarih",empty:"Henüz sipariş kaydedilmedi."}};
+export default async function Page(){const [orders,l]=await Promise.all([adminRpc<AdminOrder[]>("admin_orders_bundle"),currentAdminLocale()]);const t=c[l];return <div><div className="flex items-end justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-[.16em] text-muted">{t.eyebrow}</p><h1 className="mt-2 text-2xl font-black">{t.title}</h1></div><span className="rounded-xl border bg-card px-3 py-2 text-xs font-bold">{adminNumber(orders.length,l)} {t.count}</span></div><div className="mt-6 overflow-x-auto rounded-2xl border bg-card"><table className="w-full text-sm"><thead><tr>{[t.number,t.customer,t.items,t.amount,t.status,t.date].map(x=><th key={x} className="px-4 py-3 text-start">{x}</th>)}</tr></thead><tbody>{orders.map(o=><tr key={o.id} className="border-b"><td className="px-4 py-3"><Link href={`/admin/orders/${o.id}`} dir="ltr">{o.orderNumber}</Link></td><td className="px-4 py-3"><b>{o.customerName}</b><div dir="ltr">{o.phone}</div></td><td className="px-4 py-3">{adminNumber(o.itemCount,l)}</td><td className="px-4 py-3">{adminNumber(o.total,l)} {adminCurrency[l]}</td><td className="px-4 py-3"><Badge variant={ORDER_STATUS_BADGE[o.status]}>{adminStatusText(o.status,l)}</Badge></td><td className="px-4 py-3">{adminDate(o.createdAt,l)}</td></tr>)}{!orders.length?<tr><td colSpan={6} className="px-4 py-12 text-center">{t.empty}</td></tr>:null}</tbody></table></div></div>}
