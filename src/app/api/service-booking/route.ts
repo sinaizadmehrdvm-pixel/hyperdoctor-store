@@ -3,6 +3,8 @@ import { z } from "zod";
 import { supabaseRpc } from "@/lib/supabase-rest";
 import { getCustomerToken } from "@/lib/customer-auth";
 
+const bookingSlots = ["08:00 - 09:30", "10:00 - 11:30", "13:00 - 14:30", "15:00 - 16:30", "17:00 - 18:30"] as const;
+
 const schema = z.object({
   requestToken: z.string().uuid(),
   serviceId: z.string().min(1).max(120),
@@ -10,7 +12,7 @@ const schema = z.object({
   phone: z.string().trim().min(8).max(24),
   email: z.string().trim().email().max(254).optional().or(z.literal("")),
   preferredDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  preferredTime: z.string().trim().min(3).max(40),
+  preferredTime: z.enum(bookingSlots),
   address: z.string().trim().max(700).optional().or(z.literal("")),
   notes: z.string().trim().max(1200).optional().or(z.literal("")),
   locale: z.enum(["fa", "tr", "en", "ar"]),
