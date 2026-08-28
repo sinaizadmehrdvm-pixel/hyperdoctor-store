@@ -58,6 +58,7 @@ export function MobileNav({
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-controls={navigationId}
+        aria-haspopup="menu"
         aria-label={menuLabel(locale, open)}
         className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-[#c4c6d0]/55 bg-white text-[#001736] transition hover:bg-[#f1f4f7]"
       >
