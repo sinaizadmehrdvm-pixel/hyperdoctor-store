@@ -72,6 +72,8 @@ export function ServiceBookingForm({ services, initialSlug }: { services: Servic
         address: "آدرس / محل ارائه خدمت (اختیاری)",
         notes: "توضیحات (اختیاری)",
         required: "لطفاً خدمت، تاریخ، ساعت، نام و شماره تماس را کامل کنید.",
+        failed: "ثبت رزرو در حال حاضر انجام نشد. لطفاً کمی بعد دوباره تلاش کنید.",
+        unavailable: "در حال حاضر خدمت قابل رزروی وجود ندارد. لطفاً با پشتیبانی تماس بگیرید.",
       }
     : locale === "tr"
       ? {
@@ -94,6 +96,8 @@ export function ServiceBookingForm({ services, initialSlug }: { services: Servic
           address: "Adres / hizmet konumu (isteğe bağlı)",
           notes: "Notlar (isteğe bağlı)",
           required: "Lütfen hizmet, tarih, saat, ad ve telefon bilgilerini tamamlayın.",
+          failed: "Randevu şu anda kaydedilemedi. Lütfen kısa süre sonra tekrar deneyin.",
+          unavailable: "Şu anda rezervasyona açık bir hizmet yok. Lütfen destek ekibiyle iletişime geçin.",
         }
       : locale === "ar"
         ? {
@@ -116,6 +120,8 @@ export function ServiceBookingForm({ services, initialSlug }: { services: Servic
             address: "العنوان / موقع الخدمة (اختياري)",
             notes: "ملاحظات (اختياري)",
             required: "يرجى إكمال الخدمة والتاريخ والوقت والاسم ورقم الهاتف.",
+            failed: "تعذر تسجيل الحجز حالياً. يرجى المحاولة مرة أخرى بعد قليل.",
+            unavailable: "لا توجد حالياً خدمة متاحة للحجز. يرجى التواصل مع فريق الدعم.",
           }
         : {
             title: "Online Booking",
@@ -137,11 +143,14 @@ export function ServiceBookingForm({ services, initialSlug }: { services: Servic
             address: "Address / service location (optional)",
             notes: "Notes (optional)",
             required: "Please complete service, date, time, name and phone.",
+            failed: "The booking could not be registered right now. Please try again shortly.",
+            unavailable: "No service is currently available for booking. Please contact support.",
           };
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     const customerName = String(form.get("customerName") || "").trim();
     const phone = String(form.get("phone") || "").trim();
     if (!serviceId || !date || !time || customerName.length < 2 || phone.length < 8) {
@@ -160,23 +169,34 @@ export function ServiceBookingForm({ services, initialSlug }: { services: Servic
           serviceId,
           customerName,
           phone,
-          email: String(form.get("email") || ""),
+          email: String(form.get("email") || "").trim(),
           preferredDate: date,
           preferredTime: time,
-          address: String(form.get("address") || ""),
-          notes: String(form.get("notes") || ""),
+          address: String(form.get("address") || "").trim(),
+          notes: String(form.get("notes") || "").trim(),
           locale,
         }),
       });
+      if (!response.ok) throw new Error("booking_failed");
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Booking failed");
       setResult({ ok: true, id: data.bookingId });
-      event.currentTarget.reset();
-    } catch (error) {
-      setResult({ ok: false, error: error instanceof Error ? error.message : "Booking failed" });
+      formElement.reset();
+      setDate("");
+      setTime(timeSlots[1]);
+    } catch {
+      setResult({ ok: false, error: copy.failed });
     } finally {
       setSubmitting(false);
     }
+  }
+
+  if (!services.length) {
+    return (
+      <div className="rounded-3xl border border-[#dfe4ea] bg-white p-8 text-center shadow-[0_18px_45px_rgba(0,23,54,.05)]">
+        <Stethoscope className="mx-auto h-10 w-10 text-[#009dd8]" aria-hidden="true" />
+        <p className="mx-auto mt-4 max-w-xl text-sm font-bold leading-7 text-[#5f6570]">{copy.unavailable}</p>
+      </div>
+    );
   }
 
   return (
@@ -192,8 +212,9 @@ export function ServiceBookingForm({ services, initialSlug }: { services: Servic
                 <button
                   key={service.id}
                   type="button"
-                  onClick={() => setServiceId(service.id)}
+                  onClick={() => { setServiceId(service.id); setResult(null); }}
                   className={`group flex min-h-28 items-start gap-4 rounded-2xl border p-4 text-start transition ${active ? "border-[#009dd8] bg-[#d6e3ff]/35 shadow-[0_10px_25px_rgba(0,157,216,.10)]" : "border-[#dfe4ea] bg-[#f9fbfd] hover:border-[#009dd8]/55"}`}
+                  aria-pressed={active}
                 >
                   <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${active ? "bg-[#002b5b] text-white" : "bg-[#edf4fb] text-[#002b5b]"}`}>
                     <Icon className="h-5 w-5" aria-hidden="true" />
@@ -214,13 +235,13 @@ export function ServiceBookingForm({ services, initialSlug }: { services: Servic
           <div className="mt-5 grid gap-4 sm:grid-cols-[1fr_1.4fr]">
             <label className="flex flex-col gap-2 text-xs font-bold text-[#43474f]">
               <span className="inline-flex items-center gap-2"><CalendarDays className="h-4 w-4 text-[#009dd8]" />{copy.date}</span>
-              <input type="date" value={date} min={new Date().toISOString().slice(0, 10)} onChange={(e) => setDate(e.target.value)} className="h-12 rounded-xl border border-[#c4c6d0] bg-[#f7fafd] px-3 text-sm text-[#001736] outline-none focus:border-[#009dd8]" />
+              <input type="date" value={date} min={new Date().toISOString().slice(0, 10)} onChange={(e) => { setDate(e.target.value); setResult(null); }} className="h-12 rounded-xl border border-[#c4c6d0] bg-[#f7fafd] px-3 text-sm text-[#001736] outline-none focus:border-[#009dd8]" />
             </label>
             <div>
               <p className="mb-2 inline-flex items-center gap-2 text-xs font-bold text-[#43474f]"><Clock3 className="h-4 w-4 text-[#009dd8]" />{copy.hour}</p>
               <div className="flex flex-wrap gap-2">
                 {timeSlots.map((slot) => (
-                  <button key={slot} type="button" onClick={() => setTime(slot)} className={`rounded-xl border px-3 py-2 text-xs font-bold transition ${time === slot ? "border-[#002b5b] bg-[#002b5b] text-white" : "border-[#c4c6d0] bg-white text-[#43474f] hover:border-[#009dd8]"}`}>{slot}</button>
+                  <button key={slot} type="button" onClick={() => { setTime(slot); setResult(null); }} className={`rounded-xl border px-3 py-2 text-xs font-bold transition ${time === slot ? "border-[#002b5b] bg-[#002b5b] text-white" : "border-[#c4c6d0] bg-white text-[#43474f] hover:border-[#009dd8]"}`} aria-pressed={time === slot}>{slot}</button>
                 ))}
               </div>
             </div>
@@ -230,19 +251,19 @@ export function ServiceBookingForm({ services, initialSlug }: { services: Servic
         <form id="service-booking-form" onSubmit={submit} className="rounded-3xl border border-[#dfe4ea] bg-white p-5 shadow-[0_18px_45px_rgba(0,23,54,.05)] sm:p-7">
           <h2 className="text-xl font-black text-[#001736]">{copy.details}</h2>
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
-            <Field name="customerName" label={copy.name} required />
-            <Field name="phone" label={copy.phone} required dir="ltr" />
-            <Field name="email" label={copy.email} type="email" dir="ltr" />
-            <Field name="address" label={copy.address} />
+            <Field name="customerName" label={copy.name} required autoComplete="name" />
+            <Field name="phone" label={copy.phone} required dir="ltr" autoComplete="tel" />
+            <Field name="email" label={copy.email} type="email" dir="ltr" autoComplete="email" />
+            <Field name="address" label={copy.address} autoComplete="street-address" />
           </div>
           <label className="mt-4 flex flex-col gap-1.5">
             <span className="text-xs font-bold text-[#5f6570]">{copy.notes}</span>
             <textarea name="notes" rows={4} className="rounded-xl border border-[#c4c6d0] bg-[#f7fafd] px-3 py-3 text-sm text-[#001736] outline-none focus:border-[#009dd8]" />
           </label>
           {result ? (
-            <div className={`mt-5 rounded-xl border p-4 text-sm font-bold ${result.ok ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-red-200 bg-red-50 text-red-700"}`}>
+            <div role={result.ok ? "status" : "alert"} className={`mt-5 rounded-xl border p-4 text-sm font-bold ${result.ok ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-red-200 bg-red-50 text-red-700"}`}>
               {result.ok ? copy.success : result.error}
-              {result.ok && result.id ? <span className="ms-2 font-mono text-xs opacity-70">#{result.id.slice(0, 8)}</span> : null}
+              {result.ok && result.id ? <span className="ms-2 font-mono text-xs opacity-70" dir="ltr">#{result.id.slice(0, 8)}</span> : null}
             </div>
           ) : null}
         </form>
@@ -271,11 +292,11 @@ export function ServiceBookingForm({ services, initialSlug }: { services: Servic
   );
 }
 
-function Field({ name, label, required, type = "text", dir }: { name: string; label: string; required?: boolean; type?: string; dir?: "ltr" | "rtl" }) {
+function Field({ name, label, required, type = "text", dir, autoComplete }: { name: string; label: string; required?: boolean; type?: string; dir?: "ltr" | "rtl"; autoComplete?: string }) {
   return (
     <label className="flex flex-col gap-1.5">
       <span className="text-xs font-bold text-[#5f6570]">{label}</span>
-      <input name={name} required={required} type={type} dir={dir} className="h-12 rounded-xl border border-[#c4c6d0] bg-[#f7fafd] px-3 text-sm text-[#001736] outline-none focus:border-[#009dd8]" />
+      <input name={name} required={required} type={type} dir={dir} autoComplete={autoComplete} className="h-12 rounded-xl border border-[#c4c6d0] bg-[#f7fafd] px-3 text-sm text-[#001736] outline-none focus:border-[#009dd8]" />
     </label>
   );
 }
