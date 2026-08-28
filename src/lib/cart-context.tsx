@@ -1,128 +1,14 @@
 "use client";
-
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react";
-
-export type CartLine = {
-  key: string;
-  type: "product" | "service";
-  id: string;
-  nameFa: string;
-  nameTr?: string;
-  nameEn: string;
-  nameAr?: string;
-  price: number;
-  image?: string | null;
-  quantity: number;
-  preferredDate?: string;
-};
-
-type CartContextValue = {
-  lines: CartLine[];
-  hydrated: boolean;
-  add: (line: Omit<CartLine, "key">) => void;
-  updateQuantity: (key: string, quantity: number) => void;
-  remove: (key: string) => void;
-  clear: () => void;
-  subtotal: number;
-  count: number;
-};
-
-const CartContext = createContext<CartContextValue | null>(null);
-const STORAGE_KEY = "hyperdoctor.cart.v2";
-const LEGACY_STORAGE_KEY = "hyperdoctor.cart.v1";
-
-function normalizeStoredLines(raw: unknown): CartLine[] {
-  if (!Array.isArray(raw)) return [];
-  return raw
-    .filter((line) => line && typeof line === "object")
-    .map((line) => line as Partial<CartLine>)
-    .filter((line) => line.id && line.type && line.nameFa && line.nameEn)
-    .map((line) => ({
-      key: String(line.key || `${line.type}:${line.id}:${line.preferredDate ?? ""}`),
-      type: line.type as "product" | "service",
-      id: String(line.id),
-      nameFa: String(line.nameFa),
-      nameTr: line.nameTr ? String(line.nameTr) : undefined,
-      nameEn: String(line.nameEn),
-      nameAr: line.nameAr ? String(line.nameAr) : undefined,
-      price: Number(line.price || 0),
-      image: line.image ?? null,
-      quantity: Math.max(1, Number(line.quantity || 1)),
-      preferredDate: line.preferredDate ? String(line.preferredDate) : undefined,
-    }));
-}
-
-export function CartProvider({ children }: { children: ReactNode }) {
-  const [lines, setLines] = useState<CartLine[]>([]);
-  const [hydrated, setHydrated] = useState(false);
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(LEGACY_STORAGE_KEY);
-      if (raw) {
-        const parsed = normalizeStoredLines(JSON.parse(raw));
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setLines(parsed);
-        if (!localStorage.getItem(STORAGE_KEY)) {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
-        }
-      }
-    } catch {
-      // Ignore corrupt local storage and start with an empty cart.
-    }
-    setHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (!hydrated) return;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(lines));
-  }, [lines, hydrated]);
-
-  const value = useMemo<CartContextValue>(() => {
-    const add: CartContextValue["add"] = (line) => {
-      const key = `${line.type}:${line.id}:${line.preferredDate ?? ""}`;
-      setLines((prev) => {
-        const existing = prev.find((l) => l.key === key);
-        if (existing) {
-          return prev.map((l) =>
-            l.key === key ? { ...l, quantity: l.quantity + line.quantity } : l,
-          );
-        }
-        return [...prev, { ...line, key }];
-      });
-    };
-
-    const updateQuantity: CartContextValue["updateQuantity"] = (key, quantity) => {
-      setLines((prev) =>
-        quantity <= 0
-          ? prev.filter((l) => l.key !== key)
-          : prev.map((l) => (l.key === key ? { ...l, quantity } : l)),
-      );
-    };
-
-    const remove: CartContextValue["remove"] = (key) => {
-      setLines((prev) => prev.filter((l) => l.key !== key));
-    };
-
-    const clear = () => setLines([]);
-    const subtotal = lines.reduce((sum, l) => sum + l.price * l.quantity, 0);
-    const count = lines.reduce((sum, l) => sum + l.quantity, 0);
-
-    return { lines, hydrated, add, updateQuantity, remove, clear, subtotal, count };
-  }, [lines, hydrated]);
-
-  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
-}
-
-export function useCart() {
-  const ctx = useContext(CartContext);
-  if (!ctx) throw new Error("useCart must be used within CartProvider");
-  return ctx;
-}
+import {createContext,useContext,useEffect,useMemo,useState,type ReactNode} from "react";
+export type CartLine={key:string;type:"product"|"service";id:string;nameFa:string;nameTr?:string;nameEn:string;nameAr?:string;price:number;image?:string|null;quantity:number;preferredDate?:string;maxQuantity?:number|null};
+type CartContextValue={lines:CartLine[];hydrated:boolean;add:(line:Omit<CartLine,"key">)=>void;updateQuantity:(key:string,quantity:number)=>void;remove:(key:string)=>void;clear:()=>void;subtotal:number;count:number};
+const CartContext=createContext<CartContextValue|null>(null);const STORAGE_KEY="hyperdoctor.cart.v2";const LEGACY_STORAGE_KEY="hyperdoctor.cart.v1";const MAX_CART_LINES=100;const MAX_LINE_QTY=50;
+const cleanText=(v:unknown,max:number)=>typeof v==="string"?v.trim().slice(0,max):"";
+const safeQty=(v:unknown,max?:number|null)=>{const n=Number(v);const cap=Math.min(MAX_LINE_QTY,max&&Number.isFinite(max)&&max>0?Math.floor(max):MAX_LINE_QTY);return Number.isInteger(n)&&n>0?Math.min(n,cap):1;};
+function normalizeStoredLines(raw:unknown):CartLine[]{if(!Array.isArray(raw))return[];const seen=new Set<string>();const out:CartLine[]=[];for(const item of raw){if(!item||typeof item!=="object")continue;const line=item as Partial<CartLine>;if(line.type!=="product"&&line.type!=="service")continue;const id=cleanText(line.id,160),nameFa=cleanText(line.nameFa,240),nameEn=cleanText(line.nameEn,240),preferredDate=cleanText(line.preferredDate,80)||undefined;if(!id||!nameFa||!nameEn)continue;const price=Number(line.price);if(!Number.isFinite(price)||price<0)continue;const maxQuantity=Number.isFinite(Number(line.maxQuantity))&&Number(line.maxQuantity)>0?Math.min(MAX_LINE_QTY,Math.floor(Number(line.maxQuantity))):null;const key=`${line.type}:${id}:${preferredDate??""}`;if(seen.has(key))continue;seen.add(key);out.push({key,type:line.type,id,nameFa,nameTr:cleanText(line.nameTr,240)||undefined,nameEn,nameAr:cleanText(line.nameAr,240)||undefined,price,image:typeof line.image==="string"&&line.image.length<=2048?line.image:null,quantity:safeQty(line.quantity,maxQuantity),preferredDate,maxQuantity});if(out.length>=MAX_CART_LINES)break;}return out;}
+export function CartProvider({children}:{children:ReactNode}){const[lines,setLines]=useState<CartLine[]>([]);const[hydrated,setHydrated]=useState(false);
+ useEffect(()=>{try{const raw=localStorage.getItem(STORAGE_KEY)??localStorage.getItem(LEGACY_STORAGE_KEY);if(raw){const parsed=normalizeStoredLines(JSON.parse(raw));setLines(parsed);localStorage.setItem(STORAGE_KEY,JSON.stringify(parsed));}}catch{localStorage.removeItem(STORAGE_KEY);}setHydrated(true);},[]);
+ useEffect(()=>{if(!hydrated)return;try{localStorage.setItem(STORAGE_KEY,JSON.stringify(lines));}catch{}},[lines,hydrated]);
+ const value=useMemo<CartContextValue>(()=>{const add:CartContextValue["add"]=(line)=>{if((line.type!=="product"&&line.type!=="service")||!line.id||!Number.isFinite(line.price)||line.price<0)return;const preferredDate=cleanText(line.preferredDate,80)||undefined;const key=`${line.type}:${cleanText(line.id,160)}:${preferredDate??""}`;const maxQuantity=Number.isFinite(Number(line.maxQuantity))&&Number(line.maxQuantity)>0?Math.min(MAX_LINE_QTY,Math.floor(Number(line.maxQuantity))):null;const incoming=safeQty(line.quantity,maxQuantity);setLines(prev=>{const existing=prev.find(l=>l.key===key);if(existing)return prev.map(l=>l.key===key?{...l,quantity:safeQty(l.quantity+incoming,l.maxQuantity??maxQuantity)}:l);if(prev.length>=MAX_CART_LINES)return prev;return[...prev,{...line,id:cleanText(line.id,160),preferredDate,key,quantity:incoming,maxQuantity}];});};
+ const updateQuantity=(key:string,quantity:number)=>setLines(prev=>quantity<=0?prev.filter(l=>l.key!==key):prev.map(l=>l.key===key?{...l,quantity:safeQty(quantity,l.maxQuantity)}:l));const remove=(key:string)=>setLines(prev=>prev.filter(l=>l.key!==key));const clear=()=>setLines([]);const subtotal=lines.reduce((sum,l)=>{const value=l.price*l.quantity;return Number.isFinite(value)?sum+value:sum;},0);const count=lines.reduce((sum,l)=>sum+l.quantity,0);return{lines,hydrated,add,updateQuantity,remove,clear,subtotal,count};},[lines,hydrated]);return <CartContext.Provider value={value}>{children}</CartContext.Provider>;}
+export function useCart(){const ctx=useContext(CartContext);if(!ctx)throw new Error("useCart must be used within CartProvider");return ctx;}
