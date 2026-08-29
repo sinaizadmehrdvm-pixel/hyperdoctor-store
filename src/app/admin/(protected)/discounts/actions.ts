@@ -3,11 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { adminRpc } from "@/lib/admin-data";
 import { localDateTimeToISO } from "@/lib/calendar";
+import { getBusinessTimeZone } from "@/lib/site-data";
 
-function scheduleValue(formData: FormData, name: string) {
+function scheduleValue(formData: FormData, name: string, timeZone: string) {
   const raw = String(formData.get(name) || "");
   if (!raw) return "";
-  const iso = localDateTimeToISO(raw);
+  const iso = localDateTimeToISO(raw, timeZone);
   if (!iso) throw new Error(`Invalid ${name} date/time`);
   return iso;
 }
@@ -18,8 +19,9 @@ export async function upsertCoupon(formData: FormData) {
   const value = Number(formData.get("value") || 0);
   if (!code || !["PERCENT", "FIXED"].includes(type) || !Number.isFinite(value) || value < 0) return;
 
-  const startsAt = scheduleValue(formData, "startsAt");
-  const expiresAt = scheduleValue(formData, "expiresAt");
+  const timeZone = await getBusinessTimeZone();
+  const startsAt = scheduleValue(formData, "startsAt", timeZone);
+  const expiresAt = scheduleValue(formData, "expiresAt", timeZone);
   if (startsAt && expiresAt && new Date(expiresAt).getTime() <= new Date(startsAt).getTime()) {
     throw new Error("Discount expiry time must be after start time");
   }
