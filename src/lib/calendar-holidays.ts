@@ -53,7 +53,7 @@ export const STATIC_CALENDAR_EVENTS: CalendarEvent[] = [
   trHoliday("2026-05-30", "Kurban Bayramı (4. Gün)", "Sacrifice Feast — Day 4"),
   trHoliday("2026-07-15", "Demokrasi ve Millî Birlik Günü", "Democracy and National Unity Day"),
   trHoliday("2026-08-30", "Zafer Bayramı", "Victory Day"),
-  trHoliday("2026-10-28", "Cumhuriyet Bayramı Arifesi", "Republic Day Eve", true),
+  trHoliday("2026-10-28", "Cumhuriyet Bayramı (13:00'ten itibaren)", "Republic Day (from 13:00)", true),
   trHoliday("2026-10-29", "Cumhuriyet Bayramı", "Republic Day"),
 ];
 
