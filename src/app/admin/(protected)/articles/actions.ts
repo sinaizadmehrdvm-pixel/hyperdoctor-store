@@ -4,13 +4,15 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { adminRpc } from "@/lib/admin-data";
 import { localDateTimeToISO } from "@/lib/calendar";
+import { getBusinessTimeZone } from "@/lib/site-data";
 import { slugify } from "@/lib/slug";
 
 export async function upsertArticle(formData:FormData){
   const id=String(formData.get("id")||"");
   const isPublished=formData.get("isPublished")==="on";
   const rawPublishedAt=String(formData.get("publishedAt")||"").trim();
-  const publishedAt=rawPublishedAt?localDateTimeToISO(rawPublishedAt):"";
+  const timeZone=await getBusinessTimeZone();
+  const publishedAt=rawPublishedAt?localDateTimeToISO(rawPublishedAt,timeZone):"";
   if(rawPublishedAt&&!publishedAt)throw new Error("Invalid article publication date/time");
 
   await adminRpc<string>("admin_upsert_article",{p_data:{
