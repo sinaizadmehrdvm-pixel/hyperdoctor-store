@@ -1,74 +1,18 @@
 import { TextField, TextAreaField, SelectField, CheckboxField } from "@/components/admin/form-field";
 import { ImageUploadField } from "@/components/admin/image-upload-field";
-import { VERTICAL_OPTIONS } from "@/lib/verticals";
+import { verticalOptions } from "@/lib/verticals";
+import { currentAdminLocale } from "@/lib/admin-locale-server";
 import { upsertService } from "@/app/admin/(protected)/services/actions";
 
-type ServiceFormValues = {
-  id?: string;
-  vertical?: string;
-  slug?: string;
-  nameFa?: string;
-  nameTr?: string;
-  nameEn?: string;
-  nameAr?: string;
-  descriptionFa?: string | null;
-  descriptionTr?: string | null;
-  descriptionEn?: string | null;
-  descriptionAr?: string | null;
-  image?: string | null;
-  price?: number | null;
-  priceIsFrom?: boolean;
-  durationMinutes?: number | null;
-  requiresBooking?: boolean;
-  isPublished?: boolean;
-};
+type ServiceFormValues = { id?: string; vertical?: string; slug?: string; nameFa?: string; nameTr?: string; nameEn?: string; nameAr?: string; descriptionFa?: string | null; descriptionTr?: string | null; descriptionEn?: string | null; descriptionAr?: string | null; image?: string | null; price?: number | null; priceIsFrom?: boolean; durationMinutes?: number | null; requiresBooking?: boolean; isPublished?: boolean };
 
-export function ServiceForm({ service }: { service?: ServiceFormValues }) {
-  return (
-    <form action={upsertService} className="max-w-5xl space-y-5 pb-12">
-      {service?.id ? <input type="hidden" name="id" value={service.id} /> : null}
-
-      <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-        <h2 className="text-sm font-black text-foreground">اطلاعات پایه خدمت</h2>
-        <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <TextField label="نام (فارسی)" name="nameFa" defaultValue={service?.nameFa} required />
-          <TextField label="نام (Türkçe)" name="nameTr" defaultValue={service?.nameTr} dir="ltr" />
-          <TextField label="نام (English)" name="nameEn" defaultValue={service?.nameEn} dir="ltr" required />
-          <TextField label="نام (العربية)" name="nameAr" defaultValue={service?.nameAr} />
-        </div>
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <TextField label="اسلاگ" name="slug" defaultValue={service?.slug} dir="ltr" />
-          <SelectField label="حوزه فعالیت" name="vertical" defaultValue={service?.vertical ?? "RESPIRATORY_SERVICES"} options={VERTICAL_OPTIONS} />
-        </div>
-      </section>
-
-      <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-        <h2 className="text-sm font-black text-foreground">توضیحات چهارزبانه</h2>
-        <div className="mt-4 grid gap-4 lg:grid-cols-2">
-          <TextAreaField label="توضیحات فارسی" name="descriptionFa" defaultValue={service?.descriptionFa} rows={6} />
-          <TextAreaField label="Türkçe açıklama" name="descriptionTr" defaultValue={service?.descriptionTr} dir="ltr" rows={6} />
-          <TextAreaField label="English description" name="descriptionEn" defaultValue={service?.descriptionEn} dir="ltr" rows={6} />
-          <TextAreaField label="الوصف العربي" name="descriptionAr" defaultValue={service?.descriptionAr} rows={6} />
-        </div>
-      </section>
-
-      <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-        <h2 className="text-sm font-black text-foreground">قیمت، زمان و رزرو</h2>
-        <div className="mt-4 grid gap-4 sm:grid-cols-3">
-          <TextField label="قیمت (تومان، اختیاری)" name="price" type="number" defaultValue={service?.price ?? undefined} />
-          <TextField label="مدت زمان (دقیقه)" name="durationMinutes" type="number" defaultValue={service?.durationMinutes ?? undefined} />
-          <ImageUploadField label="تصویر خدمت" name="image" defaultValue={service?.image} />
-        </div>
-        <div className="mt-5 grid gap-3 md:grid-cols-3">
-          <CheckboxField label="قیمت «شروع از» است" name="priceIsFrom" defaultChecked={service?.priceIsFrom ?? true} />
-          <CheckboxField label="نیاز به رزرو نوبت دارد" name="requiresBooking" defaultChecked={service?.requiresBooking ?? true} />
-          <CheckboxField label="منتشر شده در سایت" name="isPublished" defaultChecked={service?.isPublished} />
-        </div>
-      </section>
-
-      <div className="sticky bottom-4 z-20 flex justify-end">
-        <button type="submit" className="min-h-12 cursor-pointer rounded-xl bg-primary px-7 text-sm font-black text-white shadow-[0_14px_30px_rgba(0,23,54,.18)] hover:bg-primary/90">ذخیره خدمت</button>
-      </div>
-    </form>
-  );
+export async function ServiceForm({ service }: { service?: ServiceFormValues }) {
+  const locale = await currentAdminLocale();
+  return <form action={upsertService} className="max-w-5xl space-y-5 pb-12">
+    {service?.id ? <input type="hidden" name="id" value={service.id} /> : null}
+    <section className="rounded-2xl border border-border bg-card p-5 shadow-sm"><h2 className="text-sm font-black text-foreground">اطلاعات پایه خدمت</h2><div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4"><TextField label="نام (فارسی)" name="nameFa" defaultValue={service?.nameFa} required /><TextField label="نام (Türkçe)" name="nameTr" defaultValue={service?.nameTr} dir="ltr" /><TextField label="نام (English)" name="nameEn" defaultValue={service?.nameEn} dir="ltr" required /><TextField label="نام (العربية)" name="nameAr" defaultValue={service?.nameAr} /></div><div className="mt-4 grid gap-4 md:grid-cols-2"><TextField label="اسلاگ" name="slug" defaultValue={service?.slug} dir="ltr" /><SelectField label="حوزه فعالیت" name="vertical" defaultValue={service?.vertical ?? "RESPIRATORY_SERVICES"} options={verticalOptions(locale)} /></div></section>
+    <section className="rounded-2xl border border-border bg-card p-5 shadow-sm"><h2 className="text-sm font-black text-foreground">توضیحات چهارزبانه</h2><div className="mt-4 grid gap-4 lg:grid-cols-2"><TextAreaField label="توضیحات فارسی" name="descriptionFa" defaultValue={service?.descriptionFa} rows={6} /><TextAreaField label="Türkçe açıklama" name="descriptionTr" defaultValue={service?.descriptionTr} dir="ltr" rows={6} /><TextAreaField label="English description" name="descriptionEn" defaultValue={service?.descriptionEn} dir="ltr" rows={6} /><TextAreaField label="الوصف العربي" name="descriptionAr" defaultValue={service?.descriptionAr} rows={6} /></div></section>
+    <section className="rounded-2xl border border-border bg-card p-5 shadow-sm"><h2 className="text-sm font-black text-foreground">قیمت، زمان و رزرو</h2><div className="mt-4 grid gap-4 sm:grid-cols-3"><TextField label="قیمت (تومان، اختیاری)" name="price" type="number" defaultValue={service?.price ?? undefined} /><TextField label="مدت زمان (دقیقه)" name="durationMinutes" type="number" defaultValue={service?.durationMinutes ?? undefined} /><ImageUploadField label="تصویر خدمت" name="image" defaultValue={service?.image} /></div><div className="mt-5 grid gap-3 md:grid-cols-3"><CheckboxField label="قیمت «شروع از» است" name="priceIsFrom" defaultChecked={service?.priceIsFrom ?? true} /><CheckboxField label="نیاز به رزرو نوبت دارد" name="requiresBooking" defaultChecked={service?.requiresBooking ?? true} /><CheckboxField label="منتشر شده در سایت" name="isPublished" defaultChecked={service?.isPublished} /></div></section>
+    <div className="sticky bottom-4 z-20 flex justify-end"><button type="submit" className="min-h-12 cursor-pointer rounded-xl bg-primary px-7 text-sm font-black text-white shadow-[0_14px_30px_rgba(0,23,54,.18)] hover:bg-primary/90">ذخیره خدمت</button></div>
+  </form>;
 }
