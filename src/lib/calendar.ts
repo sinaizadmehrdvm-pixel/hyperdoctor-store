@@ -56,6 +56,7 @@ export const CALENDAR_CONFIG: Record<AppLocale, CalendarConfig> = {
 };
 
 const ISO_DATE_ONLY = /^(\d{4})-(\d{2})-(\d{2})$/;
+const LOCAL_DATE_TIME = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.\d{1,3})?)?$/;
 
 export function appLocale(locale: string): AppLocale {
   return locale === "fa" || locale === "tr" || locale === "ar" ? locale : "en";
@@ -116,6 +117,35 @@ export function localISODate(date = new Date()) {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+export function localDateTimeInputValue(value: Date | string | number) {
+  const date = calendarDate(value);
+  if (!date) return "";
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hour = String(date.getHours()).padStart(2, "0");
+  const minute = String(date.getMinutes()).padStart(2, "0");
+  return `${year}-${month}-${day}T${hour}:${minute}`;
+}
+
+export function localDateTimeToISO(value: string) {
+  if (!value) return "";
+  const match = LOCAL_DATE_TIME.exec(value);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const hour = Number(match[4]);
+  const minute = Number(match[5]);
+  const second = Number(match[6] ?? 0);
+  const date = new Date(year, month - 1, day, hour, minute, second, 0);
+  if (
+    date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day ||
+    date.getHours() !== hour || date.getMinutes() !== minute || date.getSeconds() !== second
+  ) return null;
+  return date.toISOString();
 }
 
 export function calendarParts(value: Date | string | number, locale: string) {
