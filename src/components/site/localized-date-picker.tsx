@@ -15,66 +15,41 @@ import {
 } from "@/lib/calendar";
 import { calendarEventTitle, eventsForDate, type CalendarEvent } from "@/lib/calendar-holidays";
 
-type Props = {
-  value: string;
-  onChange: (value: string) => void;
-  locale: string;
-  min?: string;
-  max?: string;
-  disabled?: boolean;
-  id?: string;
-  className?: string;
-  events?: CalendarEvent[];
+type Props = { value:string; onChange:(value:string)=>void; locale:string; min?:string; max?:string; disabled?:boolean; id?:string; className?:string; events?:CalendarEvent[] };
+const COPY:Record<AppLocale,{today:string;previous:string;next:string;choose:string;holiday:string;halfDay:string}>={
+ fa:{today:"امروز",previous:"ماه قبل",next:"ماه بعد",choose:"انتخاب تاریخ",holiday:"تعطیل رسمی",halfDay:"نیمه‌تعطیل"},
+ tr:{today:"Bugün",previous:"Önceki ay",next:"Sonraki ay",choose:"Tarih seç",holiday:"Resmî tatil",halfDay:"Yarım gün"},
+ en:{today:"Today",previous:"Previous month",next:"Next month",choose:"Choose date",holiday:"Official holiday",halfDay:"Half day"},
+ ar:{today:"اليوم",previous:"الشهر السابق",next:"الشهر التالي",choose:"اختر التاريخ",holiday:"عطلة رسمية",halfDay:"نصف يوم"},
 };
+function sameDay(a:Date,b:Date){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate()}
+function addDays(date:Date,days:number){const next=new Date(date);next.setDate(next.getDate()+days);next.setHours(12,0,0,0);return next}
+function calendarMonthStart(date:Date,locale:AppLocale){const parts=calendarNumericParts(date,locale);return parts?addDays(date,1-parts.day):new Date(date.getFullYear(),date.getMonth(),1,12)}
+function moveCalendarMonth(date:Date,locale:AppLocale,delta:number){let cursor=calendarMonthStart(date,locale);if(delta>0){const current=calendarNumericParts(cursor,locale);for(let i=1;i<=35;i+=1){const candidate=addDays(cursor,i);const parts=calendarNumericParts(candidate,locale);if(parts&&current&&(parts.month!==current.month||parts.year!==current.year))return candidate}}else{cursor=addDays(cursor,-1);return calendarMonthStart(cursor,locale)}return cursor}
+function monthGrid(anchor:Date,locale:AppLocale){const first=calendarMonthStart(anchor,locale);const firstDay=calendarWeekRules(locale).firstDay;const offset=(first.getDay()-firstDay+7)%7;const start=addDays(first,-offset);return Array.from({length:42},(_,index)=>addDays(start,index))}
+function monthTitle(date:Date,locale:AppLocale){return new Intl.DateTimeFormat(calendarConfig(locale).locale,{month:"long",year:"numeric"}).format(calendarMonthStart(date,locale))}
+function weekdays(locale:AppLocale){const config=calendarConfig(locale);const firstDay=calendarWeekRules(locale).firstDay;const sunday=new Date(2024,0,7,12);return Array.from({length:7},(_,index)=>new Intl.DateTimeFormat(config.locale,{weekday:"short"}).format(addDays(sunday,(firstDay+index)%7)))}
 
-const COPY: Record<AppLocale, { today: string; previous: string; next: string; choose: string; holiday: string; halfDay: string }> = {
-  fa: { today: "امروز", previous: "ماه قبل", next: "ماه بعد", choose: "انتخاب تاریخ", holiday: "تعطیل رسمی", halfDay: "نیمه‌تعطیل" },
-  tr: { today: "Bugün", previous: "Önceki ay", next: "Sonraki ay", choose: "Tarih seç", holiday: "Resmî tatil", halfDay: "Yarım gün" },
-  en: { today: "Today", previous: "Previous month", next: "Next month", choose: "Choose date", holiday: "Official holiday", halfDay: "Half day" },
-  ar: { today: "اليوم", previous: "الشهر السابق", next: "الشهر التالي", choose: "اختر التاريخ", holiday: "عطلة رسمية", halfDay: "نصف يوم" },
-};
-
-function sameDay(a: Date, b: Date) { return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate(); }
-function addDays(date: Date, days: number) { const next = new Date(date); next.setDate(next.getDate() + days); next.setHours(12, 0, 0, 0); return next; }
-function calendarMonthStart(date: Date, locale: AppLocale) { const parts = calendarNumericParts(date, locale); return parts ? addDays(date, 1 - parts.day) : new Date(date.getFullYear(), date.getMonth(), 1, 12); }
-function moveCalendarMonth(date: Date, locale: AppLocale, delta: number) {
-  let cursor = calendarMonthStart(date, locale);
-  if (delta > 0) {
-    const current = calendarNumericParts(cursor, locale);
-    for (let i = 1; i <= 35; i += 1) { const candidate = addDays(cursor, i); const parts = calendarNumericParts(candidate, locale); if (parts && current && (parts.month !== current.month || parts.year !== current.year)) return candidate; }
-  } else { cursor = addDays(cursor, -1); return calendarMonthStart(cursor, locale); }
-  return cursor;
-}
-function monthGrid(anchor: Date, locale: AppLocale) { const first = calendarMonthStart(anchor, locale); const firstDay = calendarWeekRules(locale).firstDay; const offset = (first.getDay() - firstDay + 7) % 7; const start = addDays(first, -offset); return Array.from({ length: 42 }, (_, index) => addDays(start, index)); }
-function monthTitle(date: Date, locale: AppLocale) { return new Intl.DateTimeFormat(calendarConfig(locale).locale, { month: "long", year: "numeric" }).format(calendarMonthStart(date, locale)); }
-function weekdays(locale: AppLocale) { const config = calendarConfig(locale); const firstDay = calendarWeekRules(locale).firstDay; const sunday = new Date(2024, 0, 7, 12); return Array.from({ length: 7 }, (_, index) => new Intl.DateTimeFormat(config.locale, { weekday: "short" }).format(addDays(sunday, (firstDay + index) % 7))); }
-
-export function LocalizedDatePicker({ value, onChange, locale: rawLocale, min, max, disabled, id, className = "", events = [] }: Props) {
-  const locale = appLocale(rawLocale); const config = calendarConfig(locale); const weekRules = calendarWeekRules(locale); const copy = COPY[locale];
-  const selected = parseISODateOnly(value); const today = new Date(); today.setHours(12, 0, 0, 0);
-  const minDate = min ? parseISODateOnly(min) : null; const maxDate = max ? parseISODateOnly(max) : null;
-  const [open, setOpen] = useState(false); const [anchor, setAnchor] = useState(() => selected ?? minDate ?? today); const root = useRef<HTMLDivElement>(null);
-  useEffect(() => { if (selected) setAnchor(selected); }, [value]);
-  useEffect(() => {
-    if (!open) return;
-    const close = (event: PointerEvent) => { if (root.current && !root.current.contains(event.target as Node)) setOpen(false); };
-    const key = (event: KeyboardEvent) => { if (event.key === "Escape") setOpen(false); };
-    document.addEventListener("pointerdown", close); document.addEventListener("keydown", key);
-    return () => { document.removeEventListener("pointerdown", close); document.removeEventListener("keydown", key); };
-  }, [open]);
-  const days = useMemo(() => monthGrid(anchor, locale), [anchor, locale]); const names = useMemo(() => weekdays(locale), [locale]); const anchorParts = calendarNumericParts(anchor, locale);
-  const blocked = (date: Date) => Boolean((minDate && date < minDate) || (maxDate && date > maxDate));
-  const choose = (date: Date) => { if (blocked(date)) return; onChange(localISODate(date)); setAnchor(date); setOpen(false); };
-  const display = selected ? formatLocalizedDate(selected, locale, { weekday: "long", year: "numeric", month: "long", day: "numeric" }) : copy.choose;
-  return <div ref={root} className={`relative ${className}`} dir={config.direction}>
-    <button id={id} type="button" disabled={disabled} aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(current => !current)} className="flex h-12 w-full items-center gap-2 rounded-xl border border-[#c4c6d0] bg-[#f7fafd] px-3 text-start text-sm font-bold text-[#001736] outline-none transition hover:border-[#009dd8] focus-visible:border-[#009dd8] focus-visible:ring-2 focus-visible:ring-[#009dd8]/20 disabled:cursor-not-allowed disabled:opacity-60"><CalendarDays className="h-4 w-4 shrink-0 text-[#009dd8]" aria-hidden="true"/><span className="min-w-0 flex-1 truncate">{display}</span></button>
-    {open ? <div role="dialog" aria-modal="false" aria-label={copy.choose} className="absolute start-0 z-50 mt-2 w-[min(22rem,calc(100vw-2rem))] max-w-[calc(100vw-2rem)] rounded-2xl border border-[#dfe4ea] bg-white p-4 shadow-[0_24px_60px_rgba(0,23,54,.18)]">
-      <div className="flex items-center justify-between gap-2"><button type="button" aria-label={copy.previous} onClick={() => setAnchor(current => moveCalendarMonth(current, locale, -1))} className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#dfe4ea] text-[#002b5b] hover:border-[#009dd8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#009dd8]/25">{config.direction === "rtl" ? <ChevronRight className="h-4 w-4"/> : <ChevronLeft className="h-4 w-4"/>}</button><strong className="text-sm font-black text-[#001736]">{monthTitle(anchor, locale)}</strong><button type="button" aria-label={copy.next} onClick={() => setAnchor(current => moveCalendarMonth(current, locale, 1))} className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#dfe4ea] text-[#002b5b] hover:border-[#009dd8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#009dd8]/25">{config.direction === "rtl" ? <ChevronLeft className="h-4 w-4"/> : <ChevronRight className="h-4 w-4"/>}</button></div>
-      <div className="mt-3 grid grid-cols-7 gap-1">{names.map((name, index) => <span key={`${name}-${index}`} className="py-1 text-center text-[11px] font-bold text-[#747780]">{name}</span>)}{days.map(date => {
-        const key = localISODate(date); const parts = calendarParts(date, locale); const numeric = calendarNumericParts(date, locale); const outside = Boolean(numeric && anchorParts && (numeric.month !== anchorParts.month || numeric.year !== anchorParts.year)); const isSelected = Boolean(selected && sameDay(date, selected)); const isToday = sameDay(date, today); const isBlocked = blocked(date); const isWeekend = weekRules.weekendDays.includes(date.getDay()); const dayEvents = eventsForDate(locale, key, events); const official = dayEvents.some(event => event.kind === "official-holiday"); const halfDay = dayEvents.some(event => event.halfDay); const eventText = dayEvents.map(event => calendarEventTitle(event, locale)).join(" • "); const dateLabel = formatLocalizedDate(date, locale, { year: "numeric", month: "long", day: "numeric" }); const ariaLabel = [dateLabel, official ? copy.holiday : "", halfDay ? copy.halfDay : "", eventText].filter(Boolean).join("، ");
-        return <button key={key} type="button" disabled={isBlocked} title={eventText || undefined} aria-label={ariaLabel} aria-current={isToday ? "date" : undefined} aria-pressed={isSelected} onClick={() => choose(date)} className={`relative aspect-square rounded-xl text-xs font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#009dd8]/30 ${isSelected ? "bg-[#002b5b] text-white shadow-sm" : isToday ? "border border-[#009dd8] bg-[#d6e3ff]/30 text-[#002b5b]" : outside ? "text-[#a9adb5] hover:bg-[#f3f7fb]" : official ? "bg-[#fff0f1] text-[#8b2033] hover:bg-[#ffe5e8]" : isWeekend ? "bg-[#fff8f8] text-[#8b3441] hover:bg-[#fff0f1]" : "text-[#30343b] hover:bg-[#edf4fb]"} disabled:cursor-not-allowed disabled:opacity-25`}><span>{parts?.day ?? date.getDate()}</span>{dayEvents.length ? <span aria-hidden="true" className={`absolute bottom-1 start-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full ${halfDay ? "bg-amber-500" : official ? "bg-[#ba0036]" : "bg-[#009dd8]"}`}/> : null}</button>;
-      })}</div>
-      <div className="mt-3 border-t border-[#edf0f3] pt-3"><button type="button" disabled={blocked(today)} onClick={() => choose(today)} className="min-h-10 w-full rounded-xl bg-[#edf4fb] px-3 text-xs font-black text-[#002b5b] hover:bg-[#d6e3ff] disabled:opacity-40">{copy.today}</button></div>
-    </div> : null}
-  </div>;
+export function LocalizedDatePicker({value,onChange,locale:rawLocale,min,max,disabled,id,className="",events=[]}:Props){
+ const locale=appLocale(rawLocale);const config=calendarConfig(locale);const weekRules=calendarWeekRules(locale);const copy=COPY[locale];
+ const selected=parseISODateOnly(value);const today=new Date();today.setHours(12,0,0,0);const minDate=min?parseISODateOnly(min):null;const maxDate=max?parseISODateOnly(max):null;
+ const[open,setOpen]=useState(false);const[anchor,setAnchor]=useState(()=>selected??minDate??today);const[focusedDate,setFocusedDate]=useState(()=>selected??minDate??today);const root=useRef<HTMLDivElement>(null);const triggerRef=useRef<HTMLButtonElement>(null);const dayRefs=useRef<Record<string,HTMLButtonElement|null>>({});
+ useEffect(()=>{if(selected){setAnchor(selected);setFocusedDate(selected)}},[value]);
+ const blocked=(date:Date)=>Boolean((minDate&&date<minDate)||(maxDate&&date>maxDate));
+ const nearestAllowed=(date:Date)=>{if(minDate&&date<minDate)return minDate;if(maxDate&&date>maxDate)return maxDate;return date};
+ useEffect(()=>{if(!open)return;const target=nearestAllowed(selected??today);setFocusedDate(target);setAnchor(target);requestAnimationFrame(()=>dayRefs.current[localISODate(target)]?.focus());const close=(event:PointerEvent)=>{if(root.current&&!root.current.contains(event.target as Node))setOpen(false)};const key=(event:KeyboardEvent)=>{if(event.key==="Escape"){event.preventDefault();setOpen(false);requestAnimationFrame(()=>triggerRef.current?.focus())}};document.addEventListener("pointerdown",close);document.addEventListener("keydown",key);return()=>{document.removeEventListener("pointerdown",close);document.removeEventListener("keydown",key)}},[open]);
+ const days=useMemo(()=>monthGrid(anchor,locale),[anchor,locale]);const names=useMemo(()=>weekdays(locale),[locale]);const anchorParts=calendarNumericParts(anchor,locale);
+ useEffect(()=>{if(!open)return;requestAnimationFrame(()=>dayRefs.current[localISODate(focusedDate)]?.focus())},[focusedDate,anchor,open]);
+ const choose=(date:Date)=>{if(blocked(date))return;onChange(localISODate(date));setAnchor(date);setFocusedDate(date);setOpen(false);requestAnimationFrame(()=>triggerRef.current?.focus())};
+ const moveFocus=(date:Date)=>{const next=nearestAllowed(date);setFocusedDate(next);const nextParts=calendarNumericParts(next,locale);const currentParts=calendarNumericParts(anchor,locale);if(nextParts&&currentParts&&(nextParts.month!==currentParts.month||nextParts.year!==currentParts.year))setAnchor(next)};
+ const handleDayKey=(event:React.KeyboardEvent<HTMLButtonElement>,date:Date)=>{let next:Date|null=null;switch(event.key){case"ArrowLeft":next=addDays(date,config.direction==="rtl"?1:-1);break;case"ArrowRight":next=addDays(date,config.direction==="rtl"?-1:1);break;case"ArrowUp":next=addDays(date,-7);break;case"ArrowDown":next=addDays(date,7);break;case"Home":next=addDays(date,-((date.getDay()-weekRules.firstDay+7)%7));break;case"End":next=addDays(date,6-((date.getDay()-weekRules.firstDay+7)%7));break;case"PageUp":next=moveCalendarMonth(date,locale,-1);break;case"PageDown":next=moveCalendarMonth(date,locale,1);break;default:return}event.preventDefault();moveFocus(next)};
+ const display=selected?formatLocalizedDate(selected,locale,{weekday:"long",year:"numeric",month:"long",day:"numeric"}):copy.choose;const titleId=`${id??"localized-date"}-calendar-title`;
+ return <div ref={root} className={`relative ${className}`} dir={config.direction}>
+  <button ref={triggerRef} id={id} type="button" disabled={disabled} aria-haspopup="dialog" aria-expanded={open} onClick={()=>setOpen(current=>!current)} className="flex h-12 w-full items-center gap-2 rounded-xl border border-[#c4c6d0] bg-[#f7fafd] px-3 text-start text-sm font-bold text-[#001736] outline-none transition hover:border-[#009dd8] focus-visible:border-[#009dd8] focus-visible:ring-2 focus-visible:ring-[#009dd8]/20 disabled:cursor-not-allowed disabled:opacity-60"><CalendarDays className="h-4 w-4 shrink-0 text-[#009dd8]" aria-hidden="true"/><span className="min-w-0 flex-1 truncate">{display}</span></button>
+  {open?<div role="dialog" aria-modal="false" aria-labelledby={titleId} className="absolute start-0 z-50 mt-2 w-[min(22rem,calc(100vw-2rem))] max-w-[calc(100vw-2rem)] rounded-2xl border border-[#dfe4ea] bg-white p-4 shadow-[0_24px_60px_rgba(0,23,54,.18)]">
+   <div className="flex items-center justify-between gap-2"><button type="button" aria-label={copy.previous} onClick={()=>setAnchor(current=>moveCalendarMonth(current,locale,-1))} className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#dfe4ea] text-[#002b5b] hover:border-[#009dd8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#009dd8]/25">{config.direction==="rtl"?<ChevronRight className="h-4 w-4"/>:<ChevronLeft className="h-4 w-4"/>}</button><strong id={titleId} aria-live="polite" className="text-sm font-black text-[#001736]">{monthTitle(anchor,locale)}</strong><button type="button" aria-label={copy.next} onClick={()=>setAnchor(current=>moveCalendarMonth(current,locale,1))} className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#dfe4ea] text-[#002b5b] hover:border-[#009dd8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#009dd8]/25">{config.direction==="rtl"?<ChevronLeft className="h-4 w-4"/>:<ChevronRight className="h-4 w-4"/>}</button></div>
+   <div role="grid" aria-labelledby={titleId} className="mt-3 grid grid-cols-7 gap-1">{names.map((name,index)=><span role="columnheader" key={`${name}-${index}`} className="py-1 text-center text-[11px] font-bold text-[#747780]">{name}</span>)}{days.map(date=>{const key=localISODate(date);const parts=calendarParts(date,locale);const numeric=calendarNumericParts(date,locale);const outside=Boolean(numeric&&anchorParts&&(numeric.month!==anchorParts.month||numeric.year!==anchorParts.year));const isSelected=Boolean(selected&&sameDay(date,selected));const isToday=sameDay(date,today);const isBlocked=blocked(date);const isWeekend=weekRules.weekendDays.includes(date.getDay());const isFocused=sameDay(date,focusedDate);const dayEvents=eventsForDate(locale,key,events);const official=dayEvents.some(event=>event.kind==="official-holiday");const halfDay=dayEvents.some(event=>event.halfDay);const eventText=dayEvents.map(event=>calendarEventTitle(event,locale)).join(" • ");const dateLabel=formatLocalizedDate(date,locale,{year:"numeric",month:"long",day:"numeric"});const ariaLabel=[dateLabel,official?copy.holiday:"",halfDay?copy.halfDay:"",eventText].filter(Boolean).join("، ");return <button ref={node=>{dayRefs.current[key]=node}} role="gridcell" key={key} type="button" disabled={isBlocked} tabIndex={!isBlocked&&isFocused?0:-1} title={eventText||undefined} aria-label={ariaLabel} aria-current={isToday?"date":undefined} aria-selected={isSelected} onFocus={()=>{if(!isBlocked&&!isFocused)setFocusedDate(date)}} onKeyDown={event=>handleDayKey(event,date)} onClick={()=>choose(date)} className={`relative aspect-square rounded-xl text-xs font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#009dd8]/30 ${isSelected?"bg-[#002b5b] text-white shadow-sm":isToday?"border border-[#009dd8] bg-[#d6e3ff]/30 text-[#002b5b]":outside?"text-[#a9adb5] hover:bg-[#f3f7fb]":official?"bg-[#fff0f1] text-[#8b2033] hover:bg-[#ffe5e8]":isWeekend?"bg-[#fff8f8] text-[#8b3441] hover:bg-[#fff0f1]":"text-[#30343b] hover:bg-[#edf4fb]"} disabled:cursor-not-allowed disabled:opacity-25`}><span>{parts?.day??date.getDate()}</span>{dayEvents.length?<span aria-hidden="true" className={`absolute bottom-1 start-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full ${halfDay?"bg-amber-500":official?"bg-[#ba0036]":"bg-[#009dd8]"}`}/>:null}</button>})}</div>
+   <div className="mt-3 border-t border-[#edf0f3] pt-3"><button type="button" disabled={blocked(today)} onClick={()=>choose(today)} className="min-h-10 w-full rounded-xl bg-[#edf4fb] px-3 text-xs font-black text-[#002b5b] hover:bg-[#d6e3ff] disabled:opacity-40">{copy.today}</button></div>
+  </div>:null}
+ </div>
 }
