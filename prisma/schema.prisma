@@ -473,7 +473,7 @@ model WarrantyEvent {
   type        String
   title       String
   description String               @default("")
-  createdAt   DateTime             @default(now())
+  createdAt   DateTime              @default(now())
 
   @@index([warrantyId, createdAt])
 }
@@ -550,5 +550,6 @@ model SiteSetting {
   defaultLocale    String   @default("fa")
   supportedLocales String   @default("fa,tr,en,ar")
   currency         String   @default("IRT")
+  businessTimeZone String   @default("Asia/Tehran")
   updatedAt        DateTime @updatedAt
 }
