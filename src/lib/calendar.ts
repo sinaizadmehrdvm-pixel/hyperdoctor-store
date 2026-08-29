@@ -1,14 +1,27 @@
 export type AppLocale = "fa" | "tr" | "en" | "ar";
 export type HolidayRegion = "IR" | "TR" | null;
+export type WeekRegion = "IR" | "TR" | null;
 export type CalendarSystem = "persian" | "islamic-umalqura" | "gregory";
+
+type WeekRules = {
+  firstDay: 0 | 1 | 6;
+  weekendDays: number[];
+};
 
 export type CalendarConfig = {
   locale: string;
   calendar: CalendarSystem;
   direction: "rtl" | "ltr";
-  firstDay: 0 | 1 | 6;
-  weekendDays: number[];
+  weekRegion: WeekRegion;
   holidayRegion: HolidayRegion;
+};
+
+// Territory week rules are independent from language and calendar system.
+// The null fallback follows CLDR world/001: Monday first day, Saturday/Sunday weekend.
+export const WEEK_RULES: Record<Exclude<WeekRegion, null> | "001", WeekRules> = {
+  "001": { firstDay: 1, weekendDays: [0, 6] },
+  IR: { firstDay: 6, weekendDays: [5] },
+  TR: { firstDay: 1, weekendDays: [0, 6] },
 };
 
 export const CALENDAR_CONFIG: Record<AppLocale, CalendarConfig> = {
@@ -16,32 +29,28 @@ export const CALENDAR_CONFIG: Record<AppLocale, CalendarConfig> = {
     locale: "fa-IR-u-ca-persian-nu-arabext",
     calendar: "persian",
     direction: "rtl",
-    firstDay: 6,
-    weekendDays: [5],
+    weekRegion: "IR",
     holidayRegion: "IR",
   },
   ar: {
     locale: "ar-u-ca-islamic-umalqura-nu-arab",
     calendar: "islamic-umalqura",
     direction: "rtl",
-    firstDay: 6,
-    weekendDays: [5, 6],
+    weekRegion: null,
     holidayRegion: null,
   },
   tr: {
     locale: "tr-TR-u-ca-gregory",
     calendar: "gregory",
     direction: "ltr",
-    firstDay: 1,
-    weekendDays: [0, 6],
+    weekRegion: "TR",
     holidayRegion: "TR",
   },
   en: {
     locale: "en-u-ca-gregory",
     calendar: "gregory",
     direction: "ltr",
-    firstDay: 1,
-    weekendDays: [0, 6],
+    weekRegion: null,
     holidayRegion: null,
   },
 };
@@ -54,6 +63,11 @@ export function appLocale(locale: string): AppLocale {
 
 export function calendarConfig(locale: string): CalendarConfig {
   return CALENDAR_CONFIG[appLocale(locale)];
+}
+
+export function calendarWeekRules(locale: string): WeekRules {
+  const region = calendarConfig(locale).weekRegion;
+  return WEEK_RULES[region ?? "001"];
 }
 
 export function parseISODateOnly(value: string): Date | null {
