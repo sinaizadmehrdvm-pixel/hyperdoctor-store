@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { supabaseRpc } from "@/lib/supabase-rest";
 import { getCustomerToken } from "@/lib/customer-auth";
+import { localISODate, parseISODateOnly } from "@/lib/calendar";
 
 const bookingSlots = ["08:00 - 09:30", "10:00 - 11:30", "13:00 - 14:30", "15:00 - 16:30", "17:00 - 18:30"] as const;
 
@@ -23,10 +24,9 @@ export async function POST(request: Request) {
   if (!parsed.success) return NextResponse.json({ error: "Invalid booking payload" }, { status: 400 });
 
   const body = parsed.data;
-  const requested = new Date(`${body.preferredDate}T12:00:00Z`);
-  const today = new Date();
-  today.setUTCHours(0, 0, 0, 0);
-  if (Number.isNaN(requested.getTime()) || requested < today) return NextResponse.json({ error: "Invalid booking date" }, { status: 400 });
+  if (!parseISODateOnly(body.preferredDate) || body.preferredDate < localISODate()) {
+    return NextResponse.json({ error: "Invalid booking date" }, { status: 400 });
+  }
 
   try {
     const bookingId = await supabaseRpc<string>("create_service_booking", {
