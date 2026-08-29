@@ -1,4 +1,5 @@
 import { supabaseSelect } from "@/lib/supabase-rest";
+import { DEFAULT_BUSINESS_TIME_ZONE } from "@/lib/calendar";
 
 const FALLBACK_SITE_SETTINGS = {
   id: 1,
@@ -15,6 +16,7 @@ const FALLBACK_SITE_SETTINGS = {
   defaultLocale: "fa",
   supportedLocales: "fa,tr,en,ar",
   currency: "IRT",
+  businessTimeZone: DEFAULT_BUSINESS_TIME_ZONE,
   updatedAt: new Date(0),
 };
 
@@ -30,6 +32,13 @@ export async function getSiteSettings() {
     console.error("[site-data] site settings Data API read failed", error);
     return FALLBACK_SITE_SETTINGS;
   }
+}
+
+export async function getBusinessTimeZone() {
+  const settings = await getSiteSettings();
+  return typeof settings.businessTimeZone === "string" && settings.businessTimeZone
+    ? settings.businessTimeZone
+    : DEFAULT_BUSINESS_TIME_ZONE;
 }
 
 export async function getNavPages() {
