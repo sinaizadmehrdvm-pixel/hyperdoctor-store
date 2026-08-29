@@ -5,6 +5,7 @@ import { Link } from "@/i18n/navigation";
 import { ArrowLeft, BookOpen, CalendarDays, Clock3, Newspaper, Tag } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { getArticleBySlug, getPublishedArticles } from "@/lib/queries";
+import { formatLocalizedDate } from "@/lib/calendar";
 
 function pick(locale: string, item: any, key: "title" | "excerpt" | "content") {
   const suffix = locale === "fa" ? "Fa" : locale === "tr" ? "Tr" : locale === "ar" ? "Ar" : "En";
@@ -41,7 +42,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
           <h1 className="mt-5 text-3xl font-black leading-[1.45] text-[#001736] sm:text-5xl">{title}</h1>
           {excerpt ? <p className="mx-auto mt-5 max-w-3xl text-sm leading-8 text-[#5f6570] sm:text-base">{excerpt}</p> : null}
           <div className="mt-5 flex flex-wrap items-center justify-center gap-4 text-xs font-bold text-[#747780]">
-            {date ? <span className="inline-flex items-center gap-1.5"><CalendarDays className="h-4 w-4" />{new Date(date).toLocaleDateString(locale)}</span> : null}
+            {date ? <span className="inline-flex items-center gap-1.5"><CalendarDays className="h-4 w-4" />{formatLocalizedDate(date, locale)}</span> : null}
             <span className="inline-flex items-center gap-1.5"><Clock3 className="h-4 w-4" />Hyper Doctor Magazine</span>
           </div>
         </header>
