@@ -253,14 +253,21 @@ export async function getPageBySlug(slug: string) {
   }
 }
 
+function articleIsPublic(article: any, now = Date.now()) {
+  if (!article?.isPublished) return false;
+  if (!article.publishedAt) return true;
+  const publishedAt = new Date(article.publishedAt).getTime();
+  return Number.isFinite(publishedAt) && publishedAt <= now;
+}
+
 export async function getPublishedArticles(take = 12) {
   try {
-    return await supabaseSelect<any>("Article", {
+    const articles = await supabaseSelect<any>("Article", {
       select: "*",
       isPublished: "eq.true",
       order: "publishedAt.desc,createdAt.desc",
-      limit: String(take),
     });
+    return articles.filter((article) => articleIsPublic(article)).slice(0, take);
   } catch (error) {
     console.error("[queries] articles Data API read failed", error);
     return [];
@@ -275,7 +282,8 @@ export async function getArticleBySlug(slug: string) {
       isPublished: "eq.true",
       limit: "1",
     });
-    return rows[0] ?? null;
+    const article = rows[0] ?? null;
+    return articleIsPublic(article) ? article : null;
   } catch (error) {
     console.error("[queries] article Data API read failed", error);
     return null;
