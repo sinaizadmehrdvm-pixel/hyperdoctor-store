@@ -1,66 +1,11 @@
 import { TextField, TextAreaField, SelectField, CheckboxField } from "@/components/admin/form-field";
 import { ImageUploadField } from "@/components/admin/image-upload-field";
-import { VERTICAL_OPTIONS } from "@/lib/verticals";
-import { upsertCategory } from "@/app/admin/(protected)/categories/actions";
+import { CategoryFormShell } from "@/components/admin/category-form-shell";
+import { verticalOptions } from "@/lib/verticals";
+import { currentAdminLocale } from "@/lib/admin-locale-server";
+import type { AdminLocale } from "@/lib/admin-i18n";
 
-type CategoryFormValues = {
-  id?: string;
-  vertical?: string;
-  slug?: string;
-  nameFa?: string;
-  nameTr?: string;
-  nameEn?: string;
-  nameAr?: string;
-  descriptionFa?: string | null;
-  descriptionTr?: string | null;
-  descriptionEn?: string | null;
-  descriptionAr?: string | null;
-  image?: string | null;
-  order?: number;
-  isPublished?: boolean;
-};
-
-export function CategoryForm({ category }: { category?: CategoryFormValues }) {
-  return (
-    <form action={upsertCategory} className="max-w-4xl space-y-5 pb-12">
-      {category?.id ? <input type="hidden" name="id" value={category.id} /> : null}
-
-      <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-        <h2 className="text-sm font-black text-foreground">عنوان و ساختار</h2>
-        <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <TextField label="نام (فارسی)" name="nameFa" defaultValue={category?.nameFa} required />
-          <TextField label="نام (Türkçe)" name="nameTr" defaultValue={category?.nameTr} dir="ltr" />
-          <TextField label="نام (English)" name="nameEn" defaultValue={category?.nameEn} dir="ltr" required />
-          <TextField label="نام (العربية)" name="nameAr" defaultValue={category?.nameAr} />
-        </div>
-        <div className="mt-4 grid gap-4 sm:grid-cols-3">
-          <TextField label="اسلاگ (آدرس)" name="slug" defaultValue={category?.slug} dir="ltr" className="[&_input]:font-mono" />
-          <SelectField label="حوزه فعالیت" name="vertical" defaultValue={category?.vertical ?? "MEDICAL_EQUIPMENT"} options={VERTICAL_OPTIONS} />
-          <TextField label="ترتیب نمایش" name="order" type="number" defaultValue={category?.order ?? 0} />
-        </div>
-      </section>
-
-      <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-        <h2 className="text-sm font-black text-foreground">توضیحات چهارزبانه</h2>
-        <div className="mt-4 grid gap-4 lg:grid-cols-2">
-          <TextAreaField label="توضیحات فارسی" name="descriptionFa" defaultValue={category?.descriptionFa} />
-          <TextAreaField label="Türkçe açıklama" name="descriptionTr" defaultValue={category?.descriptionTr} dir="ltr" />
-          <TextAreaField label="English description" name="descriptionEn" defaultValue={category?.descriptionEn} dir="ltr" />
-          <TextAreaField label="الوصف العربي" name="descriptionAr" defaultValue={category?.descriptionAr} />
-        </div>
-      </section>
-
-      <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-        <h2 className="text-sm font-black text-foreground">تصویر و انتشار</h2>
-        <div className="mt-4 space-y-4">
-          <ImageUploadField label="تصویر دسته‌بندی" name="image" defaultValue={category?.image} />
-          <CheckboxField label="نمایش این دسته‌بندی در سایت" name="isPublished" defaultChecked={category?.isPublished ?? true} />
-        </div>
-      </section>
-
-      <div className="sticky bottom-4 z-20 flex justify-end">
-        <button type="submit" className="min-h-12 cursor-pointer rounded-xl bg-primary px-7 text-sm font-black text-white shadow-[0_14px_30px_rgba(0,23,54,.18)] hover:bg-primary/90">ذخیره دسته‌بندی</button>
-      </div>
-    </form>
-  );
-}
+type CategoryFormValues={id?:string;vertical?:string;slug?:string;nameFa?:string;nameTr?:string;nameEn?:string;nameAr?:string;descriptionFa?:string|null;descriptionTr?:string|null;descriptionEn?:string|null;descriptionAr?:string|null;image?:string|null;order?:number;isPublished?:boolean};
+const copy:Record<AdminLocale,{structure:string;structureDesc:string;slug:string;vertical:string;order:string;descriptions:string;media:string;image:string;published:string}>={fa:{structure:"عنوان و ساختار",structureDesc:"نام‌ها و ساختار دسته‌بندی. برای انتشار، نام هر چهار زبان الزامی است.",slug:"اسلاگ (آدرس)",vertical:"حوزه فعالیت",order:"ترتیب نمایش",descriptions:"توضیحات چهارزبانه",media:"تصویر و انتشار",image:"تصویر دسته‌بندی",published:"نمایش این دسته‌بندی در سایت"},tr:{structure:"Başlık ve yapı",structureDesc:"Kategori adları ve yapısı. Yayınlamak için dört dilde ad zorunludur.",slug:"Slug (adres)",vertical:"Faaliyet alanı",order:"Görüntüleme sırası",descriptions:"Dört dilli açıklamalar",media:"Görsel ve yayın",image:"Kategori görseli",published:"Bu kategoriyi sitede yayınla"},en:{structure:"Title and structure",structureDesc:"Category names and structure. Names in all four languages are required for publishing.",slug:"Slug (URL)",vertical:"Business vertical",order:"Display order",descriptions:"Four-language descriptions",media:"Image and publishing",image:"Category image",published:"Publish this category on the site"},ar:{structure:"العنوان والهيكل",structureDesc:"أسماء التصنيف وهيكله. يلزم الاسم باللغات الأربع للنشر.",slug:"الرابط (Slug)",vertical:"مجال النشاط",order:"ترتيب العرض",descriptions:"الوصف بأربع لغات",media:"الصورة والنشر",image:"صورة التصنيف",published:"نشر هذا التصنيف على الموقع"}};
+function Section({title,description,children}:{title:string;description?:string;children:React.ReactNode}){return <section className="rounded-3xl border border-[#dfe4ea] bg-white p-5 shadow-[0_14px_38px_rgba(0,23,54,.04)] sm:p-6"><div className="mb-5"><h2 className="text-base font-black text-[#001736]">{title}</h2>{description?<p className="mt-1 text-xs leading-6 text-[#747780]">{description}</p>:null}</div>{children}</section>}
+export async function CategoryForm({category}:{category?:CategoryFormValues}){const locale=await currentAdminLocale(),t=copy[locale];return <CategoryFormShell locale={locale}>{category?.id?<input type="hidden" name="id" value={category.id}/>:null}<Section title={t.structure} description={t.structureDesc}><div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4"><TextField label="نام (فارسی) / Persian" name="nameFa" defaultValue={category?.nameFa} required/><TextField label="Ad (Türkçe) / Turkish" name="nameTr" defaultValue={category?.nameTr} dir="ltr"/><TextField label="Name (English)" name="nameEn" defaultValue={category?.nameEn} dir="ltr" required/><TextField label="الاسم (العربية) / Arabic" name="nameAr" defaultValue={category?.nameAr}/></div><div className="mt-4 grid gap-4 sm:grid-cols-3"><TextField label={t.slug} name="slug" defaultValue={category?.slug} dir="ltr" className="[&_input]:font-mono"/><SelectField label={t.vertical} name="vertical" defaultValue={category?.vertical??"MEDICAL_EQUIPMENT"} options={verticalOptions(locale)}/><TextField label={t.order} name="order" type="number" defaultValue={category?.order??0} min={0} max={10000} step={1} inputMode="numeric"/></div></Section><Section title={t.descriptions}><div className="grid gap-4 lg:grid-cols-2"><TextAreaField label="فارسی / Persian" name="descriptionFa" defaultValue={category?.descriptionFa}/><TextAreaField label="Türkçe / Turkish" name="descriptionTr" defaultValue={category?.descriptionTr} dir="ltr"/><TextAreaField label="English" name="descriptionEn" defaultValue={category?.descriptionEn} dir="ltr"/><TextAreaField label="العربية / Arabic" name="descriptionAr" defaultValue={category?.descriptionAr}/></div></Section><Section title={t.media}><div className="space-y-4"><ImageUploadField label={t.image} name="image" defaultValue={category?.image}/><CheckboxField label={t.published} name="isPublished" defaultChecked={category?.isPublished??true}/></div></Section></CategoryFormShell>}
