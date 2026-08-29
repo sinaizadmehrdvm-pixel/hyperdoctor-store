@@ -19,6 +19,7 @@ export async function updateSiteSettings(formData: FormData) {
       defaultLocale: String(formData.get("defaultLocale") || "fa"),
       supportedLocales: "fa,tr,en,ar",
       currency: String(formData.get("currency") || "IRT"),
+      businessTimeZone: String(formData.get("businessTimeZone") || "Asia/Tehran").trim(),
     },
   });
 
