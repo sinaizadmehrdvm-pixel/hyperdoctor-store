@@ -3,18 +3,20 @@
 import { revalidatePath } from "next/cache";
 import { adminRpc } from "@/lib/admin-data";
 import { localDateTimeToISO } from "@/lib/calendar";
+import { getBusinessTimeZone } from "@/lib/site-data";
 
-function scheduleValue(formData: FormData, name: string) {
+function scheduleValue(formData: FormData, name: string, timeZone: string) {
   const raw = String(formData.get(name) || "");
   if (!raw) return "";
-  const iso = localDateTimeToISO(raw);
+  const iso = localDateTimeToISO(raw, timeZone);
   if (!iso) throw new Error(`Invalid ${name} date/time`);
   return iso;
 }
 
 export async function upsertBanner(formData:FormData){
-  const startsAt = scheduleValue(formData, "startsAt");
-  const endsAt = scheduleValue(formData, "endsAt");
+  const timeZone = await getBusinessTimeZone();
+  const startsAt = scheduleValue(formData, "startsAt", timeZone);
+  const endsAt = scheduleValue(formData, "endsAt", timeZone);
   if (startsAt && endsAt && new Date(endsAt).getTime() <= new Date(startsAt).getTime()) {
     throw new Error("Banner end time must be after start time");
   }
