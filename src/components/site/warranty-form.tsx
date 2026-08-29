@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useLocale } from "next-intl";
 import { BadgeCheck, Loader2, ShieldCheck } from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { LocalizedDatePicker } from "@/components/site/localized-date-picker";
+import { formatLocalizedDate, localISODate } from "@/lib/calendar";
 
 type WarrantyProduct = {
   id: string;
@@ -20,6 +22,7 @@ function productName(locale: string, p: WarrantyProduct) {
 
 export function WarrantyForm({ products }: { products: WarrantyProduct[] }) {
   const locale = useLocale();
+  const [purchaseDate, setPurchaseDate] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{ serialNumber: string; publicToken: string; expiresAt: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -39,9 +42,9 @@ export function WarrantyForm({ products }: { products: WarrantyProduct[] }) {
     event.preventDefault(); setSubmitting(true); setError(null); setResult(null);
     const form = new FormData(event.currentTarget);
     try {
-      const response = await fetch("/api/warranty", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ requestToken:crypto.randomUUID(), productId:String(form.get("productId")||""), serialNumber:String(form.get("serialNumber")||""), orderNumber:String(form.get("orderNumber")||""), purchaseDate:String(form.get("purchaseDate")||""), name:String(form.get("name")||""), phone:String(form.get("phone")||""), email:String(form.get("email")||""), locale }) });
+      const response = await fetch("/api/warranty", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ requestToken:crypto.randomUUID(), productId:String(form.get("productId")||""), serialNumber:String(form.get("serialNumber")||""), orderNumber:String(form.get("orderNumber")||""), purchaseDate, name:String(form.get("name")||""), phone:String(form.get("phone")||""), email:String(form.get("email")||""), locale }) });
       const data = await response.json(); if (!response.ok) throw new Error(data.error || "Warranty registration failed");
-      setResult({ serialNumber:data.serialNumber, publicToken:data.publicToken, expiresAt:data.expiresAt }); event.currentTarget.reset();
+      setResult({ serialNumber:data.serialNumber, publicToken:data.publicToken, expiresAt:data.expiresAt }); event.currentTarget.reset(); setPurchaseDate("");
     } catch (err) { setError(err instanceof Error ? err.message : "Warranty registration failed"); } finally { setSubmitting(false); }
   }
 
@@ -53,14 +56,15 @@ export function WarrantyForm({ products }: { products: WarrantyProduct[] }) {
       <Label text={copy.product} className="sm:col-span-2"><select name="productId" required className={field}>{eligible.map(p=><option key={p.id} value={p.id}>{productName(locale,p)} · {p.warrantyMonths} months</option>)}</select></Label>
       <Label text={copy.serial}><input name="serialNumber" required minLength={3} maxLength={120} dir="ltr" className={field} /></Label>
       <Label text={copy.order}><input name="orderNumber" maxLength={80} dir="ltr" className={field} /></Label>
-      <Label text={copy.date}><input name="purchaseDate" type="date" required max={new Date().toISOString().slice(0,10)} className={field} /></Label>
+      <Label text={copy.date}><LocalizedDatePicker id="warranty-purchase-date" value={purchaseDate} onChange={setPurchaseDate} locale={locale} max={localISODate()} /></Label>
+      <input type="hidden" name="purchaseDate" value={purchaseDate} required />
       <Label text={copy.name}><input name="name" required minLength={2} maxLength={120} className={field} /></Label>
       <Label text={copy.phone}><input name="phone" required minLength={8} maxLength={24} dir="ltr" className={field} /></Label>
       <Label text={copy.email}><input name="email" type="email" dir="ltr" className={field} /></Label>
     </div>
     {error ? <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-bold text-red-700">{error}</div> : null}
-    {result ? <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800"><div className="flex items-center gap-2 font-black"><BadgeCheck className="h-5 w-5" />{copy.success}</div><div className="mt-2 text-xs">{copy.expiry}: {new Date(result.expiresAt).toLocaleDateString(locale)}</div><Link href={`/warranty/status?serial=${encodeURIComponent(result.serialNumber)}&token=${encodeURIComponent(result.publicToken)}`} className="mt-3 inline-flex text-xs font-black underline">{copy.track}</Link></div> : null}
-    <button type="submit" disabled={submitting} className="mt-5 inline-flex min-h-12 items-center gap-2 rounded-2xl bg-[#ba0036] px-6 text-sm font-black text-white shadow-[0_12px_28px_rgba(186,0,54,.18)] hover:bg-[#e80346] disabled:opacity-60">{submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}{copy.submit}</button>
+    {result ? <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800"><div className="flex items-center gap-2 font-black"><BadgeCheck className="h-5 w-5" />{copy.success}</div><div className="mt-2 text-xs">{copy.expiry}: {formatLocalizedDate(result.expiresAt, locale)}</div><Link href={`/warranty/status?serial=${encodeURIComponent(result.serialNumber)}&token=${encodeURIComponent(result.publicToken)}`} className="mt-3 inline-flex text-xs font-black underline">{copy.track}</Link></div> : null}
+    <button type="submit" disabled={submitting || !purchaseDate} className="mt-5 inline-flex min-h-12 items-center gap-2 rounded-2xl bg-[#ba0036] px-6 text-sm font-black text-white shadow-[0_12px_28px_rgba(186,0,54,.18)] hover:bg-[#e80346] disabled:opacity-60">{submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}{copy.submit}</button>
   </form>;
 }
 
