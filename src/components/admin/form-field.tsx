@@ -11,6 +11,9 @@ export function TextField({
   required,
   dir,
   step,
+  min,
+  max,
+  inputMode,
   className,
 }: {
   label: string;
@@ -19,7 +22,10 @@ export function TextField({
   type?: string;
   required?: boolean;
   dir?: "ltr" | "rtl";
-  step?: string;
+  step?: string | number;
+  min?: string | number;
+  max?: string | number;
+  inputMode?: "none" | "text" | "tel" | "url" | "email" | "numeric" | "decimal" | "search";
   className?: string;
 }) {
   return (
@@ -32,6 +38,9 @@ export function TextField({
         required={required}
         dir={dir}
         step={step}
+        min={min}
+        max={max}
+        inputMode={inputMode}
         className={cn("h-11", sharedClass)}
       />
     </label>
