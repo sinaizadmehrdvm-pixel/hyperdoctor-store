@@ -6,6 +6,7 @@ import { supabaseRpc } from "@/lib/supabase-rest";
 const schema=z.object({
   requestToken:z.string().uuid(),
   productId:z.string().min(1).max(120),
+  requestedQuantity:z.number().int().min(1).max(99).default(1),
   customerName:z.string().trim().min(2).max(120),
   phone:z.string().trim().min(8).max(24),
   email:z.string().trim().email().max(254).optional().or(z.literal("")),
@@ -24,20 +25,15 @@ export async function POST(request:Request){
   if(end&&(!parseISODateOnly(end)||(start&&end<start)))return NextResponse.json({error:"Invalid rental date range"},{status:400});
   try{
     const rentalRequestId=await supabaseRpc<string>("create_rental_request",{
-      p_request_token:body.requestToken,
-      p_product_id:body.productId,
-      p_customer_name:body.customerName,
-      p_phone:body.phone,
-      p_email:body.email||null,
-      p_preferred_start_date:start,
-      p_preferred_end_date:end,
-      p_address:body.address||null,
-      p_notes:body.notes||null,
-      p_locale:body.locale,
+      p_request_token:body.requestToken,p_product_id:body.productId,p_customer_name:body.customerName,p_phone:body.phone,
+      p_email:body.email||null,p_preferred_start_date:start,p_preferred_end_date:end,p_address:body.address||null,p_notes:body.notes||null,
+      p_locale:body.locale,p_requested_quantity:body.requestedQuantity,
     });
     return NextResponse.json({ok:true,rentalRequestId});
   }catch(error){
+    const message=error instanceof Error?error.message:"";
     console.error("[rental-request] create failed",error);
+    if(message.includes("unavailable")||message.includes("inventory")||message.includes("quantity"))return NextResponse.json({error:"Rental inventory is not available for the selected quantity or dates"},{status:409});
     return NextResponse.json({error:"Rental request could not be registered"},{status:500});
   }
 }
