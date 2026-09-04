@@ -6,97 +6,16 @@ import { GitCompareArrows, ImageOff, Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { formatPrice } from "@/lib/utils";
-import { localizedName } from "@/lib/i18n-content";
+import { localizedName, pickLocalized } from "@/lib/i18n-content";
 
-const STORAGE_KEY = "hd_compare_products";
-
-type Product = {
-  id: string;
-  slug: string;
-  nameFa: string;
-  nameTr?: string | null;
-  nameEn: string;
-  nameAr?: string | null;
-  price: number;
-  compareAtPrice?: number | null;
-  stock: number;
-  sku?: string | null;
-  modelNumber?: string | null;
-  brand?: string | null;
-  manufacturer?: string | null;
-  countryOfOrigin?: string | null;
-  warrantyMonths?: number | null;
-  weightGrams?: number | null;
-  specs?: unknown;
-  images?: Array<{ url: string; altFa?: string | null; altTr?: string | null; altEn?: string | null; altAr?: string | null }>;
-};
-
-function l(locale: string, fa: string, en: string, tr: string, ar: string) {
-  if (locale === "en") return en;
-  if (locale === "tr") return tr;
-  if (locale === "ar") return ar;
-  return fa;
-}
-
-function readIds() {
-  try {
-    const parsed = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || "[]");
-    return Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === "string").slice(0, 4) : [];
-  } catch {
-    return [];
-  }
-}
-
-export function CompareClient({ products }: { products: Product[] }) {
-  const locale = useLocale();
-  const c = useTranslations("common");
-  const [ids, setIds] = useState<string[]>([]);
-
-  useEffect(() => {
-    setIds(readIds());
-    const sync = () => setIds(readIds());
-    window.addEventListener("hd-compare-change", sync);
-    window.addEventListener("storage", sync);
-    return () => {
-      window.removeEventListener("hd-compare-change", sync);
-      window.removeEventListener("storage", sync);
-    };
-  }, []);
-
-  const selected = useMemo(() => ids.map((id) => products.find((p) => p.id === id)).filter((p): p is Product => Boolean(p)), [ids, products]);
-
-  function remove(id: string) {
-    const next = ids.filter((value) => value !== id);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-    setIds(next);
-    window.dispatchEvent(new Event("hd-compare-change"));
-  }
-
-  function clear() {
-    localStorage.removeItem(STORAGE_KEY);
-    setIds([]);
-    window.dispatchEvent(new Event("hd-compare-change"));
-  }
-
-  if (!selected.length) {
-    return <section className="rounded-[2rem] border border-dashed border-[#c4c6d0] bg-white p-10 text-center shadow-sm sm:p-16"><span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#edf4ff] text-[#002b5b]"><GitCompareArrows className="h-7 w-7" /></span><h2 className="mt-5 text-xl font-black text-[#001736]">{l(locale,"هنوز محصولی برای مقایسه انتخاب نشده است","No products selected for comparison","Karşılaştırma için ürün seçilmedi","لم يتم اختيار منتجات للمقارنة")}</h2><p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-[#747780]">{l(locale,"در فروشگاه روی آیکن مقایسه هر محصول بزنید. حداکثر چهار محصول را می‌توانید هم‌زمان مقایسه کنید.","Use the compare icon on product cards. You can compare up to four products at once.","Ürün kartlarındaki karşılaştır simgesini kullanın. Aynı anda en fazla dört ürün karşılaştırabilirsiniz.","استخدم أيقونة المقارنة في بطاقات المنتجات. يمكنك مقارنة أربعة منتجات كحد أقصى.")}</p><Link href="/shop" className="mt-6 inline-flex min-h-11 items-center rounded-xl bg-[#ba0036] px-5 text-sm font-black text-white">{l(locale,"رفتن به فروشگاه","Go to shop","Mağazaya git","الذهاب إلى المتجر")}</Link></section>;
-  }
-
-  const rows = [
-    [l(locale,"برند","Brand","Marka","العلامة"), (p: Product) => p.brand || "—"],
-    [l(locale,"مدل","Model","Model","الموديل"), (p: Product) => p.modelNumber || "—"],
-    ["SKU", (p: Product) => p.sku || "—"],
-    [l(locale,"موجودی","Stock","Stok","المخزون"), (p: Product) => p.stock > 0 ? l(locale,`${p.stock} عدد`,`${p.stock} in stock`,`${p.stock} stokta`,`${p.stock} متوفر`) : l(locale,"ناموجود","Out of stock","Stokta yok","غير متوفر")],
-    [l(locale,"گارانتی","Warranty","Garanti","الضمان"), (p: Product) => p.warrantyMonths ? l(locale,`${p.warrantyMonths} ماه`,`${p.warrantyMonths} months`,`${p.warrantyMonths} ay`,`${p.warrantyMonths} شهر`) : "—"],
-    [l(locale,"سازنده","Manufacturer","Üretici","المصنع"), (p: Product) => p.manufacturer || "—"],
-    [l(locale,"کشور سازنده","Country of origin","Menşei","بلد المنشأ"), (p: Product) => p.countryOfOrigin || "—"],
-    [l(locale,"وزن","Weight","Ağırlık","الوزن"), (p: Product) => p.weightGrams ? `${p.weightGrams} g` : "—"],
-  ] as const;
-
-  return <div className="space-y-5">
-    <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-[#747780]">{l(locale,`${selected.length} محصول انتخاب شده`,`${selected.length} products selected`,`${selected.length} ürün seçildi`,`${selected.length} منتجات محددة`)}</p><button type="button" onClick={clear} className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#ffd5df] bg-white px-4 text-xs font-black text-[#ba0036]"><Trash2 className="h-4 w-4" />{l(locale,"پاک کردن مقایسه","Clear comparison","Karşılaştırmayı temizle","مسح المقارنة")}</button></div>
-    <div className="overflow-x-auto rounded-[1.7rem] border border-[#dfe4ea] bg-white shadow-[0_14px_38px_rgba(0,23,54,.05)]">
-      <table className="w-full min-w-[760px] border-collapse text-sm"><thead><tr><th className="w-40 border-b border-e border-[#e6e9ed] bg-[#f7fafd] p-4 text-start text-xs font-black text-[#747780]">{l(locale,"مشخصه","Attribute","Özellik","الخاصية")}</th>{selected.map((p)=><th key={p.id} className="min-w-48 border-b border-e border-[#e6e9ed] p-4 align-top last:border-e-0"><div className="relative mx-auto aspect-square max-w-36 overflow-hidden rounded-2xl bg-[#f1f4f7]">{p.images?.[0]?.url?<Image src={p.images[0].url} alt={localizedName(locale,p)} fill className="object-contain p-3" sizes="144px"/>:<div className="flex h-full items-center justify-center text-[#9aa0aa]"><ImageOff className="h-7 w-7"/></div>}</div><Link href={`/product/${p.slug}`} className="mt-3 block line-clamp-2 font-black leading-6 text-[#001736] hover:text-[#ba0036]">{localizedName(locale,p)}</Link><div className="mt-2 text-base font-black text-[#ba0036]">{formatPrice(p.price,locale)} <span className="text-[10px] text-[#747780]">{c("currency")}</span></div><button type="button" onClick={()=>remove(p.id)} className="mt-3 text-[11px] font-black text-[#747780] hover:text-[#ba0036]">{l(locale,"حذف از مقایسه","Remove","Kaldır","إزالة")}</button></th>)}</tr></thead><tbody>{rows.map(([label,get])=><tr key={label}><th className="border-b border-e border-[#edf0f2] bg-[#fafcff] p-4 text-start text-xs font-black text-[#5f6570]">{label}</th>{selected.map(p=><td key={`${label}-${p.id}`} className="border-b border-e border-[#edf0f2] p-4 text-center font-bold text-[#001736] last:border-e-0" dir={label === "SKU" ? "ltr" : undefined}>{get(p)}</td>)}</tr>)}</tbody></table>
-    </div>
-  </div>;
-}
+const STORAGE_KEY="hd_compare_products";
+type Term={id:string;dimension:string;nameFa:string;nameTr:string;nameEn:string;nameAr:string};
+type Product={id:string;slug:string;nameFa:string;nameTr?:string|null;nameEn:string;nameAr?:string|null;price:number;compareAtPrice?:number|null;stock:number;sku?:string|null;modelNumber?:string|null;manufacturer?:string|null;countryOfOrigin?:string|null;warrantyMonths?:number|null;weightGrams?:number|null;rentalEligible?:boolean;professionalUse?:boolean;homeUse?:boolean;brandEntity?:{name:string}|null;specs?:unknown;taxonomyTerms?:Term[];images?:Array<{url:string}>};
+function l(locale:string,fa:string,en:string,tr:string,ar:string){return locale==="en"?en:locale==="tr"?tr:locale==="ar"?ar:fa}
+function readIds(){try{const parsed=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");return Array.isArray(parsed)?parsed.filter((id):id is string=>typeof id==="string").slice(0,5):[]}catch{return[]}}
+function yesNo(v:boolean|undefined,locale:string){return v?l(locale,"بله","Yes","Evet","نعم"):l(locale,"خیر","No","Hayır","لا")}
+function specsOf(p:Product){try{return typeof p.specs==="string"?JSON.parse(p.specs)||{}:(p.specs&&typeof p.specs==="object"?p.specs:{})}catch{return{}}}
+function termText(p:Product,dimension:string,locale:string){const items=(p.taxonomyTerms??[]).filter(t=>t.dimension===dimension);if(!items.length)return"—";return items.map(t=>pickLocalized(locale,{fa:t.nameFa,tr:t.nameTr,en:t.nameEn,ar:t.nameAr})||t.nameEn||t.nameFa).join("، ")}
+export function CompareClient({products}:{products:Product[]}){const locale=useLocale(),c=useTranslations("common"),[ids,setIds]=useState<string[]>([]);useEffect(()=>{setIds(readIds());const sync=()=>setIds(readIds());addEventListener("hd-compare-change",sync);addEventListener("storage",sync);return()=>{removeEventListener("hd-compare-change",sync);removeEventListener("storage",sync)}},[]);const selected=useMemo(()=>ids.map(id=>products.find(p=>p.id===id)).filter((p):p is Product=>Boolean(p)),[ids,products]);function remove(id:string){const next=ids.filter(x=>x!==id);localStorage.setItem(STORAGE_KEY,JSON.stringify(next));setIds(next);dispatchEvent(new Event("hd-compare-change"))}function clear(){localStorage.removeItem(STORAGE_KEY);setIds([]);dispatchEvent(new Event("hd-compare-change"))}if(!selected.length)return <section className="rounded-[2rem] border border-dashed border-[#c4c6d0] bg-white p-10 text-center shadow-sm sm:p-16"><GitCompareArrows className="mx-auto h-10 w-10 text-[#002b5b]"/><h2 className="mt-5 text-xl font-black text-[#001736]">{l(locale,"هنوز محصولی برای مقایسه انتخاب نشده است","No products selected for comparison","Karşılaştırma için ürün seçilmedi","لم يتم اختيار منتجات للمقارنة")}</h2><p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-[#747780]">{l(locale,"از کارت محصولات حداکثر پنج محصول را انتخاب کنید.","Select up to five products from product cards.","Ürün kartlarından en fazla beş ürün seçin.","اختر حتى خمسة منتجات من بطاقات المنتجات.")}</p><Link href="/shop" className="mt-6 inline-flex min-h-11 items-center rounded-xl bg-[#ba0036] px-5 text-sm font-black text-white">{l(locale,"رفتن به فروشگاه","Go to shop","Mağazaya git","الذهاب إلى المتجر")}</Link></section>;
+const base:Array<[string,(p:Product)=>string]>=[[l(locale,"برند مرجع","Canonical brand","Referans marka","العلامة المرجعية"),p=>p.brandEntity?.name||"—"],[l(locale,"مدل","Model","Model","الموديل"),p=>p.modelNumber||"—"],["SKU",p=>p.sku||"—"],[l(locale,"موجودی","Stock","Stok","المخزون"),p=>p.stock>0?String(p.stock):l(locale,"ناموجود","Out of stock","Stokta yok","غير متوفر")],[l(locale,"قابل اجاره","Rental eligible","Kiralanabilir","قابل للإيجار"),p=>yesNo(p.rentalEligible,locale)],[l(locale,"کاربری حرفه‌ای","Professional use","Profesyonel kullanım","استخدام مهني"),p=>yesNo(p.professionalUse,locale)],[l(locale,"کاربری خانگی","Home use","Ev kullanımı","استخدام منزلي"),p=>yesNo(p.homeUse,locale)],[l(locale,"گارانتی","Warranty","Garanti","الضمان"),p=>p.warrantyMonths?String(p.warrantyMonths):"—"],[l(locale,"سازنده","Manufacturer","Üretici","المصنع"),p=>p.manufacturer||"—"],[l(locale,"کشور سازنده","Country of origin","Menşei","بلد المنشأ"),p=>p.countryOfOrigin||"—"],[l(locale,"وزن","Weight","Ağırlık","الوزن"),p=>p.weightGrams?`${p.weightGrams} g`:"—"],[l(locale,"محیط مراقبت","Care setting","Bakım ortamı","بيئة الرعاية"),p=>termText(p,"CARE_SETTING",locale)],[l(locale,"نوع محصول","Product type","Ürün tipi","نوع المنتج"),p=>termText(p,"PRODUCT_TYPE",locale)],[l(locale,"فناوری","Technology","Teknoloji","التقنية"),p=>termText(p,"PRODUCT_TECHNOLOGY",locale)],[l(locale,"سازگاری","Compatibility","Uyumluluk","التوافق"),p=>termText(p,"COMPATIBILITY",locale)]];
+const specKeys=[...new Set(selected.flatMap(p=>Object.keys(specsOf(p))))].slice(0,40);const rows=[...base,...specKeys.map(key=>[key,(p:Product)=>{const v=specsOf(p)[key];if(v==null)return"—";return typeof v==="object"?pickLocalized(locale,v as Record<string,string>)||JSON.stringify(v):String(v)}] as [string,(p:Product)=>string])];return <div className="space-y-5"><div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-[#747780]">{l(locale,`${selected.length} محصول از ۵`,`${selected.length} of 5 products`,`${selected.length}/5 ürün`,`${selected.length} من 5 منتجات`)}</p><button type="button" onClick={clear} className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#ffd5df] bg-white px-4 text-xs font-black text-[#ba0036]"><Trash2 className="h-4 w-4"/>{l(locale,"پاک کردن مقایسه","Clear comparison","Karşılaştırmayı temizle","مسح المقارنة")}</button></div><div className="overflow-x-auto rounded-[1.7rem] border border-[#dfe4ea] bg-white shadow-sm"><table className="w-full min-w-[900px] border-collapse text-sm"><thead><tr><th className="w-44 border-b border-e bg-[#f7fafd] p-4 text-start text-xs font-black text-[#747780]">{l(locale,"مشخصه","Attribute","Özellik","الخاصية")}</th>{selected.map(p=><th key={p.id} className="min-w-48 border-b border-e p-4 align-top last:border-e-0"><div className="relative mx-auto aspect-square max-w-32 overflow-hidden rounded-2xl bg-[#f1f4f7]">{p.images?.[0]?.url?<Image src={p.images[0].url} alt={localizedName(locale,p)} fill className="object-contain p-3" sizes="128px"/>:<div className="flex h-full items-center justify-center"><ImageOff className="h-7 w-7 text-[#9aa0aa]"/></div>}</div><Link href={`/product/${p.slug}`} className="mt-3 block line-clamp-2 font-black leading-6 text-[#001736]">{localizedName(locale,p)}</Link><div className="mt-2 font-black text-[#ba0036]">{formatPrice(p.price,locale)} <span className="text-[10px] text-[#747780]">{c("currency")}</span></div><button type="button" onClick={()=>remove(p.id)} className="mt-2 text-[11px] font-black text-[#747780]">{l(locale,"حذف","Remove","Kaldır","إزالة")}</button></th>)}</tr></thead><tbody>{rows.map(([label,get])=>{const values=selected.map(get),different=new Set(values).size>1;return <tr key={label}><th className={`border-b border-e p-4 text-start text-xs font-black ${different?"bg-[#fff7f9] text-[#920028]":"bg-[#fafcff] text-[#5f6570]"}`}>{label}</th>{selected.map((p,i)=><td key={`${label}-${p.id}`} className={`border-b border-e p-4 text-center font-bold last:border-e-0 ${different?"bg-[#fffafb] text-[#001736]":"text-[#43474f]"}`}>{values[i]}</td>)}</tr>})}</tbody></table></div></div>}
