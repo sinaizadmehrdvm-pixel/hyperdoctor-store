@@ -8,10 +8,10 @@ import { HyperDoctorLogo } from "@/components/site/logo";
 import { logoutAdmin, requireAdminSession } from "@/lib/admin-auth";
 
 const copy = {
-  fa: { site: "مشاهده سایت", search: "جستجو در پنل مدیریت", alerts: "اعلان‌ها", logout: "خروج" },
-  ar: { site: "عرض الموقع", search: "البحث في لوحة الإدارة", alerts: "الإشعارات", logout: "تسجيل الخروج" },
-  en: { site: "View site", search: "Search admin panel", alerts: "Notifications", logout: "Logout" },
-  tr: { site: "Siteyi görüntüle", search: "Yönetim panelinde ara", alerts: "Bildirimler", logout: "Çıkış" },
+  fa: { site: "مشاهده سایت", search: "جستجو در محصولات، سفارش‌ها، مشتریان و محتوا", alerts: "اعلان‌ها", logout: "خروج" },
+  ar: { site: "عرض الموقع", search: "البحث في المنتجات والطلبات والعملاء والمحتوى", alerts: "الإشعارات", logout: "تسجيل الخروج" },
+  en: { site: "View site", search: "Search products, orders, customers and content", alerts: "Notifications", logout: "Logout" },
+  tr: { site: "Siteyi görüntüle", search: "Ürün, sipariş, müşteri ve içerik ara", alerts: "Bildirimler", logout: "Çıkış" },
 } as const;
 
 export default async function AdminProtectedLayout({ children }: { children: React.ReactNode }) {
@@ -32,10 +32,10 @@ export default async function AdminProtectedLayout({ children }: { children: Rea
       <div className={`min-h-screen ${rtl ? "lg:mr-[246px]" : "lg:ml-[246px]"}`}>
         <header className="sticky top-0 z-30 border-b border-[#e4e8ed] bg-white/95 backdrop-blur-xl">
           <div className="flex min-h-[82px] items-center gap-3 px-4 sm:px-6 xl:px-8">
-            <div className="hidden min-w-0 flex-1 md:block"><label className="relative block max-w-md"><Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9a9da5]" /><input readOnly aria-label={t.search} placeholder={t.search} className="h-11 w-full rounded-full border border-[#e0e3e6] bg-[#f7fafd] ps-10 pe-4 text-xs text-[#5f6570] outline-none" /></label></div>
+            <div className="hidden min-w-0 flex-1 md:block"><form action="/admin/search" className="relative block max-w-md"><Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9a9da5]" /><input name="q" minLength={2} maxLength={100} aria-label={t.search} placeholder={t.search} className="h-11 w-full rounded-full border border-[#e0e3e6] bg-[#f7fafd] ps-10 pe-4 text-xs text-[#5f6570] outline-none transition focus:border-[#009dd8] focus:bg-white" /></form></div>
             <div className="me-auto flex items-center gap-2 md:me-0">
               <AdminLocaleSwitcher locale={locale} />
-              <button type="button" aria-label={t.alerts} className="relative flex h-10 w-10 items-center justify-center rounded-full border border-[#e0e3e6] bg-white text-[#5f6570]"><Bell className="h-4 w-4" /><span className="absolute -end-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-[#e80346]" /></button>
+              <button type="button" aria-label={t.alerts} className="relative flex h-10 w-10 items-center justify-center rounded-full border border-[#e0e3e6] bg-white text-[#5f6570]"><Bell className="h-4 w-4" /></button>
               <div className="hidden h-10 w-px bg-[#edf0f2] sm:block" />
               <div className="hidden min-w-0 sm:block"><div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[.14em] text-[#009dd8]"><ShieldCheck className="h-3.5 w-3.5" />Hyper Doctor Admin</div><p className="mt-1 max-w-[220px] truncate text-xs font-black text-[#001736]">{session.name || session.email}</p></div>
               <span dir="ltr" className="hidden rounded-full border border-[#e0e3e6] bg-[#f7fafd] px-3 py-1.5 text-[10px] font-black text-[#747780] xl:inline-flex">{session.role}</span>
