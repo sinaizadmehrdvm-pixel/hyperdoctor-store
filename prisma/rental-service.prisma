@@ -1,0 +1,35 @@
+model ProductRentalPolicy {
+  productId     String   @id
+  availableUnits Int     @default(0)
+  dailyRate     Int?
+  weeklyRate    Int?
+  monthlyRate   Int?
+  depositAmount Int?
+  currency      String   @default("IRR")
+  minDays       Int      @default(1)
+  maxDays       Int?
+  isActive      Boolean  @default(true)
+  updatedAt     DateTime @default(now()) @db.Timestamptz(6)
+}
+
+model ServiceExecutionReport {
+  id                     String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  bookingId              String    @unique @db.Uuid
+  reportType             String    @default("INSTALLATION")
+  visitDate              DateTime? @db.Date
+  deviceModel            String?
+  deviceSerial           String?
+  accessories            String?
+  initialCondition       String?
+  workPerformed          String?
+  settingsApplied        String?
+  testResult             String?
+  customerInstructions   String?
+  technicianName         String?
+  customerRepresentative String?
+  nextServiceDate        DateTime? @db.Date
+  status                 String    @default("DRAFT")
+  finalizedAt            DateTime? @db.Timestamptz(6)
+  createdAt              DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt              DateTime  @default(now()) @db.Timestamptz(6)
+}
