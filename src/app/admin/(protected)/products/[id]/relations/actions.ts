@@ -8,7 +8,7 @@ export async function saveProductRelationsAndFlags(formData:FormData){
   const productId=String(formData.get("productId")||"").trim();
   if(!productId)throw new Error("Product id is required");
   const rows:Array<{relatedProductId:string;relationType:string;sortOrder:number}>=[];
-  const groups:[string,string][]=[["alternativeIds","ALTERNATIVE"],["upgradeIds","UPGRADE"],["accessoryIds","ACCESSORY"]];
+  const groups:[string,string][]=[["alternativeIds","ALTERNATIVE"],["upgradeIds","UPGRADE"],["accessoryIds","ACCESSORY"],["compatibleIds","COMPATIBLE_WITH"]];
   for(const[name,type]of groups){formData.getAll(name).map(String).map(v=>v.trim()).filter(Boolean).slice(0,100).forEach((id,index)=>rows.push({relatedProductId:id,relationType:type,sortOrder:index}));}
   await adminRpc("admin_set_product_relations_and_flags",{
     p_product_id:productId,
