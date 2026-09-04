@@ -4,7 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { Container } from "@/components/ui/container";
 import { ShopProductCard } from "@/components/site/shop-product-card";
 import { SortSelect } from "@/components/site/shop-filters";
-import { getCategories, getProducts, type ProductSort } from "@/lib/queries";
+import { getCategories, getProducts, type ProductSort, type ShopCatalogFilters } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 import { localizedName } from "@/lib/i18n-content";
 import { Activity, BedDouble, ChevronLeft, ChevronRight, HeartPulse, Home, LayoutGrid, Move3d, PackageSearch, Search, ShieldCheck, Sparkles, Stethoscope, UserRound, Wind, Wrench, Truck, Headphones, GitCompareArrows } from "lucide-react";
@@ -22,8 +22,8 @@ function l(locale:string,fa:string,en:string,tr:string,ar:string){if(locale==="e
 function emptyCopy(locale:string){return {title:l(locale,"محصولی در این بخش ثبت نشده است","No products have been added here yet","Bu bölüme henüz ürün eklenmedi","لم تتم إضافة منتجات هنا بعد"),body:l(locale,"پس از ثبت محصول واقعی در پنل مدیریت، محصولات به‌صورت خودکار در همین بخش نمایش داده می‌شوند.","Real products added in Admin will appear here automatically.","Yönetim paneline eklenen gerçek ürünler burada otomatik görünecek.","ستظهر المنتجات الحقيقية المضافة من لوحة الإدارة هنا تلقائياً.")};}
 function EmptyProducts({locale,dark=false}:{locale:string;dark?:boolean}){const text=emptyCopy(locale);return <div className={cn("col-span-full flex min-h-48 flex-col items-center justify-center rounded-2xl border border-dashed p-6 text-center",dark?"border-white/20 bg-white/8 text-white":"border-[#c4c6d0] bg-[#f7fafd] text-[#001736]")}><PackageSearch aria-hidden="true" className={cn("h-8 w-8",dark?"text-[#82cfff]":"text-[#002b5b]")}/><strong className="mt-3 text-sm font-black">{text.title}</strong><p className={cn("mt-2 max-w-md text-xs leading-6",dark?"text-white/65":"text-[#747780]")}>{text.body}</p></div>}
 
-export async function ShopContent({categorySlug,sort,search}:{categorySlug?:string;sort?:ProductSort;search?:string}){
- const locale=await getLocale(); const t=await getTranslations("shop"); const [categories,products]=await Promise.all([getCategories(),getProducts({categorySlug,sort,search})]); const activeCategory=categorySlug?categories.find(cat=>cat.slug===categorySlug):null; const Arrow=locale==="fa"||locale==="ar"?ChevronLeft:ChevronRight;
+export async function ShopContent({categorySlug,sort,search,filters}:{categorySlug?:string;sort?:ProductSort;search?:string;filters?:ShopCatalogFilters}){
+ const locale=await getLocale(); const t=await getTranslations("shop"); const [categories,products]=await Promise.all([getCategories(),getProducts({categorySlug,sort,search,filters})]); const activeCategory=categorySlug?categories.find(cat=>cat.slug===categorySlug):null; const Arrow=locale==="fa"||locale==="ar"?ChevronLeft:ChevronRight;
  return <main className="flex-1 bg-[#f7fafd] pb-24 md:pb-0">
   <div className="hidden border-b border-[#e0e3e6] bg-white/92 shadow-sm backdrop-blur lg:block"><Container className="flex min-h-14 items-center justify-center gap-1 overflow-x-auto py-2"><Link href="/shop" aria-current={!categorySlug?"page":undefined} className={cn("vitalis-focus shrink-0 rounded-full px-4 py-2 text-xs font-black",!categorySlug?"bg-[#001736] text-white":"text-[#43474f] hover:bg-[#f1f4f7]")}>{l(locale,"همه دسته‌بندی‌ها","All categories","Tüm kategoriler","كل الفئات")}</Link>{categories.map(cat=><Link key={cat.id} href={`/shop/${cat.slug}`} aria-current={categorySlug===cat.slug?"page":undefined} className={cn("vitalis-focus shrink-0 rounded-full px-4 py-2 text-xs font-bold transition",categorySlug===cat.slug?"bg-[#d6e3ff] text-[#001736]":"text-[#43474f] hover:bg-[#f1f4f7]")}>{localizedName(locale,cat)}</Link>)}</Container></div>
   <Container className="pt-5 sm:pt-7">
