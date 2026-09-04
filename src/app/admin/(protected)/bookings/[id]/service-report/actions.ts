@@ -1,0 +1,6 @@
+"use server";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { adminRpc } from "@/lib/admin-data";
+function s(f:FormData,k:string){const v=String(f.get(k)||"").trim();return v||null}
+export async function saveServiceExecutionReport(bookingId:string,formData:FormData){await adminRpc("admin_save_service_execution_report",{p_booking_id:bookingId,p_report_type:String(formData.get("reportType")||"INSTALLATION"),p_visit_date:s(formData,"visitDate"),p_device_model:s(formData,"deviceModel"),p_device_serial:s(formData,"deviceSerial"),p_accessories:s(formData,"accessories"),p_initial_condition:s(formData,"initialCondition"),p_work_performed:s(formData,"workPerformed"),p_settings_applied:s(formData,"settingsApplied"),p_test_result:s(formData,"testResult"),p_customer_instructions:s(formData,"customerInstructions"),p_technician_name:s(formData,"technicianName"),p_customer_representative:s(formData,"customerRepresentative"),p_next_service_date:s(formData,"nextServiceDate"),p_status:String(formData.get("status")||"DRAFT")});revalidatePath(`/admin/bookings/${bookingId}/service-report`);redirect(`/admin/bookings/${bookingId}/service-report?saved=1`)}
