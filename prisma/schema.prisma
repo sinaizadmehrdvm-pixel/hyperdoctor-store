@@ -74,27 +74,40 @@ enum WarrantyStatus {
   REPLACED
 }
 
+enum TaxonomyDimension {
+  REGULATORY_CLASSIFICATION
+  MEDICAL_SPECIALTY
+  CLINICAL_APPLICATION
+  INTENDED_USE
+  CARE_SETTING
+  PRODUCT_TYPE
+  PRODUCT_TECHNOLOGY
+  COLLECTION
+  COMPATIBILITY
+}
+
 model Category {
-  id            String     @id @default(cuid())
-  vertical      Vertical
-  slug          String     @unique
-  nameFa        String
-  nameTr        String     @default("")
-  nameEn        String
-  nameAr        String     @default("")
-  descriptionFa String     @default("")
-  descriptionTr String     @default("")
-  descriptionEn String     @default("")
-  descriptionAr String     @default("")
-  image         String?
-  order         Int        @default(0)
-  isPublished   Boolean    @default(true)
-  parentId      String?
-  parent        Category?  @relation("CategoryToCategory", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  children      Category[] @relation("CategoryToCategory")
-  products      Product[]
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  id                   String                     @id @default(cuid())
+  vertical             Vertical
+  slug                 String                     @unique
+  nameFa               String
+  nameTr               String                     @default("")
+  nameEn               String
+  nameAr               String                     @default("")
+  descriptionFa        String                     @default("")
+  descriptionTr        String                     @default("")
+  descriptionEn        String                     @default("")
+  descriptionAr        String                     @default("")
+  image                String?
+  order                Int                        @default(0)
+  isPublished          Boolean                    @default(true)
+  parentId             String?
+  parent               Category?                  @relation("CategoryToCategory", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children             Category[]                 @relation("CategoryToCategory")
+  products             Product[]
+  secondaryMemberships ProductSecondaryCategory[]
+  createdAt            DateTime                   @default(now())
+  updatedAt            DateTime                   @updatedAt
 
   @@index([vertical])
   @@index([parentId])
@@ -114,61 +127,71 @@ model Brand {
 }
 
 model Product {
-  id                 String                 @id @default(cuid())
-  vertical           Vertical
-  categoryId         String
-  category           Category               @relation(fields: [categoryId], references: [id])
-  brandId            String?
-  brandEntity        Brand?                 @relation("ProductBrand", fields: [brandId], references: [id], onDelete: SetNull)
-  slug               String                 @unique
-  nameFa             String
-  nameTr             String                 @default("")
-  nameEn             String
-  nameAr             String                 @default("")
-  descriptionFa      String                 @default("")
-  descriptionTr      String                 @default("")
-  descriptionEn      String                 @default("")
-  descriptionAr      String                 @default("")
-  brand              String                 @default("")
-  modelNumber        String                 @default("")
-  sku                String                 @unique
-  barcode            String                 @default("")
-  gtin               String                 @default("")
-  manufacturer       String                 @default("")
-  countryOfOrigin    String                 @default("")
-  price              Int
-  compareAtPrice     Int?
-  costPrice          Int?
-  stock              Int                    @default(0)
-  lowStockThreshold  Int                    @default(2)
-  minOrderQty        Int                    @default(1)
-  maxOrderQty        Int?
-  weightGrams        Int?
-  lengthMm           Int?
-  widthMm            Int?
-  heightMm           Int?
-  warrantyMonths     Int?
-  specs              String                 @default("{}")
-  tags               String                 @default("[]")
-  images             Media[]
-  variants           ProductVariant[]
-  isPublished        Boolean                @default(false)
-  isFeatured         Boolean                @default(false)
-  isNewArrival       Boolean                @default(false)
-  seoTitleFa         String                 @default("")
-  seoTitleTr         String                 @default("")
-  seoTitleEn         String                 @default("")
-  seoTitleAr         String                 @default("")
-  seoDescriptionFa   String                 @default("")
-  seoDescriptionTr   String                 @default("")
-  seoDescriptionEn   String                 @default("")
-  seoDescriptionAr   String                 @default("")
-  orderItems         OrderItem[]
-  wishlistItems      WishlistItem[]
-  reviews            Review[]
-  warranties         WarrantyRegistration[]
-  createdAt          DateTime               @default(now())
-  updatedAt          DateTime               @updatedAt
+  id                   String                     @id @default(cuid())
+  vertical             Vertical
+  categoryId           String
+  category             Category                   @relation(fields: [categoryId], references: [id])
+  brandId              String?
+  brandEntity          Brand?                     @relation("ProductBrand", fields: [brandId], references: [id], onDelete: SetNull)
+  slug                 String                     @unique
+  nameFa               String
+  nameTr               String                     @default("")
+  nameEn               String
+  nameAr               String                     @default("")
+  descriptionFa        String                     @default("")
+  descriptionTr        String                     @default("")
+  descriptionEn        String                     @default("")
+  descriptionAr        String                     @default("")
+  brand                String                     @default("")
+  modelNumber          String                     @default("")
+  sku                  String                     @unique
+  barcode              String                     @default("")
+  gtin                 String                     @default("")
+  manufacturer         String                     @default("")
+  countryOfOrigin      String                     @default("")
+  price                Int
+  compareAtPrice       Int?
+  costPrice            Int?
+  stock                Int                        @default(0)
+  lowStockThreshold    Int                        @default(2)
+  minOrderQty          Int                        @default(1)
+  maxOrderQty          Int?
+  weightGrams          Int?
+  lengthMm             Int?
+  widthMm              Int?
+  heightMm             Int?
+  warrantyMonths       Int?
+  specs                String                     @default("{}")
+  tags                 String                     @default("[]")
+  rentalEligible       Boolean                    @default(false)
+  professionalUse      Boolean                    @default(false)
+  homeUse              Boolean                    @default(true)
+  images               Media[]
+  variants             ProductVariant[]
+  isPublished          Boolean                    @default(false)
+  isFeatured           Boolean                    @default(false)
+  isNewArrival         Boolean                    @default(false)
+  seoTitleFa           String                     @default("")
+  seoTitleTr           String                     @default("")
+  seoTitleEn           String                     @default("")
+  seoTitleAr           String                     @default("")
+  seoDescriptionFa     String                     @default("")
+  seoDescriptionTr     String                     @default("")
+  seoDescriptionEn     String                     @default("")
+  seoDescriptionAr     String                     @default("")
+  orderItems           OrderItem[]
+  wishlistItems        WishlistItem[]
+  reviews              Review[]
+  warranties           WarrantyRegistration[]
+  secondaryCategories  ProductSecondaryCategory[]
+  taxonomyLinks        ProductTaxonomy[]
+  relationsOutgoing    ProductRelation[]          @relation("ProductRelationSource")
+  relationsIncoming    ProductRelation[]          @relation("ProductRelationTarget")
+  rentalRequests       RentalRequest[]
+  attributeValues      ProductAttributeValue[]
+  collectionMemberships CollectionProduct[]
+  createdAt            DateTime                   @default(now())
+  updatedAt            DateTime                   @updatedAt
 
   @@index([vertical])
   @@index([categoryId])
@@ -177,45 +200,264 @@ model Product {
 }
 
 model ProductVariant {
-  id             String   @id @default(cuid())
+  id             String      @id @default(cuid())
   productId      String
-  product        Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product        Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
   name           String
-  sku            String   @unique
+  sku            String      @unique
   price          Int?
   compareAtPrice Int?
-  stock          Int      @default(0)
-  attributes     String   @default("{}")
-  isPublished    Boolean  @default(true)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  stock          Int         @default(0)
+  attributes     String      @default("{}")
+  isPublished    Boolean     @default(true)
+  orderItems     OrderItem[]
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
 
   @@index([productId])
 }
 
+model ProductSecondaryCategory {
+  productId  String
+  categoryId String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@id([productId, categoryId])
+  @@index([categoryId])
+}
+
+model TaxonomyTerm {
+  id            String            @id @default(dbgenerated("(gen_random_uuid())::text"))
+  dimension     TaxonomyDimension
+  slug          String
+  nameFa        String            @default("")
+  nameTr        String            @default("")
+  nameEn        String            @default("")
+  nameAr        String            @default("")
+  descriptionFa String            @default("")
+  descriptionTr String            @default("")
+  descriptionEn String            @default("")
+  descriptionAr String            @default("")
+  sortOrder     Int               @default(0)
+  isPublished   Boolean           @default(true)
+  productLinks  ProductTaxonomy[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @default(now())
+
+  @@unique([dimension, slug])
+  @@index([dimension, isPublished, sortOrder])
+}
+
+model ProductTaxonomy {
+  productId String
+  termId    String
+  product   Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  term      TaxonomyTerm @relation(fields: [termId], references: [id], onDelete: Cascade)
+  createdAt DateTime     @default(now())
+
+  @@id([productId, termId])
+  @@index([termId])
+}
+
+model ProductRelation {
+  productId        String
+  relatedProductId String
+  relationType     String
+  sortOrder        Int      @default(0)
+  product          Product  @relation("ProductRelationSource", fields: [productId], references: [id], onDelete: Cascade)
+  relatedProduct   Product  @relation("ProductRelationTarget", fields: [relatedProductId], references: [id], onDelete: Cascade)
+  createdAt        DateTime @default(now())
+
+  @@id([productId, relatedProductId, relationType])
+  @@index([relatedProductId])
+}
+
+model ProductAttributeDefinition {
+  id           String                  @id @default(dbgenerated("(gen_random_uuid())::text"))
+  code         String                  @unique
+  nameFa       String                  @default("")
+  nameTr       String                  @default("")
+  nameEn       String                  @default("")
+  nameAr       String                  @default("")
+  groupFa      String                  @default("")
+  groupTr      String                  @default("")
+  groupEn      String                  @default("")
+  groupAr      String                  @default("")
+  dataType     String                  @default("TEXT")
+  unit         String                  @default("")
+  options      Json                    @default("[]") @db.JsonB
+  isComparable Boolean                 @default(true)
+  isFilterable Boolean                 @default(false)
+  isPublished  Boolean                 @default(true)
+  sortOrder    Int                     @default(0)
+  values       ProductAttributeValue[]
+  createdAt    DateTime                @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime                @default(now()) @db.Timestamptz(6)
+
+  @@index([isPublished, sortOrder])
+}
+
+model ProductAttributeValue {
+  productId    String
+  definitionId String
+  valueText    String?
+  valueNumber  Decimal?
+  valueBoolean Boolean?
+  product      Product                    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  definition   ProductAttributeDefinition @relation(fields: [definitionId], references: [id], onDelete: Cascade)
+  createdAt    DateTime                   @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime                   @default(now()) @db.Timestamptz(6)
+
+  @@id([productId, definitionId])
+  @@index([definitionId])
+}
+
+model Collection {
+  id               String              @id @default(dbgenerated("(gen_random_uuid())::text"))
+  slug             String              @unique
+  titleFa          String              @default("")
+  titleTr          String              @default("")
+  titleEn          String              @default("")
+  titleAr          String              @default("")
+  descriptionFa    String              @default("")
+  descriptionTr    String              @default("")
+  descriptionEn    String              @default("")
+  descriptionAr    String              @default("")
+  heroImageUrl     String              @default("")
+  seoTitleFa       String              @default("")
+  seoTitleTr       String              @default("")
+  seoTitleEn       String              @default("")
+  seoTitleAr       String              @default("")
+  seoDescriptionFa String              @default("")
+  seoDescriptionTr String              @default("")
+  seoDescriptionEn String              @default("")
+  seoDescriptionAr String              @default("")
+  isPublished      Boolean             @default(false)
+  sortOrder        Int                 @default(0)
+  products         CollectionProduct[]
+  createdAt        DateTime            @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime            @default(now()) @db.Timestamptz(6)
+
+  @@index([isPublished, sortOrder])
+}
+
+model CollectionProduct {
+  collectionId String
+  productId    String
+  sortOrder    Int        @default(0)
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  product      Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now()) @db.Timestamptz(6)
+
+  @@id([collectionId, productId])
+  @@index([productId])
+}
+
 model Service {
-  id              String      @id @default(cuid())
+  id              String           @id @default(cuid())
   vertical        Vertical
-  slug            String      @unique
+  slug            String           @unique
   nameFa          String
-  nameTr          String      @default("")
+  nameTr          String           @default("")
   nameEn          String
-  nameAr          String      @default("")
-  descriptionFa   String      @default("")
-  descriptionTr   String      @default("")
-  descriptionEn   String      @default("")
-  descriptionAr   String      @default("")
+  nameAr          String           @default("")
+  descriptionFa   String           @default("")
+  descriptionTr   String           @default("")
+  descriptionEn   String           @default("")
+  descriptionAr   String           @default("")
   image           String?
   price           Int?
-  priceIsFrom     Boolean     @default(true)
+  priceIsFrom     Boolean          @default(true)
   durationMinutes Int?
-  requiresBooking Boolean     @default(true)
-  isPublished     Boolean     @default(false)
+  requiresBooking Boolean          @default(true)
+  isPublished     Boolean          @default(false)
   orderItems      OrderItem[]
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  bookings        ServiceBooking[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 
   @@index([vertical])
+}
+
+model ServiceBooking {
+  id            String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  requestToken  String                    @unique @db.Uuid
+  serviceId     String
+  customerId    String?
+  customerName  String
+  phone         String
+  email         String?
+  preferredDate DateTime                  @db.Date
+  preferredTime String
+  address       String?
+  notes         String?
+  locale        String                    @default("fa")
+  status        String                    @default("PENDING")
+  service       Service                   @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  customer      Customer?                 @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  report        RespiratoryServiceReport?
+  createdAt     DateTime                  @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime                  @default(now()) @db.Timestamptz(6)
+
+  @@index([serviceId, createdAt])
+  @@index([status, createdAt])
+  @@index([customerId])
+}
+
+model RespiratoryServiceReport {
+  id                    String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  bookingId             String         @unique @db.Uuid
+  reportType            String
+  studyDate             DateTime?      @db.Date
+  heightCm              Decimal?
+  weightKg              Decimal?
+  bmi                   Decimal?
+  ahi                   Decimal?
+  odi                   Decimal?
+  avgSpo2               Decimal?
+  minSpo2               Decimal?
+  t90Minutes            Decimal?
+  totalRecordingMinutes Decimal?
+  cpapPressure          Decimal?
+  ipap                  Decimal?
+  epap                  Decimal?
+  leakLpm               Decimal?
+  maskType              String         @default("")
+  deviceModel           String         @default("")
+  deviceSerial          String         @default("")
+  findings              String         @default("")
+  recommendation        String         @default("")
+  technicianName        String         @default("")
+  physicianName         String         @default("")
+  status                String         @default("DRAFT")
+  finalizedAt           DateTime?      @db.Timestamptz(6)
+  booking               ServiceBooking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  createdAt             DateTime       @default(now()) @db.Timestamptz(6)
+  updatedAt             DateTime       @default(now()) @db.Timestamptz(6)
+}
+
+model RentalRequest {
+  id                 String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  requestToken       String   @unique @db.Uuid
+  productId          String
+  customerName       String
+  phone              String
+  email              String?
+  preferredStartDate DateTime? @db.Date
+  preferredEndDate   DateTime? @db.Date
+  address            String?
+  notes              String?
+  locale             String   @default("fa")
+  status             String   @default("NEW")
+  adminNotes         String?
+  product            Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  createdAt          DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([productId, createdAt])
+  @@index([status, createdAt])
 }
 
 model Page {
@@ -255,14 +497,14 @@ model Media {
 }
 
 model Customer {
-  id                String                 @id @default(cuid())
-  email             String?                @unique
-  phone             String?                @unique
-  passwordHash      String                 @default("")
-  fullName          String                 @default("")
-  locale            String                 @default("fa")
-  isActive          Boolean                @default(true)
-  marketingConsent  Boolean                @default(false)
+  id                String           @id @default(cuid())
+  email             String?          @unique
+  phone             String?          @unique
+  passwordHash      String           @default("")
+  fullName          String           @default("")
+  locale            String           @default("fa")
+  isActive          Boolean          @default(true)
+  marketingConsent  Boolean          @default(false)
   addresses         Address[]
   orders            Order[]
   wishlistItems     WishlistItem[]
@@ -270,8 +512,9 @@ model Customer {
   couponRedemptions CouponRedemption[]
   tickets           SupportTicket[]
   warranties        WarrantyRegistration[]
-  createdAt         DateTime               @default(now())
-  updatedAt         DateTime               @updatedAt
+  serviceBookings   ServiceBooking[]
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
 }
 
 model Address {
@@ -400,19 +643,24 @@ model Order {
 }
 
 model OrderItem {
-  id            String   @id @default(cuid())
-  orderId       String
-  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  productId     String?
-  product       Product? @relation(fields: [productId], references: [id])
-  serviceId     String?
-  service       Service? @relation(fields: [serviceId], references: [id])
-  nameSnapshot  String
-  priceSnapshot Int
-  quantity      Int      @default(1)
-  preferredDate DateTime?
+  id                        String          @id @default(cuid())
+  orderId                   String
+  order                     Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId                 String?
+  product                   Product?        @relation(fields: [productId], references: [id])
+  variantId                 String?
+  variant                   ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  serviceId                 String?
+  service                   Service?        @relation(fields: [serviceId], references: [id])
+  nameSnapshot              String
+  priceSnapshot             Int
+  variantSkuSnapshot        String          @default("")
+  variantAttributesSnapshot String          @default("{}")
+  quantity                  Int             @default(1)
+  preferredDate             DateTime?
 
   @@index([productId, orderId])
+  @@index([variantId])
 }
 
 model SupportTicket {
@@ -473,7 +721,7 @@ model WarrantyEvent {
   type        String
   title       String
   description String               @default("")
-  createdAt   DateTime              @default(now())
+  createdAt   DateTime             @default(now())
 
   @@index([warrantyId, createdAt])
 }
@@ -525,14 +773,64 @@ model Article {
 }
 
 model AdminUser {
-  id           String    @id @default(cuid())
-  email        String    @unique
+  id           String          @id @default(cuid())
+  email        String          @unique
   passwordHash String
   name         String
-  role         AdminRole @default(EDITOR)
-  isActive     Boolean   @default(true)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  role         AdminRole       @default(EDITOR)
+  isActive     Boolean         @default(true)
+  sessions     AdminSession[]
+  auditLogs    AdminAuditLog[]
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+}
+
+model AdminSession {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  adminId    String
+  tokenHash  String    @unique
+  expiresAt  DateTime  @db.Timestamptz(6)
+  lastSeenAt DateTime  @default(now()) @db.Timestamptz(6)
+  revokedAt  DateTime? @db.Timestamptz(6)
+  admin      AdminUser @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  createdAt  DateTime  @default(now()) @db.Timestamptz(6)
+
+  @@index([adminId])
+  @@index([expiresAt])
+}
+
+model AdminBootstrap {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tokenHash String    @unique
+  expiresAt DateTime  @db.Timestamptz(6)
+  usedAt    DateTime? @db.Timestamptz(6)
+  createdAt DateTime  @default(now()) @db.Timestamptz(6)
+}
+
+model AdminLoginAttempt {
+  id        BigInt   @id @default(autoincrement())
+  email     String
+  success   Boolean
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([email, createdAt])
+}
+
+model AdminAuditLog {
+  id         String     @id @default(dbgenerated("(gen_random_uuid())::text"))
+  adminId    String?
+  actorName  String     @default("")
+  actorEmail String     @default("")
+  actorRole  String     @default("")
+  action     String
+  entity     String     @default("")
+  entityId   String?
+  details    Json       @default("{}") @db.JsonB
+  admin      AdminUser? @relation(fields: [adminId], references: [id], onDelete: SetNull)
+  createdAt  DateTime   @default(now())
+
+  @@index([adminId, createdAt])
+  @@index([action, createdAt])
 }
 
 model SiteSetting {
