@@ -1,0 +1,62 @@
+export type AdminRole = "SUPER_ADMIN" | "EDITOR" | "SUPPORT" | "SALES";
+
+const routeRules: Array<{prefix:string;roles:AdminRole[]}> = [
+  {prefix:"/admin/team",roles:["SUPER_ADMIN"]},
+  {prefix:"/admin/audit",roles:["SUPER_ADMIN"]},
+  {prefix:"/admin/settings",roles:["SUPER_ADMIN"]},
+  {prefix:"/admin/reports",roles:["SUPER_ADMIN","SALES"]},
+  {prefix:"/admin/transactions",roles:["SUPER_ADMIN","SALES"]},
+  {prefix:"/admin/discounts",roles:["SUPER_ADMIN","SALES"]},
+  {prefix:"/admin/orders",roles:["SUPER_ADMIN","SALES","SUPPORT"]},
+  {prefix:"/admin/customers",roles:["SUPER_ADMIN","SALES","SUPPORT"]},
+  {prefix:"/admin/bookings",roles:["SUPER_ADMIN","SALES","SUPPORT"]},
+  {prefix:"/admin/support",roles:["SUPER_ADMIN","SUPPORT"]},
+  {prefix:"/admin/contacts",roles:["SUPER_ADMIN","SUPPORT"]},
+  {prefix:"/admin/warranties",roles:["SUPER_ADMIN","SUPPORT"]},
+  {prefix:"/admin/content",roles:["SUPER_ADMIN","EDITOR"]},
+  {prefix:"/admin/products",roles:["SUPER_ADMIN","EDITOR"]},
+  {prefix:"/admin/inventory",roles:["SUPER_ADMIN","EDITOR","SALES"]},
+  {prefix:"/admin/categories",roles:["SUPER_ADMIN","EDITOR"]},
+  {prefix:"/admin/services",roles:["SUPER_ADMIN","EDITOR"]},
+  {prefix:"/admin/reviews",roles:["SUPER_ADMIN","EDITOR"]},
+  {prefix:"/admin/articles",roles:["SUPER_ADMIN","EDITOR"]},
+  {prefix:"/admin/banners",roles:["SUPER_ADMIN","EDITOR"]},
+  {prefix:"/admin/pages",roles:["SUPER_ADMIN","EDITOR"]},
+  {prefix:"/admin/media",roles:["SUPER_ADMIN","EDITOR"]},
+];
+
+export function canAdminAccessPath(role:AdminRole, path:string){
+  if(role==="SUPER_ADMIN") return true;
+  if(path==="/admin" || path.startsWith("/admin/search") || path.startsWith("/admin/alerts")) return true;
+  const rule=routeRules.find(r=>path===r.prefix || path.startsWith(`${r.prefix}/`));
+  return rule ? rule.roles.includes(role) : false;
+}
+
+const commonRpc = new Set(["admin_dashboard","admin_global_search","admin_site_settings"]);
+const editorRpc = new Set([
+  "admin_add_media","admin_archive_product","admin_archive_service","admin_article_detail","admin_articles_bundle","admin_banners_bundle","admin_categories_bundle","admin_categories_search","admin_category_detail","admin_consume_storage_upload_grant","admin_create_storage_upload_grant","admin_delete_article","admin_delete_banner","admin_delete_category","admin_delete_media","admin_delete_page","admin_import_product_row","admin_inventory","admin_adjust_stock","admin_media_bundle","admin_media_search","admin_page_detail","admin_pages_bundle","admin_pages_search","admin_product_detail","admin_products_bundle","admin_reviews","admin_service_detail","admin_services_bundle","admin_services_search","admin_update_review","admin_upsert_article","admin_upsert_banner","admin_upsert_category","admin_upsert_page","admin_upsert_product","admin_upsert_service"
+]);
+const supportRpc = new Set([
+  "admin_bookings_bundle","admin_bookings_search","admin_contact_messages","admin_customer_summary","admin_customers","admin_order_detail","admin_orders_bundle","admin_orders_search","admin_support_tickets","admin_update_booking_status","admin_update_contact_message","admin_update_customer","admin_update_support_ticket","admin_update_warranty","admin_warranties"
+]);
+const salesRpc = new Set([
+  "admin_adjust_stock","admin_bookings_bundle","admin_bookings_search","admin_coupons","admin_customer_summary","admin_customers","admin_inventory","admin_order_detail","admin_orders_bundle","admin_orders_search","admin_reports_bundle","admin_resolve_payment_review","admin_transactions","admin_update_booking_status","admin_update_customer","admin_update_order_status","admin_upsert_coupon"
+]);
+const superOnlyRpc = new Set(["admin_update_site_settings","admin_team_list","admin_team_save","admin_team_revoke_sessions","admin_audit_logs"]);
+
+export function canAdminUseRpc(role:AdminRole, fn:string){
+  if(role==="SUPER_ADMIN") return true;
+  if(superOnlyRpc.has(fn)) return false;
+  if(commonRpc.has(fn)) return true;
+  if(role==="EDITOR") return editorRpc.has(fn);
+  if(role==="SUPPORT") return supportRpc.has(fn);
+  if(role==="SALES") return salesRpc.has(fn);
+  return false;
+}
+
+export const adminRoleLabels = {
+  fa:{SUPER_ADMIN:"مدیر ارشد",EDITOR:"مدیر محتوا",SUPPORT:"پشتیبانی",SALES:"فروش"},
+  ar:{SUPER_ADMIN:"مدير رئيسي",EDITOR:"محرر المحتوى",SUPPORT:"الدعم",SALES:"المبيعات"},
+  en:{SUPER_ADMIN:"Super Admin",EDITOR:"Content Editor",SUPPORT:"Support",SALES:"Sales"},
+  tr:{SUPER_ADMIN:"Süper Yönetici",EDITOR:"İçerik Editörü",SUPPORT:"Destek",SALES:"Satış"},
+} as const;
