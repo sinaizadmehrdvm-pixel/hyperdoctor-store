@@ -23,6 +23,7 @@ type ShopProduct = {
   compareAtPrice?: number | null;
   stock: number;
   brand?: string | null;
+  brandEntity?: { name: string } | null;
   isNewArrival?: boolean;
   images?: {
     url: string;
@@ -82,12 +83,12 @@ export function ShopProductCard({ product, compact = false }: { product: ShopPro
   }
 
   function toggleCompare() {
-    const current = readStored(COMPARE_KEY).slice(0, 4);
+    const current = readStored(COMPARE_KEY).slice(0, 5);
     let next: string[];
     if (current.includes(product.id)) {
       next = current.filter((id) => id !== product.id);
       setCompareLimit(false);
-    } else if (current.length >= 4) {
+    } else if (current.length >= 5) {
       setCompareLimit(true);
       window.setTimeout(() => setCompareLimit(false), 1800);
       return;
@@ -102,7 +103,8 @@ export function ShopProductCard({ product, compact = false }: { product: ShopPro
 
   const newLabel = l(locale, "جدید", "New", "Yeni", "جديد");
   const discountLabel = l(locale, `${discountPercent}٪ تخفیف`, `${discountPercent}% off`, `%${discountPercent} indirim`, `خصم ${discountPercent}٪`);
-  const compareLimitText = l(locale, "حداکثر چهار محصول را می‌توانید مقایسه کنید", "You can compare up to four products", "En fazla dört ürünü karşılaştırabilirsiniz", "يمكنك مقارنة أربعة منتجات كحد أقصى");
+  const compareLimitText = l(locale, "حداکثر پنج محصول را می‌توانید مقایسه کنید", "You can compare up to five products", "En fazla beş ürünü karşılaştırabilirsiniz", "يمكنك مقارنة خمسة منتجات كحد أقصى");
+  const brandName=product.brandEntity?.name||product.brand||"";
 
   return (
     <article className="group relative flex min-h-full flex-col overflow-hidden rounded-[1.2rem] border border-[#e0e3e6] bg-white p-2.5 shadow-[0_8px_26px_rgba(0,23,54,.06)] transition duration-300 hover:-translate-y-1 hover:border-[#c4c6d0] hover:shadow-[0_18px_42px_rgba(0,23,54,.12)] focus-within:border-[#009dd8] focus-within:shadow-[0_0_0_3px_rgba(0,157,216,.12),0_18px_42px_rgba(0,23,54,.1)] sm:p-3">
@@ -117,7 +119,7 @@ export function ShopProductCard({ product, compact = false }: { product: ShopPro
       </div>
 
       <div className="flex flex-1 flex-col px-1.5 pb-1 pt-3">
-        {product.brand ? <p className="mb-1 truncate text-[10px] font-black uppercase tracking-[.1em] text-[#747780]">{product.brand}</p> : null}
+        {brandName ? <p className="mb-1 truncate text-[10px] font-black uppercase tracking-[.1em] text-[#747780]">{brandName}</p> : null}
         <Link href={`/product/${product.slug}`} className="vitalis-focus line-clamp-2 min-h-12 rounded-md text-sm font-black leading-6 text-[#181c1e] transition hover:text-[#002b5b]">{name}</Link>
         <div className="mt-2 flex min-h-10 flex-wrap items-baseline gap-x-1.5 gap-y-1 tabular-nums"><strong className="text-[15px] font-black text-[#ba0036] sm:text-base">{formatPrice(product.price, locale)}</strong><span className="text-[10px] font-bold text-[#747780]">{c("currency")}</span>{hasDiscount && product.compareAtPrice ? <span className="text-[10px] text-[#9aa0aa] line-through">{formatPrice(product.compareAtPrice, locale)}</span> : null}</div>
 
