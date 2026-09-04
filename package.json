@@ -11,9 +11,7 @@
     "import:products": "tsx scripts/import-products.ts",
     "test:catalog-smoke": "tsx scripts/smoke-catalog.ts"
   },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
-  },
+  "prisma": { "seed": "tsx prisma/seed.ts" },
   "dependencies": {
     "@prisma/adapter-pg": "^7.9.0",
     "@prisma/client": "^7.9.0",
@@ -25,6 +23,7 @@
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "exceljs": "4.4.0",
     "lucide-react": "^1.26.0",
     "next": "16.2.11",
     "next-auth": "^5.0.0-beta.32",
