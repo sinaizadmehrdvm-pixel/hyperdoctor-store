@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Bell, LogOut, Search, ShieldCheck } from "lucide-react";
 import { AdminSidebar } from "@/components/admin/sidebar";
+import { AdminMobileNav } from "@/components/admin/mobile-nav";
 import { AdminLocaleSwitcher, type AdminLocale } from "@/components/admin/locale-switcher";
 import { HyperDoctorLogo } from "@/components/site/logo";
 import { logoutAdmin, requireAdminSession } from "@/lib/admin-auth";
@@ -33,6 +34,7 @@ export default async function AdminProtectedLayout({ children }: { children: Rea
       <div className={`min-h-screen ${rtl ? "lg:mr-[246px]" : "lg:ml-[246px]"}`}>
         <header className="sticky top-0 z-30 border-b border-[#e4e8ed] bg-white/95 backdrop-blur-xl">
           <div className="flex min-h-[82px] items-center gap-3 px-4 sm:px-6 xl:px-8">
+            <AdminMobileNav locale={locale} role={session.role} />
             <div className="hidden min-w-0 flex-1 md:block"><form action="/admin/search" className="relative block max-w-md"><Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9a9da5]" /><input name="q" minLength={2} maxLength={100} aria-label={t.search} placeholder={t.search} className="h-11 w-full rounded-full border border-[#e0e3e6] bg-[#f7fafd] ps-10 pe-4 text-xs text-[#5f6570] outline-none transition focus:border-[#009dd8] focus:bg-white" /></form></div>
             <div className="me-auto flex items-center gap-2 md:me-0">
               <AdminLocaleSwitcher locale={locale} />
