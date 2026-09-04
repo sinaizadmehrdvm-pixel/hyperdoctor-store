@@ -3,6 +3,7 @@ import "server-only";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { supabaseRpc } from "@/lib/supabase-rest";
+import type { AdminRole } from "@/lib/admin-permissions";
 
 const ADMIN_COOKIE = "hd_admin_session";
 const MAX_AGE = 60 * 60 * 24 * 7;
@@ -11,7 +12,7 @@ export type AdminIdentity = {
   id: string;
   email: string;
   name: string;
-  role: "SUPER_ADMIN" | "EDITOR" | "SUPPORT" | "SALES";
+  role: AdminRole;
   expiresAt?: string;
 };
 
@@ -67,6 +68,12 @@ export async function getAdminSessionToken() {
 export async function requireAdminSession() {
   const session = await getAdminSession();
   if (!session) redirect("/admin/login");
+  return session;
+}
+
+export async function requireAdminRole(roles: readonly AdminRole[]) {
+  const session = await requireAdminSession();
+  if (!roles.includes(session.role)) redirect("/admin?error=forbidden");
   return session;
 }
 
