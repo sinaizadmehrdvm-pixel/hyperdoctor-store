@@ -1,3 +1,4 @@
+-- Version 192: contextual, category-aware storefront facets with real result counts.
 create or replace function public.public_catalog_facets_v2(
   p_category_slug text default null,
   p_search text default null,
