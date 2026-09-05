@@ -2,56 +2,12 @@ import {NextResponse} from "next/server";
 import {z} from "zod";
 import {supabaseRpc} from "@/lib/supabase-rest";
 
-const schema=z.object({
-  orderNumber:z.string().trim().min(4).max(80).regex(/^[A-Za-z0-9-]+$/),
-  phone:z.string().trim().min(8).max(24).regex(/^[+0-9()\s-]+$/)
-}).strict();
-
-type Tracking={
-  orderNumber:string;
-  status:string;
-  shippingMethod:string;
-  trackingCode:string;
-  createdAt:string;
-  shippedAt?:string|null;
-  completedAt?:string|null;
-  items:Array<{name:string;quantity:number}>;
-};
-
-const allowedStatuses=new Set(["PENDING_PAYMENT","PAYMENT_REVIEW","PAID","PROCESSING","SHIPPED","COMPLETED","FAILED","CANCELLED","REFUNDED"]);
+const schema=z.object({orderNumber:z.string().trim().min(4).max(80).regex(/^[A-Za-z0-9-]+$/),phone:z.string().trim().min(8).max(24).regex(/^[+0-9()\s-]+$/)}).strict();
+type Branch={code:string;nameFa:string;nameTr:string;nameEn:string;nameAr:string;countryCode:string;currency:string};
+type Item={name:string;quantity:number;price:number};
+type Tracking={orderNumber:string;status:string;currency:string;subtotal:number;shippingFee:number;total:number;shippingMethod:string;trackingCode:string;createdAt:string;shippedAt?:string|null;completedAt?:string|null;branch?:Branch|null;items:Item[]};
+const statuses=new Set(["PENDING_PAYMENT","PAYMENT_REVIEW","PAID","PROCESSING","SHIPPED","COMPLETED","FAILED","CANCELLED","REFUNDED"]);
 function json(body:unknown,status=200){return NextResponse.json(body,{status,headers:{"Cache-Control":"no-store","X-Content-Type-Options":"nosniff"}})}
-function normalizeOrderNumber(value:string){return value.trim().toUpperCase()}
-function sanitize(result:Tracking):Tracking|null{
-  if(!result||typeof result!=="object")return null;
-  const orderNumber=String(result.orderNumber||"").trim().slice(0,80);
-  const status=String(result.status||"").trim().toUpperCase();
-  const shippingMethod=String(result.shippingMethod||"").trim().slice(0,120);
-  const trackingCode=String(result.trackingCode||"").trim().slice(0,120);
-  const createdAt=String(result.createdAt||"").trim();
-  if(!orderNumber||!allowedStatuses.has(status)||!Number.isFinite(new Date(createdAt).getTime()))return null;
-  const cleanItems=Array.isArray(result.items)?result.items.slice(0,100).map(item=>({name:String(item?.name||"").trim().slice(0,240),quantity:Number(item?.quantity)})).filter(item=>item.name&&Number.isInteger(item.quantity)&&item.quantity>0&&item.quantity<=50):[];
-  const cleanDate=(v?:string|null)=>{if(!v)return null;const s=String(v).trim();return Number.isFinite(new Date(s).getTime())?s:null};
-  return{orderNumber,status,shippingMethod,trackingCode,createdAt,shippedAt:cleanDate(result.shippedAt),completedAt:cleanDate(result.completedAt),items:cleanItems};
-}
-
-export async function POST(request:Request){
-  let raw:unknown=null;
-  try{raw=await request.json()}catch{return json({error:"Invalid tracking data"},400)}
-  const parsed=schema.safeParse(raw);
-  if(!parsed.success)return json({error:"Invalid tracking data"},400);
-  const requestedOrderNumber=normalizeOrderNumber(parsed.data.orderNumber);
-  try{
-    const result=await supabaseRpc<Tracking|null>("track_order_public",{p_order_number:parsed.data.orderNumber,p_phone:parsed.data.phone});
-    if(!result)return json({error:"Order not found"},404);
-    const safe=sanitize(result);
-    if(!safe){console.error("[order-tracking] invalid backend payload");return json({error:"Tracking is temporarily unavailable"},503)}
-    if(normalizeOrderNumber(safe.orderNumber)!==requestedOrderNumber){
-      console.error("[order-tracking] backend order mismatch");
-      return json({error:"Tracking is temporarily unavailable"},503);
-    }
-    return json(safe);
-  }catch(error){
-    console.error("[order-tracking] failed",error);
-    return json({error:"Tracking is temporarily unavailable"},503);
-  }
-}
+const n=(v:unknown)=>Number.isSafeInteger(Number(v))&&Number(v)>=0?Number(v):null;
+function sanitize(r:Tracking):Tracking|null{if(!r||typeof r!=="object")return null;const orderNumber=String(r.orderNumber||"").trim().slice(0,80),status=String(r.status||"").trim().toUpperCase(),createdAt=String(r.createdAt||"").trim();if(!orderNumber||!statuses.has(status)||!Number.isFinite(new Date(createdAt).getTime()))return null;const subtotal=n(r.subtotal),shippingFee=n(r.shippingFee),total=n(r.total);if(subtotal===null||shippingFee===null||total===null)return null;const date=(v?:string|null)=>{if(!v)return null;const s=String(v).trim();return Number.isFinite(new Date(s).getTime())?s:null};const items=Array.isArray(r.items)?r.items.slice(0,100).map(x=>({name:String(x?.name||"").trim().slice(0,240),quantity:Number(x?.quantity),price:Number(x?.price)})).filter(x=>x.name&&Number.isInteger(x.quantity)&&x.quantity>0&&x.quantity<=50&&Number.isSafeInteger(x.price)&&x.price>=0):[];const b=r.branch&&typeof r.branch==="object"?{code:String(r.branch.code||"").slice(0,40),nameFa:String(r.branch.nameFa||"").slice(0,120),nameTr:String(r.branch.nameTr||"").slice(0,120),nameEn:String(r.branch.nameEn||"").slice(0,120),nameAr:String(r.branch.nameAr||"").slice(0,120),countryCode:String(r.branch.countryCode||"").slice(0,4),currency:String(r.branch.currency||"").slice(0,12)}:null;return{orderNumber,status,currency:String(r.currency||"").slice(0,12),subtotal,shippingFee,total,shippingMethod:String(r.shippingMethod||"").trim().slice(0,120),trackingCode:String(r.trackingCode||"").trim().slice(0,120),createdAt,shippedAt:date(r.shippedAt),completedAt:date(r.completedAt),branch:b,items};}
+export async function POST(request:Request){let raw:unknown;try{raw=await request.json()}catch{return json({error:"Invalid tracking data"},400)}const parsed=schema.safeParse(raw);if(!parsed.success)return json({error:"Invalid tracking data"},400);try{const result=await supabaseRpc<Tracking|null>("track_order_public_v2",{p_order_number:parsed.data.orderNumber,p_phone:parsed.data.phone});if(!result)return json({error:"Order not found"},404);const safe=sanitize(result);if(!safe||safe.orderNumber.trim().toUpperCase()!==parsed.data.orderNumber.trim().toUpperCase())return json({error:"Tracking is temporarily unavailable"},503);return json(safe)}catch(error){console.error("[order-tracking] failed",error);return json({error:"Tracking is temporarily unavailable"},503)}}
