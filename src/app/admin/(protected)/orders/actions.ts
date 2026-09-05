@@ -24,6 +24,6 @@ export async function resolvePaymentReview(orderId: string, formData: FormData) 
   if (!REVIEW_RESOLUTIONS.includes(resolution as (typeof REVIEW_RESOLUTIONS)[number])) return;
   const note = String(formData.get("note") || "").trim().slice(0, 500);
   if (resolution === "REFUNDED" && !note) return;
-  await adminRpc("admin_resolve_payment_review", { p_id: orderId, p_resolution: resolution, p_note: note || null });
+  await adminRpc("admin_resolve_payment_review_v2", { p_id: orderId, p_resolution: resolution, p_note: note || null });
   refreshOrder(orderId);
 }
