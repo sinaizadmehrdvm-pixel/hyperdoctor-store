@@ -1,0 +1,13 @@
+model RespiratoryServiceReportVersion {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  reportId  String   @db.Uuid
+  bookingId String   @db.Uuid
+  version   Int
+  status    String
+  snapshot  Json     @db.JsonB
+  createdBy String?
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+
+  @@unique([reportId, version])
+  @@index([bookingId, version])
+}
