@@ -41,3 +41,16 @@ model WarehouseInventory {
   @@id([warehouseId, productId])
   @@index([productId])
 }
+
+model WarehouseVariantInventory {
+  warehouseId String
+  variantId   String
+  productId   String
+  onHand      Int      @default(0)
+  reserved    Int      @default(0)
+  updatedAt   DateTime @default(now()) @db.Timestamptz(6)
+
+  @@id([warehouseId, variantId])
+  @@index([productId])
+  @@index([variantId])
+}
