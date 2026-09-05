@@ -39,6 +39,12 @@ export function getSupabasePublicConfig() {
   return getConfig();
 }
 
+export function getSupabaseServiceConfig() {
+  const apiKey = getServiceRoleKey();
+  if (!apiKey) throw new Error("SUPABASE_SERVICE_ROLE_KEY is required for privileged storage access");
+  return { baseUrl: getBaseUrl(), apiKey };
+}
+
 export function hasSupabaseServiceRoleKey() {
   return Boolean(getServiceRoleKey());
 }
