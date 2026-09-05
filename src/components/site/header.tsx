@@ -5,6 +5,7 @@ import { getSiteSettings } from "@/lib/site-data";
 import { getCustomerSession } from "@/lib/customer-auth";
 import { HyperDoctorLogo } from "./logo";
 import { LocaleSwitcher } from "./locale-switcher";
+import { BranchSwitcher } from "./branch-switcher";
 import { CartBadge } from "./cart-badge";
 import { MobileNav } from "./mobile-nav";
 
@@ -66,6 +67,7 @@ export async function Header() {
         </nav>
 
         <div className="flex shrink-0 items-center gap-1.5">
+          <BranchSwitcher />
           <Link
             href="/contact"
             className="vitalis-focus hidden min-h-10 items-center rounded-full border border-[#c4c6d0]/60 bg-white px-3 text-xs font-bold text-[#001736] shadow-sm transition hover:border-[#9aa0aa] hover:bg-[#f1f4f7] 2xl:flex"
