@@ -12,6 +12,35 @@ model ProductRentalPolicy {
   updatedAt     DateTime @default(now()) @db.Timestamptz(6)
 }
 
+model RentalLifecycle {
+  id                        String    @id @default(dbgenerated("gen_random_uuid()"))
+  rentalRequestId           String    @unique
+  state                     String    @default("APPROVED")
+  contractNumber            String?   @unique
+  deviceSerials             String?
+  handoverAt                DateTime? @db.Timestamptz(6)
+  handoverBy                String?
+  handoverCondition         String?
+  handoverAccessories       String?
+  handoverNotes             String?
+  depositReceived           Int?
+  returnedAt                DateTime? @db.Timestamptz(6)
+  returnedBy                String?
+  returnCondition           String?
+  returnAccessories         String?
+  damageNotes               String?
+  missingItems              String?
+  finalRentalCharge         Int?
+  damageCharge              Int       @default(0)
+  otherCharge               Int       @default(0)
+  depositRefunded           Int?
+  additionalPaymentReceived Int       @default(0)
+  settlementReference       String?
+  settledAt                 DateTime? @db.Timestamptz(6)
+  createdAt                 DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt                 DateTime  @default(now()) @db.Timestamptz(6)
+}
+
 model ServiceExecutionReport {
   id                     String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   bookingId              String    @unique @db.Uuid
