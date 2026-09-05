@@ -54,3 +54,35 @@ model WarehouseVariantInventory {
   @@index([productId])
   @@index([variantId])
 }
+
+model BranchCommercePolicy {
+  branchId       String   @id
+  salesEnabled   Boolean  @default(false)
+  paymentGateway String   @default("DISABLED")
+  updatedAt      DateTime @default(now()) @db.Timestamptz(6)
+}
+
+model BranchProductPrice {
+  branchId       String
+  productId      String
+  price          Int
+  compareAtPrice Int?
+  isActive       Boolean  @default(true)
+  updatedAt      DateTime @default(now()) @db.Timestamptz(6)
+
+  @@id([branchId, productId])
+  @@index([productId])
+}
+
+model BranchVariantPrice {
+  branchId       String
+  variantId      String
+  productId      String
+  price          Int
+  compareAtPrice Int?
+  isActive       Boolean  @default(true)
+  updatedAt      DateTime @default(now()) @db.Timestamptz(6)
+
+  @@id([branchId, variantId])
+  @@index([productId])
+}
