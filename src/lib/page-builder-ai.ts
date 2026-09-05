@@ -1,19 +1,27 @@
 import { z } from "zod";
 import type { BuilderDocument } from "@/lib/page-builder";
 
+const unsafeMarkup = /(?:<\s*script\b|<\s*iframe\b|javascript\s*:|data\s*:\s*text\/html|on[a-z]+\s*=)/i;
+const safeText = (max: number) => z.string().max(max).refine(value => !unsafeMarkup.test(value), "unsafe_markup");
+const safeHref = z.string().max(2048).refine(value => {
+  if (!value) return true;
+  return value.startsWith("/") || value.startsWith("#") || /^https?:\/\//i.test(value) || /^mailto:/i.test(value) || /^tel:/i.test(value);
+}, "unsafe_href");
+const safeImageUrl = z.string().max(4096).refine(value => !value || value.startsWith("/") || /^https?:\/\//i.test(value), "unsafe_image_url");
+
 const localizedTextSchema = z.object({
-  fa: z.string().max(12000).optional(),
-  tr: z.string().max(12000).optional(),
-  en: z.string().max(12000).optional(),
-  ar: z.string().max(12000).optional(),
+  fa: safeText(12000).optional(),
+  tr: safeText(12000).optional(),
+  en: safeText(12000).optional(),
+  ar: safeText(12000).optional(),
 }).strict();
 
 const cardSchema = z.object({
   id: z.string().min(1).max(160),
   title: localizedTextSchema,
   body: localizedTextSchema,
-  imageUrl: z.string().max(4096).optional(),
-  href: z.string().max(2048).optional(),
+  imageUrl: safeImageUrl.optional(),
+  href: safeHref.optional(),
 }).strict();
 
 const settingsSchema = z.object({
@@ -35,8 +43,8 @@ const contentSchema = z.object({
   body: localizedTextSchema.optional(),
   text: localizedTextSchema.optional(),
   buttonLabel: localizedTextSchema.optional(),
-  buttonHref: z.string().max(2048).optional(),
-  imageUrl: z.string().max(4096).optional(),
+  buttonHref: safeHref.optional(),
+  imageUrl: safeImageUrl.optional(),
   imageAlt: localizedTextSchema.optional(),
   cards: z.array(cardSchema).max(24).optional(),
 }).strict();
@@ -67,7 +75,7 @@ export const builderDocumentAiSchema = z.object({
 }).strict();
 
 export const editorAiRequestSchema = z.object({
-  instruction: z.string().trim().min(2).max(4000),
+  instruction: safeText(4000).trim().min(2),
   document: builderDocumentAiSchema,
   scope: z.enum(["page", "section"]).default("page"),
   selectedSectionId: z.string().max(160).nullable().optional(),
