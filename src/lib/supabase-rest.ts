@@ -86,10 +86,7 @@ export async function supabaseServiceRpc<T>(fn: string, payload: Record<string, 
 }
 
 export async function supabasePrivilegedRpc<T>(fn: string, payload: Record<string, unknown>): Promise<T> {
-  const serviceRoleKey = getServiceRoleKey();
-  return serviceRoleKey
-    ? rpcWithKey<T>(fn, payload, serviceRoleKey)
-    : rpcWithKey<T>(fn, payload, getPublishableKey());
+  return supabaseServiceRpc<T>(fn, payload);
 }
 
 export function inFilter(values: string[]) {
