@@ -38,7 +38,7 @@ export async function GET(request:Request){
   if(context.status!=="PENDING_PAYMENT")return result("pending");
 
   if(gatewayStatus!=="OK"){
-    const finalized=await supabaseRpc<FinalizedOrder|null>("finalize_order_payment",{p_order_number:orderNumber,p_checkout_token:checkoutToken,p_authority:authority,p_success:false,p_ref_id:null}).catch(error=>{console.error("[zarinpal-callback] failure finalization failed",error);return null;});
+    const finalized=await supabaseRpc<FinalizedOrder|null>("finalize_order_payment_v2",{p_order_number:orderNumber,p_checkout_token:checkoutToken,p_authority:authority,p_success:false,p_ref_id:null}).catch(error=>{console.error("[zarinpal-callback] failure finalization failed",error);return null;});
     const finalState=stateFromFinalized(finalized);
     return result(finalState,finalized?.resultToken||context.resultToken);
   }
@@ -46,13 +46,13 @@ export async function GET(request:Request){
   const verification=await verifyZarinpalPayment({amountToman:context.total,authority});
   if(verification.status==="unavailable")return result("pending");
   if(verification.status==="rejected"){
-    const finalized=await supabaseRpc<FinalizedOrder|null>("finalize_order_payment",{p_order_number:orderNumber,p_checkout_token:checkoutToken,p_authority:authority,p_success:false,p_ref_id:null}).catch(error=>{console.error("[zarinpal-callback] rejection finalization failed",error);return null;});
+    const finalized=await supabaseRpc<FinalizedOrder|null>("finalize_order_payment_v2",{p_order_number:orderNumber,p_checkout_token:checkoutToken,p_authority:authority,p_success:false,p_ref_id:null}).catch(error=>{console.error("[zarinpal-callback] rejection finalization failed",error);return null;});
     const finalState=stateFromFinalized(finalized);
     return result(finalState,finalized?.resultToken||context.resultToken);
   }
 
   let finalized:FinalizedOrder|null=null;
-  try{finalized=await supabaseRpc<FinalizedOrder|null>("finalize_order_payment",{p_order_number:orderNumber,p_checkout_token:checkoutToken,p_authority:authority,p_success:true,p_ref_id:verification.refId});}catch(error){console.error("[zarinpal-callback] success finalization failed",error);return result("pending");}
+  try{finalized=await supabaseRpc<FinalizedOrder|null>("finalize_order_payment_v2",{p_order_number:orderNumber,p_checkout_token:checkoutToken,p_authority:authority,p_success:true,p_ref_id:verification.refId});}catch(error){console.error("[zarinpal-callback] success finalization failed",error);return result("pending");}
   const finalState=stateFromFinalized(finalized);
   return result(finalState,finalized?.resultToken||context.resultToken);
 }
