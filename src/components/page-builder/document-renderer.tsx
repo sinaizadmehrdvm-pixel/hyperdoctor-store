@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import type { BuilderDocument, BuilderLocale } from "@/lib/page-builder";
+import type { BuilderDocument, BuilderLocale, BuilderSection, BuilderViewport } from "@/lib/page-builder";
 import { defaultBuilderTheme } from "@/lib/page-builder";
 import { SectionRenderer } from "@/components/page-builder/section-renderer";
 
@@ -10,6 +10,19 @@ type ThemeStyle = CSSProperties & {
   "--builder-muted": string;
   "--builder-radius": string;
 };
+
+function responsiveVisibility(hiddenOn:BuilderViewport[]|undefined){
+  if(!hiddenOn?.length)return "";
+  return [
+    hiddenOn.includes("mobile")?"max-md:hidden":"",
+    hiddenOn.includes("tablet")?"md:max-xl:hidden":"",
+    hiddenOn.includes("desktop")?"xl:hidden":"",
+  ].filter(Boolean).join(" ");
+}
+
+function publicSection(section:BuilderSection):BuilderSection{
+  return {...section,settings:{...(section.settings||{}),hiddenOn:[]}};
+}
 
 export function PageBuilderDocumentRenderer({document,locale}:{document:BuilderDocument;locale:BuilderLocale}){
   const theme={...defaultBuilderTheme,...(document.theme||{})};
@@ -27,7 +40,7 @@ export function PageBuilderDocumentRenderer({document,locale}:{document:BuilderD
   };
   return <main className="flex-1" style={style}>
     <div style={{display:"grid",gap:`${Math.max(0,Math.min(Number(theme.sectionGap||0),160))}px`}}>
-      {document.sections.map(section=><SectionRenderer key={section.id} section={section} locale={locale}/>) }
+      {document.sections.map(section=><div key={section.id} className={responsiveVisibility(section.settings?.hiddenOn)}><SectionRenderer section={publicSection(section)} locale={locale}/></div>)}
     </div>
   </main>;
 }
