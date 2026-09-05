@@ -1,35 +1,33 @@
 import "server-only";
-import { inFilter, supabaseSelect } from "@/lib/supabase-rest";
+import { supabaseRpc } from "@/lib/supabase-rest";
+import type { ShopCatalogFilters } from "@/lib/queries";
 
-function facetValue(row:any,type:string){
-  if(type==="BOOLEAN")return row.valueBoolean==null?"":String(Boolean(row.valueBoolean));
-  if(type==="NUMBER"){const n=Number(row.valueNumber);return Number.isFinite(n)?String(n):""}
-  return String(row.valueText??"").trim();
-}
+export type CatalogFacetBrand={id:string;name:string;slug:string;count:number};
+export type CatalogFacetTerm={id:string;dimension:string;slug:string;nameFa:string;nameTr:string;nameEn:string;nameAr:string;count:number};
+export type CatalogFacetChoice={value:string;count:number};
+export type CatalogFacetAttribute={id:string;code:string;nameFa:string;nameTr:string;nameEn:string;nameAr:string;dataType:string;unit?:string|null;choices:CatalogFacetChoice[]};
+export type CatalogUseFacet={value:"rental"|"professional"|"home";count:number};
+export type ContextualCatalogFacets={resultCount:number;brands:CatalogFacetBrand[];terms:CatalogFacetTerm[];attributes:CatalogFacetAttribute[];useProfiles:CatalogUseFacet[]};
 
-export async function getPublishedCatalogFacets(){
+const EMPTY:ContextualCatalogFacets={resultCount:0,brands:[],terms:[],attributes:[],useProfiles:[]};
+
+export async function getContextualCatalogFacets(opts:{categorySlug?:string;search?:string;filters?:ShopCatalogFilters}={}):Promise<ContextualCatalogFacets>{
+  const filters=opts.filters??{brandId:"",termIds:[],use:"",attributes:[]};
   try{
-    const products=await supabaseSelect<any>("Product",{select:"id,brandId",isPublished:"eq.true"});
-    if(!products.length)return{brands:[],terms:[],attributes:[]};
-    const productIds=products.map(p=>p.id),usedBrandIds=[...new Set(products.map(p=>p.brandId).filter(Boolean))];
-    const[taxonomyLinks,definitions]=await Promise.all([
-      supabaseSelect<any>("ProductTaxonomy",{select:"productId,termId",productId:inFilter(productIds)}).catch(()=>[]),
-      supabaseSelect<any>("ProductAttributeDefinition",{select:"id,code,nameFa,nameTr,nameEn,nameAr,dataType,unit,sortOrder",isPublished:"eq.true",isFilterable:"eq.true",order:"sortOrder.asc"}).catch(()=>[]),
-    ]);
-    const usedTermIds=[...new Set(taxonomyLinks.map((x:any)=>x.termId).filter(Boolean))];
-    const definitionIds=definitions.map((d:any)=>d.id);
-    const[brands,terms,values]=await Promise.all([
-      usedBrandIds.length?supabaseSelect<any>("Brand",{select:"id,name,slug",id:inFilter(usedBrandIds),isPublished:"eq.true",order:"name.asc"}):Promise.resolve([]),
-      usedTermIds.length?supabaseSelect<any>("TaxonomyTerm",{select:"id,dimension,slug,nameFa,nameTr,nameEn,nameAr",id:inFilter(usedTermIds),isPublished:"eq.true",order:"dimension.asc,sortOrder.asc"}):Promise.resolve([]),
-      definitionIds.length?supabaseSelect<any>("ProductAttributeValue",{select:"productId,definitionId,valueText,valueNumber,valueBoolean",productId:inFilter(productIds),definitionId:inFilter(definitionIds)}).catch(()=>[]):Promise.resolve([]),
-    ]);
-    const byDefinition=new Map<string,Set<string>>(),definitionById=new Map(definitions.map((d:any)=>[d.id,d]));
-    for(const row of values){
-      const def:any=definitionById.get(row.definitionId);if(!def)continue;
-      const value=facetValue(row,def.dataType);if(!value)continue;
-      const set=byDefinition.get(def.id)??new Set<string>();if(set.size<50)set.add(value);byDefinition.set(def.id,set);
-    }
-    const attributes=definitions.map((d:any)=>({...d,choices:[...(byDefinition.get(d.id)??new Set<string>())].sort((a,b)=>d.dataType==="NUMBER"?Number(a)-Number(b):a.localeCompare(b))})).filter((d:any)=>d.choices.length);
-    return{brands,terms,attributes};
-  }catch(error){console.error("[catalog] published facets read failed",error);return{brands:[],terms:[],attributes:[]}}
+    const data=await supabaseRpc<ContextualCatalogFacets>("public_catalog_facets_v2",{
+      p_category_slug:opts.categorySlug??null,
+      p_search:opts.search??null,
+      p_brand_id:filters.brandId||null,
+      p_term_ids:filters.termIds.slice(0,12),
+      p_use:filters.use||null,
+      p_attributes:filters.attributes.slice(0,12).map(item=>({definitionId:item.definitionId,value:item.value})),
+    });
+    return{
+      resultCount:Math.max(0,Number(data?.resultCount)||0),
+      brands:Array.isArray(data?.brands)?data.brands:[],
+      terms:Array.isArray(data?.terms)?data.terms:[],
+      attributes:Array.isArray(data?.attributes)?data.attributes:[],
+      useProfiles:Array.isArray(data?.useProfiles)?data.useProfiles:[],
+    };
+  }catch(error){console.error("[catalog] contextual facets read failed",error);return EMPTY}
 }
