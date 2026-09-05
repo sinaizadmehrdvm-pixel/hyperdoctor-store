@@ -1,7 +1,6 @@
 import Link from "next/link";
 import {CalendarRange,FileCheck2,MapPin,PackageCheck,Search,ShieldCheck} from "lucide-react";
 import {customerRpc,requireCustomerSession} from "@/lib/customer-auth";
-import {formatLocalizedDate} from "@/lib/calendar";
 
 type Rental={
  rentalRequestId:string;requestStatus:string;createdAt:string;requestedQuantity:number;
