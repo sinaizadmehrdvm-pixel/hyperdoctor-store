@@ -1,0 +1,43 @@
+model Branch {
+  id          String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  code        String   @unique
+  nameFa      String   @default("")
+  nameTr      String   @default("")
+  nameEn      String   @default("")
+  nameAr      String   @default("")
+  countryCode String   @default("IR")
+  currency    String   @default("IRT")
+  timezone    String   @default("Asia/Tehran")
+  isDefault   Boolean  @default(false)
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @db.Timestamptz(6)
+}
+
+model Warehouse {
+  id        String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  branchId  String
+  code      String
+  nameFa    String   @default("")
+  nameTr    String   @default("")
+  nameEn    String   @default("")
+  nameAr    String   @default("")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @db.Timestamptz(6)
+
+  @@unique([branchId, code])
+  @@index([branchId])
+}
+
+model WarehouseInventory {
+  warehouseId String
+  productId   String
+  onHand      Int      @default(0)
+  reserved    Int      @default(0)
+  rentalUnits Int      @default(0)
+  updatedAt   DateTime @default(now()) @db.Timestamptz(6)
+
+  @@id([warehouseId, productId])
+  @@index([productId])
+}
