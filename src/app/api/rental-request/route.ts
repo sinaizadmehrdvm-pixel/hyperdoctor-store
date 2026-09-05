@@ -24,16 +24,16 @@ export async function POST(request:Request){
   if(start&&(!parseISODateOnly(start)||start<localISODate()))return NextResponse.json({error:"Invalid rental start date"},{status:400});
   if(end&&(!parseISODateOnly(end)||(start&&end<start)))return NextResponse.json({error:"Invalid rental date range"},{status:400});
   try{
-    const rentalRequestId=await supabaseRpc<string>("create_rental_request",{
+    const rentalRequestId=await supabaseRpc<string>("create_rental_request_v2",{
       p_request_token:body.requestToken,p_product_id:body.productId,p_customer_name:body.customerName,p_phone:body.phone,
       p_email:body.email||null,p_preferred_start_date:start,p_preferred_end_date:end,p_address:body.address||null,p_notes:body.notes||null,
-      p_locale:body.locale,p_requested_quantity:body.requestedQuantity,
+      p_locale:body.locale,p_requested_quantity:body.requestedQuantity,p_branch_id:null,
     });
     return NextResponse.json({ok:true,rentalRequestId});
   }catch(error){
     const message=error instanceof Error?error.message:"";
     console.error("[rental-request] create failed",error);
-    if(message.includes("unavailable")||message.includes("inventory")||message.includes("quantity"))return NextResponse.json({error:"Rental inventory is not available for the selected quantity or dates"},{status:409});
+    if(message.includes("unavailable")||message.includes("inventory")||message.includes("quantity")||message.includes("branch"))return NextResponse.json({error:"Rental inventory is not available for the selected quantity or dates"},{status:409});
     return NextResponse.json({error:"Rental request could not be registered"},{status:500});
   }
 }
