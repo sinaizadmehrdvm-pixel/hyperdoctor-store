@@ -1,15 +1,15 @@
 model ProductRentalPolicy {
-  productId     String   @id
-  availableUnits Int     @default(0)
-  dailyRate     Int?
-  weeklyRate    Int?
-  monthlyRate   Int?
-  depositAmount Int?
-  currency      String   @default("IRR")
-  minDays       Int      @default(1)
-  maxDays       Int?
-  isActive      Boolean  @default(true)
-  updatedAt     DateTime @default(now()) @db.Timestamptz(6)
+  productId      String   @id
+  availableUnits Int      @default(0)
+  dailyRate      Int?
+  weeklyRate     Int?
+  monthlyRate    Int?
+  depositAmount  Int?
+  currency       String   @default("IRR")
+  minDays        Int      @default(1)
+  maxDays        Int?
+  isActive       Boolean  @default(true)
+  updatedAt      DateTime @default(now()) @db.Timestamptz(6)
 }
 
 model RentalLifecycle {
@@ -39,6 +39,36 @@ model RentalLifecycle {
   settledAt                 DateTime? @db.Timestamptz(6)
   createdAt                 DateTime  @default(now()) @db.Timestamptz(6)
   updatedAt                 DateTime  @default(now()) @db.Timestamptz(6)
+}
+
+model RentalFinancialEntry {
+  id               String   @id @default(dbgenerated("gen_random_uuid()"))
+  rentalRequestId  String
+  entryKey         String
+  entryType        String
+  cashDirection    String
+  amount           Int
+  currency         String
+  reference        String?
+  occurredAt       DateTime @db.Timestamptz(6)
+  createdByAdminId String?
+  createdAt        DateTime @default(now()) @db.Timestamptz(6)
+
+  @@unique([rentalRequestId, entryKey])
+  @@index([rentalRequestId, occurredAt])
+}
+
+model RentalDocumentSnapshot {
+  id              String   @id @default(dbgenerated("gen_random_uuid()"))
+  rentalRequestId String
+  documentType    String
+  version         Int      @default(1)
+  snapshot        Json
+  sha256          String
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+
+  @@unique([rentalRequestId, documentType, version])
+  @@index([rentalRequestId, documentType])
 }
 
 model ServiceExecutionReport {
