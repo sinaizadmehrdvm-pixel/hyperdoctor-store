@@ -1,0 +1,109 @@
+"use client";
+
+import Link from "next/link";
+import { useMemo, useState, useTransition } from "react";
+import { ArrowLeft, Check, ChevronDown, ChevronUp, Copy, Desktop, Eye, EyeOff, GripVertical, History, Languages, MonitorSmartphone, Plus, Redo2, Save, Smartphone, Tablet, Trash2, Undo2, UploadCloud } from "lucide-react";
+import { publishBuilderDraft, restoreBuilderRevision, saveBuilderDraft } from "@/app/admin/(protected)/editor/actions";
+import { SectionRenderer } from "@/components/page-builder/section-renderer";
+import { createSection, type BuilderBundle, type BuilderDocument, type BuilderLocale, type BuilderSection, type BuilderSectionType, type BuilderViewport, type LocalizedText } from "@/lib/page-builder";
+import type { AdminLocale } from "@/lib/admin-i18n";
+
+const locales:BuilderLocale[]=["fa","tr","en","ar"];
+const types:BuilderSectionType[]=["hero","richText","imageText","cards","cta","spacer"];
+const typeLabels:Record<BuilderSectionType,string>={hero:"Hero",richText:"Rich text",imageText:"Image + text",cards:"Cards",cta:"Call to action",spacer:"Spacer"};
+const ui={
+ fa:{back:"صفحات",title:"ویرایشگر بصری",draft:"پیش‌نویس",saved:"ذخیره شد",save:"ذخیره",publish:"انتشار",published:"منتشر شد",add:"افزودن بخش",layers:"بخش‌ها",settings:"تنظیمات",content:"محتوا",history:"نسخه‌ها",empty:"هنوز بخشی وجود ندارد. یک بخش اضافه کنید.",select:"برای ویرایش یک بخش را انتخاب کنید",desktop:"دسکتاپ",tablet:"تبلت",mobile:"موبایل",undo:"برگشت",redo:"جلو",visible:"نمایش",duplicate:"تکثیر",remove:"حذف",moveUp:"بالا",moveDown:"پایین",restore:"بازیابی",revision:"نسخه",background:"پس‌زمینه",foreground:"رنگ متن",padding:"فاصله عمودی",maxWidth:"حداکثر عرض",minHeight:"حداقل ارتفاع",align:"چیدمان",imageUrl:"آدرس تصویر",buttonHref:"لینک دکمه",columns:"ستون‌ها",eyebrow:"بالانویس",heading:"عنوان",body:"متن",button:"متن دکمه",text:"متن",imageAlt:"متن جایگزین تصویر",preview:"پیش‌نمایش عمومی"},
+ en:{back:"Pages",title:"Visual editor",draft:"Draft",saved:"Saved",save:"Save",publish:"Publish",published:"Published",add:"Add section",layers:"Sections",settings:"Settings",content:"Content",history:"Versions",empty:"No sections yet. Add one to start.",select:"Select a section to edit",desktop:"Desktop",tablet:"Tablet",mobile:"Mobile",undo:"Undo",redo:"Redo",visible:"Visible",duplicate:"Duplicate",remove:"Delete",moveUp:"Move up",moveDown:"Move down",restore:"Restore",revision:"Revision",background:"Background",foreground:"Text color",padding:"Vertical padding",maxWidth:"Max width",minHeight:"Min height",align:"Alignment",imageUrl:"Image URL",buttonHref:"Button link",columns:"Columns",eyebrow:"Eyebrow",heading:"Heading",body:"Body",button:"Button label",text:"Text",imageAlt:"Image alt text",preview:"Public preview"},
+ tr:{back:"Sayfalar",title:"Görsel düzenleyici",draft:"Taslak",saved:"Kaydedildi",save:"Kaydet",publish:"Yayınla",published:"Yayınlandı",add:"Bölüm ekle",layers:"Bölümler",settings:"Ayarlar",content:"İçerik",history:"Sürümler",empty:"Henüz bölüm yok. Bir bölüm ekleyin.",select:"Düzenlemek için bir bölüm seçin",desktop:"Masaüstü",tablet:"Tablet",mobile:"Mobil",undo:"Geri al",redo:"Yinele",visible:"Görünür",duplicate:"Kopyala",remove:"Sil",moveUp:"Yukarı",moveDown:"Aşağı",restore:"Geri yükle",revision:"Sürüm",background:"Arka plan",foreground:"Metin rengi",padding:"Dikey boşluk",maxWidth:"Maks genişlik",minHeight:"Min yükseklik",align:"Hizalama",imageUrl:"Görsel URL",buttonHref:"Buton bağlantısı",columns:"Sütunlar",eyebrow:"Üst başlık",heading:"Başlık",body:"Metin",button:"Buton metni",text:"Metin",imageAlt:"Görsel alternatif metni",preview:"Canlı önizleme"},
+ ar:{back:"الصفحات",title:"المحرر المرئي",draft:"مسودة",saved:"تم الحفظ",save:"حفظ",publish:"نشر",published:"تم النشر",add:"إضافة قسم",layers:"الأقسام",settings:"الإعدادات",content:"المحتوى",history:"الإصدارات",empty:"لا توجد أقسام بعد. أضف قسماً للبدء.",select:"اختر قسماً لتحريره",desktop:"سطح المكتب",tablet:"جهاز لوحي",mobile:"الهاتف",undo:"تراجع",redo:"إعادة",visible:"ظاهر",duplicate:"تكرار",remove:"حذف",moveUp:"أعلى",moveDown:"أسفل",restore:"استعادة",revision:"إصدار",background:"الخلفية",foreground:"لون النص",padding:"المسافة العمودية",maxWidth:"العرض الأقصى",minHeight:"الارتفاع الأدنى",align:"المحاذاة",imageUrl:"رابط الصورة",buttonHref:"رابط الزر",columns:"الأعمدة",eyebrow:"العنوان العلوي",heading:"العنوان",body:"النص",button:"نص الزر",text:"النص",imageAlt:"النص البديل للصورة",preview:"معاينة عامة"}
+} as const;
+
+function clone<T>(value:T):T{return JSON.parse(JSON.stringify(value)) as T}
+
+export function VisualPageEditor({initial,adminLocale}:{initial:BuilderBundle;adminLocale:AdminLocale}){
+ const t=ui[adminLocale]; const rtl=adminLocale==="fa"||adminLocale==="ar";
+ const [doc,setDoc]=useState<BuilderDocument>(initial.draft);
+ const [selectedId,setSelectedId]=useState<string|null>(initial.draft.sections[0]?.id??null);
+ const [locale,setLocale]=useState<BuilderLocale>((adminLocale in {fa:1,tr:1,en:1,ar:1}?adminLocale:"fa") as BuilderLocale);
+ const [viewport,setViewport]=useState<BuilderViewport>("desktop");
+ const [past,setPast]=useState<BuilderDocument[]>([]); const [future,setFuture]=useState<BuilderDocument[]>([]);
+ const [dirty,setDirty]=useState(false); const [status,setStatus]=useState<"idle"|"saving"|"saved"|"published"|"error">("idle");
+ const [revision,setRevision]=useState(initial.publishedRevision); const [isPending,startTransition]=useTransition();
+ const [dragId,setDragId]=useState<string|null>(null);
+ const selected=useMemo(()=>doc.sections.find(s=>s.id===selectedId)??null,[doc,selectedId]);
+ const width=viewport==="desktop"?"100%":viewport==="tablet"?"820px":"390px";
+
+ const commit=(next:BuilderDocument)=>{setPast(p=>[...p.slice(-49),clone(doc)]);setFuture([]);setDoc(next);setDirty(true);setStatus("idle")};
+ const mutate=(fn:(draft:BuilderDocument)=>void)=>{const next=clone(doc);fn(next);commit(next)};
+ const updateSelected=(fn:(section:BuilderSection)=>void)=>{if(!selectedId)return;mutate(d=>{const s=d.sections.find(x=>x.id===selectedId);if(s)fn(s)})};
+ const undo=()=>{const prev=past.at(-1);if(!prev)return;setFuture(f=>[clone(doc),...f].slice(0,50));setPast(p=>p.slice(0,-1));setDoc(prev);setDirty(true)};
+ const redo=()=>{const next=future[0];if(!next)return;setPast(p=>[...p,clone(doc)].slice(-50));setFuture(f=>f.slice(1));setDoc(next);setDirty(true)};
+ const add=(type:BuilderSectionType)=>{const s=createSection(type);mutate(d=>d.sections.push(s));setSelectedId(s.id)};
+ const remove=()=>{if(!selectedId)return;const idx=doc.sections.findIndex(s=>s.id===selectedId);mutate(d=>{d.sections=d.sections.filter(s=>s.id!==selectedId)});setSelectedId(doc.sections[idx+1]?.id??doc.sections[idx-1]?.id??null)};
+ const duplicate=()=>{if(!selected)return;const copy=clone(selected);copy.id=`${selected.type}-${Date.now()}-${Math.random().toString(36).slice(2,6)}`;const idx=doc.sections.findIndex(s=>s.id===selected.id);mutate(d=>d.sections.splice(idx+1,0,copy));setSelectedId(copy.id)};
+ const move=(delta:number)=>{if(!selectedId)return;const idx=doc.sections.findIndex(s=>s.id===selectedId);const nextIdx=idx+delta;if(idx<0||nextIdx<0||nextIdx>=doc.sections.length)return;mutate(d=>{const [item]=d.sections.splice(idx,1);d.sections.splice(nextIdx,0,item)})};
+ const dropOn=(targetId:string)=>{if(!dragId||dragId===targetId)return;const from=doc.sections.findIndex(s=>s.id===dragId),to=doc.sections.findIndex(s=>s.id===targetId);if(from<0||to<0)return;mutate(d=>{const [item]=d.sections.splice(from,1);d.sections.splice(to,0,item)});setDragId(null)};
+ const save=()=>startTransition(async()=>{try{setStatus("saving");await saveBuilderDraft(initial.page.id,doc);setDirty(false);setStatus("saved")}catch{setStatus("error")}});
+ const publish=()=>startTransition(async()=>{try{setStatus("saving");if(dirty)await saveBuilderDraft(initial.page.id,doc);const result=await publishBuilderDraft(initial.page.id);setRevision(result.publishedRevision);setDirty(false);setStatus("published")}catch{setStatus("error")}});
+ const restore=(rev:number)=>startTransition(async()=>{try{const restored=await restoreBuilderRevision(initial.page.id,rev);setPast(p=>[...p,clone(doc)].slice(-50));setFuture([]);setDoc(restored);setSelectedId(restored.sections[0]?.id??null);setDirty(true);setStatus("idle")}catch{setStatus("error")}});
+ const setLocalized=(field:string,value:string)=>updateSelected(s=>{const current=(s.content[field]??{}) as LocalizedText;s.content[field]={...current,[locale]:value}});
+
+ return <div className="fixed inset-0 z-[80] flex flex-col bg-[#eef1f5] text-[#001736]" dir={rtl?"rtl":"ltr"}>
+  <header className="flex min-h-16 items-center gap-3 border-b border-slate-200 bg-white px-3 sm:px-5">
+   <Link href="/admin/pages" className="flex h-10 items-center gap-2 rounded-xl border border-slate-200 px-3 text-xs font-black"><ArrowLeft className={`h-4 w-4 ${rtl?"rotate-180":""}`}/><span className="hidden sm:inline">{t.back}</span></Link>
+   <div className="min-w-0 flex-1"><div className="truncate text-sm font-black">{t.title} · {initial.page.titleFa||initial.page.titleEn}</div><div className="mt-0.5 flex items-center gap-2 text-[11px] text-slate-500"><span>/{initial.page.slug}</span><span>•</span><span>{t.draft}</span>{revision>0?<><span>•</span><span>v{revision}</span></>:null}</div></div>
+   <div className="hidden items-center rounded-xl bg-slate-100 p-1 md:flex">{(["desktop","tablet","mobile"] as BuilderViewport[]).map(v=>{const I=v==="desktop"?Desktop:v==="tablet"?Tablet:Smartphone;return <button key={v} type="button" onClick={()=>setViewport(v)} title={t[v]} className={`flex h-9 w-10 items-center justify-center rounded-lg ${viewport===v?"bg-white shadow-sm":"text-slate-500"}`}><I className="h-4 w-4"/></button>})}</div>
+   <div className="hidden items-center rounded-xl border border-slate-200 p-1 sm:flex"><Languages className="mx-2 h-4 w-4 text-slate-400"/>{locales.map(l=><button key={l} onClick={()=>setLocale(l)} className={`h-8 rounded-lg px-2 text-[11px] font-black uppercase ${locale===l?"bg-[#001736] text-white":""}`}>{l}</button>)}</div>
+   <button onClick={undo} disabled={!past.length} title={t.undo} className="hidden h-10 w-10 items-center justify-center rounded-xl border border-slate-200 disabled:opacity-30 lg:flex"><Undo2 className="h-4 w-4"/></button>
+   <button onClick={redo} disabled={!future.length} title={t.redo} className="hidden h-10 w-10 items-center justify-center rounded-xl border border-slate-200 disabled:opacity-30 lg:flex"><Redo2 className="h-4 w-4"/></button>
+   <button onClick={save} disabled={isPending||!dirty} className="flex h-10 items-center gap-2 rounded-xl border border-slate-200 px-3 text-xs font-black disabled:opacity-50"><Save className="h-4 w-4"/><span className="hidden sm:inline">{status==="saved"?t.saved:t.save}</span></button>
+   <button onClick={publish} disabled={isPending} className="flex h-10 items-center gap-2 rounded-xl bg-[#e80346] px-4 text-xs font-black text-white shadow-lg shadow-rose-200"><UploadCloud className="h-4 w-4"/><span className="hidden sm:inline">{status==="published"?t.published:t.publish}</span></button>
+  </header>
+
+  <div className="flex min-h-0 flex-1">
+   <aside className="hidden w-64 shrink-0 overflow-y-auto border-e border-slate-200 bg-white lg:block">
+    <div className="p-4"><div className="mb-3 text-xs font-black uppercase tracking-wider text-slate-500">{t.add}</div><div className="grid grid-cols-2 gap-2">{types.map(type=><button key={type} type="button" onClick={()=>add(type)} className="rounded-xl border border-slate-200 p-3 text-start text-[11px] font-bold hover:border-sky-400 hover:bg-sky-50"><Plus className="mb-2 h-4 w-4"/>{typeLabels[type]}</button>)}</div></div>
+    <div className="border-t border-slate-100 p-4"><div className="mb-3 text-xs font-black uppercase tracking-wider text-slate-500">{t.layers}</div><div className="space-y-2">{doc.sections.map((s,i)=><button key={s.id} draggable onDragStart={()=>setDragId(s.id)} onDragOver={e=>e.preventDefault()} onDrop={()=>dropOn(s.id)} onClick={()=>setSelectedId(s.id)} className={`flex w-full items-center gap-2 rounded-xl border px-3 py-2.5 text-start text-xs ${selectedId===s.id?"border-sky-400 bg-sky-50":"border-slate-200"}`}><GripVertical className="h-4 w-4 shrink-0 text-slate-400"/><span className="min-w-0 flex-1 truncate">{i+1}. {typeLabels[s.type]}</span>{s.visible===false?<EyeOff className="h-3.5 w-3.5 text-slate-400"/>:null}</button>)}</div></div>
+   </aside>
+
+   <main className="min-w-0 flex-1 overflow-auto p-4 sm:p-6" onClick={()=>setSelectedId(null)}>
+    <div className="mx-auto transition-all duration-300" style={{width,maxWidth:"100%"}}>
+     <div className="overflow-hidden rounded-2xl border border-slate-300 bg-white shadow-[0_25px_70px_rgba(0,23,54,.12)]">
+      {doc.sections.length?doc.sections.map((s,i)=><div key={s.id} className="group relative" draggable onDragStart={()=>setDragId(s.id)} onDragOver={e=>e.preventDefault()} onDrop={()=>dropOn(s.id)}>
+       {selectedId===s.id?<div className="absolute start-3 top-3 z-20 flex items-center gap-1 rounded-xl bg-[#001736] p-1 text-white shadow-lg"><button onClick={e=>{e.stopPropagation();move(-1)}} disabled={i===0} className="flex h-8 w-8 items-center justify-center rounded-lg disabled:opacity-30"><ChevronUp className="h-4 w-4"/></button><button onClick={e=>{e.stopPropagation();move(1)}} disabled={i===doc.sections.length-1} className="flex h-8 w-8 items-center justify-center rounded-lg disabled:opacity-30"><ChevronDown className="h-4 w-4"/></button><button onClick={e=>{e.stopPropagation();duplicate()}} className="flex h-8 w-8 items-center justify-center rounded-lg"><Copy className="h-4 w-4"/></button><button onClick={e=>{e.stopPropagation();updateSelected(x=>{x.visible=x.visible===false?true:false})}} className="flex h-8 w-8 items-center justify-center rounded-lg">{s.visible===false?<Eye className="h-4 w-4"/>:<EyeOff className="h-4 w-4"/>}</button><button onClick={e=>{e.stopPropagation();remove()}} className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-500"><Trash2 className="h-4 w-4"/></button></div>:null}
+       <SectionRenderer section={s} locale={locale} viewport={viewport} editable selected={selectedId===s.id} onSelect={()=>setSelectedId(s.id)}/>
+      </div>):<div className="flex min-h-[520px] flex-col items-center justify-center p-10 text-center text-slate-500"><MonitorSmartphone className="mb-4 h-10 w-10"/><p className="text-sm">{t.empty}</p><button onClick={e=>{e.stopPropagation();add("hero")}} className="mt-5 rounded-xl bg-[#001736] px-5 py-3 text-xs font-black text-white">{t.add}</button></div>}
+     </div>
+    </div>
+   </main>
+
+   <aside className="w-[320px] shrink-0 overflow-y-auto border-s border-slate-200 bg-white max-xl:hidden">
+    {selected?<Inspector section={selected} locale={locale} t={t} onLocalized={setLocalized} onUpdate={updateSelected}/>:<div className="p-6 text-center text-sm text-slate-500">{t.select}</div>}
+    <div className="border-t border-slate-100 p-5"><div className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-wider text-slate-500"><History className="h-4 w-4"/>{t.history}</div>{initial.revisions.length?<div className="space-y-2">{initial.revisions.map(r=><div key={r.revision} className="flex items-center gap-2 rounded-xl border border-slate-200 p-3"><div className="min-w-0 flex-1 text-xs"><b>{t.revision} {r.revision}</b><div className="mt-1 truncate text-[10px] text-slate-400">{r.createdAt?new Date(r.createdAt).toLocaleString():""}</div></div><button disabled={isPending} onClick={()=>restore(r.revision)} className="rounded-lg bg-slate-100 px-2 py-1.5 text-[10px] font-black">{t.restore}</button></div>)}</div>:<p className="text-xs text-slate-400">—</p>}</div>
+    <div className="border-t border-slate-100 p-5"><Link href={`/${locale}/${initial.page.slug}`} target="_blank" className="flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 text-xs font-black"><Eye className="h-4 w-4"/>{t.preview}</Link></div>
+   </aside>
+  </div>
+  {status==="error"?<div className="fixed bottom-5 start-1/2 -translate-x-1/2 rounded-xl bg-rose-600 px-4 py-3 text-xs font-black text-white shadow-xl">Save failed. Please retry.</div>:null}
+ </div>
+}
+
+function Inspector({section,locale,t,onLocalized,onUpdate}:{section:BuilderSection;locale:BuilderLocale;t:(typeof ui)[AdminLocale];onLocalized:(field:string,value:string)=>void;onUpdate:(fn:(s:BuilderSection)=>void)=>void}){
+ const localized=(field:string)=>String(((section.content[field] as LocalizedText|undefined)?.[locale])??"");
+ const Field=({label,field,multiline=false}:{label:string;field:string;multiline?:boolean})=><label className="block"><span className="mb-1.5 block text-[11px] font-bold text-slate-500">{label} · {locale.toUpperCase()}</span>{multiline?<textarea value={localized(field)} onChange={e=>onLocalized(field,e.target.value)} rows={5} className="w-full rounded-xl border border-slate-200 p-3 text-sm outline-none focus:border-sky-400"/>:<input value={localized(field)} onChange={e=>onLocalized(field,e.target.value)} className="h-10 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-sky-400"/>}</label>;
+ const Plain=({label,value,onChange,type="text"}:{label:string;value:string;onChange:(v:string)=>void;type?:string})=><label className="block"><span className="mb-1.5 block text-[11px] font-bold text-slate-500">{label}</span><input type={type} value={value} onChange={e=>onChange(e.target.value)} className="h-10 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-sky-400"/></label>;
+ return <div>
+  <div className="border-b border-slate-100 p-5"><div className="flex items-center justify-between"><div><div className="text-xs font-black uppercase tracking-wider text-slate-500">{t.content}</div><div className="mt-1 text-sm font-black">{typeLabels[section.type]}</div></div><span className="rounded-lg bg-slate-100 px-2 py-1 text-[10px] font-bold uppercase">{locale}</span></div><div className="mt-4 space-y-4">
+   {section.type==="hero"?<><Field label={t.eyebrow} field="eyebrow"/><Field label={t.heading} field="title"/><Field label={t.body} field="body" multiline/><Field label={t.button} field="buttonLabel"/><Plain label={t.buttonHref} value={String(section.content.buttonHref||"")} onChange={v=>onUpdate(s=>{s.content.buttonHref=v})}/></>:null}
+   {section.type==="richText"?<Field label={t.text} field="text" multiline/>:null}
+   {section.type==="imageText"?<><Field label={t.heading} field="title"/><Field label={t.body} field="body" multiline/><Plain label={t.imageUrl} value={String(section.content.imageUrl||"")} onChange={v=>onUpdate(s=>{s.content.imageUrl=v})}/><Field label={t.imageAlt} field="imageAlt"/></>:null}
+   {section.type==="cards"?<><Field label={t.heading} field="title"/><Plain label={t.columns} value={String(section.settings?.columns||3)} type="number" onChange={v=>onUpdate(s=>{s.settings={...s.settings,columns:([2,3,4].includes(Number(v))?Number(v):3) as 2|3|4}})}/><div className="space-y-3">{(section.content.cards||[]).map((card,index)=><div key={card.id} className="rounded-xl border border-slate-200 p-3"><div className="mb-2 text-[10px] font-black text-slate-400">Card {index+1}</div><input value={String(card.title?.[locale]||"")} onChange={e=>onUpdate(s=>{const c=(s.content.cards||[])[index];c.title={...c.title,[locale]:e.target.value}})} className="mb-2 h-9 w-full rounded-lg border border-slate-200 px-2 text-xs"/><textarea value={String(card.body?.[locale]||"")} onChange={e=>onUpdate(s=>{const c=(s.content.cards||[])[index];c.body={...c.body,[locale]:e.target.value}})} rows={2} className="w-full rounded-lg border border-slate-200 p-2 text-xs"/></div>)}</div></>:null}
+   {section.type==="cta"?<><Field label={t.heading} field="title"/><Field label={t.body} field="body" multiline/><Field label={t.button} field="buttonLabel"/><Plain label={t.buttonHref} value={String(section.content.buttonHref||"")} onChange={v=>onUpdate(s=>{s.content.buttonHref=v})}/></>:null}
+  </div></div>
+  <div className="p-5"><div className="mb-4 text-xs font-black uppercase tracking-wider text-slate-500">{t.settings}</div><div className="space-y-4">
+   <div className="grid grid-cols-2 gap-3"><Plain label={t.background} type="color" value={String(section.settings?.background||"#ffffff")} onChange={v=>onUpdate(s=>{s.settings={...s.settings,background:v}})}/><Plain label={t.foreground} type="color" value={String(section.settings?.foreground||"#001736")} onChange={v=>onUpdate(s=>{s.settings={...s.settings,foreground:v}})}/></div>
+   <Plain label={t.padding} type="number" value={String(section.settings?.paddingY||64)} onChange={v=>onUpdate(s=>{s.settings={...s.settings,paddingY:v}})}/><Plain label={t.maxWidth} type="number" value={String(section.settings?.maxWidth||1180)} onChange={v=>onUpdate(s=>{s.settings={...s.settings,maxWidth:v}})}/>{section.type==="hero"?<Plain label={t.minHeight} type="number" value={String(section.settings?.minHeight||520)} onChange={v=>onUpdate(s=>{s.settings={...s.settings,minHeight:v}})}/>:null}
+   <label className="block"><span className="mb-1.5 block text-[11px] font-bold text-slate-500">{t.align}</span><select value={String(section.settings?.align||"start")} onChange={e=>onUpdate(s=>{s.settings={...s.settings,align:e.target.value as "start"|"center"|"end"}})} className="h-10 w-full rounded-xl border border-slate-200 px-3 text-sm"><option value="start">Start</option><option value="center">Center</option><option value="end">End</option></select></label>
+   <button onClick={()=>onUpdate(s=>{s.visible=s.visible===false?true:false})} className="flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 text-xs font-black">{section.visible===false?<Eye className="h-4 w-4"/>:<EyeOff className="h-4 w-4"/>}{t.visible}</button>
+  </div></div>
+ </div>
+}
