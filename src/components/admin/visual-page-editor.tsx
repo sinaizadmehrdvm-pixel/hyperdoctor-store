@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
-import { ArrowLeft, Check, ChevronDown, ChevronUp, Copy, Eye, EyeOff, GripVertical, History, ImageIcon, Languages, LayoutGrid, Monitor, Palette, Plus, Redo2, Save, Smartphone, Tablet, Trash2, Undo2, UploadCloud, X } from "lucide-react";
+import { ArrowLeft, Check, ChevronDown, ChevronUp, Copy, Eye, EyeOff, GripVertical, History, ImageIcon, Languages, LayoutGrid, Monitor, Palette, Plus, Redo2, Save, Smartphone, Sparkles, Tablet, Trash2, Undo2, UploadCloud, X } from "lucide-react";
 import { publishBuilderDraft, restoreBuilderRevision, saveBuilderDraft } from "@/app/admin/(protected)/editor/actions";
+import { AiEditorPanel } from "@/components/admin/ai-editor-panel";
 import { MediaStudioModal, type EditorMediaAsset } from "@/components/admin/media-studio-modal";
 import { SectionRenderer } from "@/components/page-builder/section-renderer";
 import {
@@ -64,6 +65,7 @@ export function VisualPageEditor({initial,adminLocale,initialMedia}:{initial:Bui
   const [media,setMedia]=useState(initialMedia);
   const [mediaOpen,setMediaOpen]=useState(false);
   const [imageTarget,setImageTarget]=useState<ImageTarget>({kind:"section"});
+  const [aiOpen,setAiOpen]=useState(false);
   const changeSeq=useRef(0);
   const selected=useMemo(()=>doc.sections.find(s=>s.id===selectedId)??null,[doc,selectedId]);
   const theme={...defaultBuilderTheme,...(doc.theme||{})};
@@ -106,6 +108,7 @@ export function VisualPageEditor({initial,adminLocale,initialMedia}:{initial:Bui
     const onKey=(event:KeyboardEvent)=>{
       const meta=event.ctrlKey||event.metaKey;
       if(meta&&event.key.toLowerCase()==="s"){event.preventDefault();void saveNow();}
+      if(meta&&event.key.toLowerCase()==="k"){event.preventDefault();setAiOpen(true);}
       if(meta&&event.key.toLowerCase()==="z"&&!event.shiftKey){event.preventDefault();undo();}
       if(meta&&(event.key.toLowerCase()==="y"||(event.key.toLowerCase()==="z"&&event.shiftKey))){event.preventDefault();redo();}
       if(event.key==="Escape")setSelectedId(null);
@@ -157,6 +160,7 @@ export function VisualPageEditor({initial,adminLocale,initialMedia}:{initial:Bui
       <div className="hidden rounded-xl bg-slate-100 p-1 md:flex">{(["desktop","tablet","mobile"] as BuilderViewport[]).map(v=>{const Icon=v==="desktop"?Monitor:v==="tablet"?Tablet:Smartphone;return <button key={v} onClick={()=>setViewport(v)} title={t[v]} className={`flex h-9 w-10 items-center justify-center rounded-lg ${viewport===v?"bg-white shadow-sm":"text-slate-500"}`}><Icon className="h-4 w-4"/></button>})}</div>
       <div className="hidden items-center rounded-xl border border-slate-200 p-1 sm:flex"><Languages className="mx-2 h-4 w-4 text-slate-400"/>{localeList.map(l=><button key={l} onClick={()=>setLocale(l)} className={`h-8 rounded-lg px-2 text-[11px] font-black uppercase ${locale===l?"bg-[#001736] text-white":""}`}>{l}</button>)}</div>
       <a href={liveUrl} target="_blank" rel="noreferrer" className="hidden h-10 items-center rounded-xl border border-slate-200 px-3 text-xs font-black xl:flex">{t.publicPreview}</a>
+      <button onClick={()=>setAiOpen(true)} title="AI · Ctrl/Cmd+K" className="flex h-10 items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-3 text-xs font-black text-violet-700"><Sparkles className="h-4 w-4"/><span className="hidden sm:inline">AI</span></button>
       <button onClick={undo} disabled={!past.length} title={t.undo} className="hidden h-10 w-10 items-center justify-center rounded-xl border border-slate-200 disabled:opacity-30 lg:flex"><Undo2 className="h-4 w-4"/></button>
       <button onClick={redo} disabled={!future.length} title={t.redo} className="hidden h-10 w-10 items-center justify-center rounded-xl border border-slate-200 disabled:opacity-30 lg:flex"><Redo2 className="h-4 w-4"/></button>
       <button onClick={save} disabled={pending||!dirty} className="flex h-10 items-center gap-2 rounded-xl border border-slate-200 px-3 text-xs font-black disabled:opacity-50"><Save className="h-4 w-4"/><span className="hidden sm:inline">{t.save}</span></button>
@@ -206,5 +210,6 @@ export function VisualPageEditor({initial,adminLocale,initialMedia}:{initial:Bui
     </div>
 
     <MediaStudioModal open={mediaOpen} assets={media} locale={locale} onClose={()=>setMediaOpen(false)} onSelect={selectImage} onUploaded={asset=>setMedia(current=>[asset,...current])}/>
+    <AiEditorPanel open={aiOpen} document={doc} locale={locale} adminLocale={adminLocale} selectedSectionId={selectedId} onClose={()=>setAiOpen(false)} onApply={next=>{const normalized=normalizeDocument(next);commit(normalized);if(selectedId&&!normalized.sections.some(section=>section.id===selectedId))setSelectedId(normalized.sections[0]?.id??null);}}/>
   </div>;
 }
