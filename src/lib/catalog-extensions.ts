@@ -1,9 +1,14 @@
 import "server-only";
 import { inFilter, supabaseSelect } from "@/lib/supabase-rest";
+import { applyProductInventory, getStoreInventory } from "@/lib/store-inventory";
 
 async function hydrateCollectionProducts(ids:string[]){
   if(!ids.length)return[];
-  const products=await supabaseSelect<any>("Product",{select:"*",id:inFilter(ids),isPublished:"eq.true"});
+  const[rawProducts,snapshot]=await Promise.all([
+    supabaseSelect<any>("Product",{select:"*",id:inFilter(ids),isPublished:"eq.true"}),
+    getStoreInventory(),
+  ]);
+  const products=applyProductInventory(rawProducts,snapshot);
   const images=await supabaseSelect<any>("Media",{select:"*",productId:inFilter(ids),order:"sortOrder.asc"});
   const brands=[...new Set(products.map(p=>p.brandId).filter(Boolean))];
   const brandRows=brands.length?await supabaseSelect<any>("Brand",{select:"id,name,slug,logoUrl",id:inFilter(brands),isPublished:"eq.true"}):[];
