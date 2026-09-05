@@ -2,7 +2,7 @@ import {NextResponse} from "next/server";
 import {z} from "zod";
 import {supabaseRpc} from "@/lib/supabase-rest";
 
-const schema=z.object({rentalRequestId:z.string().trim().min(8).max(160),phone:z.string().trim().min(8).max(24),documentType:z.enum(["CONTRACT","SETTLEMENT"])}).strict();
+const schema=z.object({rentalRequestId:z.string().trim().min(8).max(160),phone:z.string().trim().min(8).max(24).regex(/^[+0-9()\s-]+$/),documentType:z.enum(["CONTRACT","SETTLEMENT"])}).strict();
 function json(body:unknown,status=200){return NextResponse.json(body,{status,headers:{"Cache-Control":"no-store","X-Content-Type-Options":"nosniff","Referrer-Policy":"no-referrer"}})}
 export async function POST(request:Request){
  const parsed=schema.safeParse(await request.json().catch(()=>null));if(!parsed.success)return json({error:"Invalid rental document request"},400);
