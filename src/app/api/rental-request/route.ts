@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { z } from "zod";
 import { localISODate, parseISODateOnly } from "@/lib/calendar";
 import { supabaseRpc } from "@/lib/supabase-rest";
@@ -20,14 +21,14 @@ const schema=z.object({
 export async function POST(request:Request){
   const parsed=schema.safeParse(await request.json().catch(()=>null));
   if(!parsed.success)return NextResponse.json({error:"Invalid rental request payload"},{status:400});
-  const body=parsed.data,start=body.preferredStartDate||null,end=body.preferredEndDate||null;
+  const body=parsed.data,start=body.preferredStartDate||null,end=body.preferredEndDate||null,branchId=(await cookies()).get("hd_branch")?.value?.trim()||null;
   if(start&&(!parseISODateOnly(start)||start<localISODate()))return NextResponse.json({error:"Invalid rental start date"},{status:400});
   if(end&&(!parseISODateOnly(end)||(start&&end<start)))return NextResponse.json({error:"Invalid rental date range"},{status:400});
   try{
     const rentalRequestId=await supabaseRpc<string>("create_rental_request_v2",{
       p_request_token:body.requestToken,p_product_id:body.productId,p_customer_name:body.customerName,p_phone:body.phone,
       p_email:body.email||null,p_preferred_start_date:start,p_preferred_end_date:end,p_address:body.address||null,p_notes:body.notes||null,
-      p_locale:body.locale,p_requested_quantity:body.requestedQuantity,p_branch_id:null,
+      p_locale:body.locale,p_requested_quantity:body.requestedQuantity,p_branch_id:branchId,
     });
     return NextResponse.json({ok:true,rentalRequestId});
   }catch(error){
