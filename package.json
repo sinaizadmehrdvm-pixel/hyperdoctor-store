@@ -21,7 +21,8 @@
     "test:payment-prod": "tsx scripts/audit-production-payment.ts",
     "test:private-route-seo": "tsx scripts/audit-private-route-seo.ts",
     "test:site-sku-identity": "tsx scripts/audit-site-sku-identity.ts",
-    "test:identity-reconciliation": "tsx scripts/audit-identity-reconciliation.ts"
+    "test:identity-reconciliation": "tsx scripts/audit-identity-reconciliation.ts",
+    "test:legacy-identity": "tsx scripts/audit-legacy-identity-registry.ts"
   },
   "prisma": { "seed": "tsx prisma/seed.ts" },
   "dependencies": {

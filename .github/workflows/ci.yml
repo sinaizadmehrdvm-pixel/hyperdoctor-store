@@ -62,4 +62,5 @@ jobs:
       - run: npm run test:private-route-seo
       - run: npm run test:site-sku-identity
       - run: npm run test:identity-reconciliation
+      - run: npm run test:legacy-identity
       - run: npm run build
