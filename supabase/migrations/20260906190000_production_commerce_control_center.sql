@@ -13,21 +13,36 @@ declare
   v_branch_id text;
   v_branch public."Branch"%rowtype;
   v_policy public."BranchCommercePolicy"%rowtype;
-  v_products jsonb;
-  v_warehouses jsonb;
+  v_products jsonb := '[]'::jsonb;
+  v_warehouses jsonb := '[]'::jsonb;
+  v_branches jsonb := '[]'::jsonb;
+  v_total integer := 0;
+  v_ready integer := 0;
 begin
   v_admin := public._admin_session_user(p_token);
-  if v_admin.role not in ('SUPER_ADMIN'::"AdminRole", 'SALES'::"AdminRole") then raise exception 'forbidden'; end if;
+  if v_admin.role not in ('SUPER_ADMIN'::"AdminRole", 'SALES'::"AdminRole") then
+    raise exception 'forbidden';
+  end if;
 
   v_branch_id := nullif(btrim(coalesce(p_branch_id,'')),'');
   if v_branch_id is null then
-    select id into v_branch_id from public."Branch" where "isPublished"=true order by "isDefault" desc,"createdAt" asc limit 1;
+    select id into v_branch_id from public."Branch"
+    where "isPublished"=true
+    order by "isDefault" desc,"createdAt" asc limit 1;
   end if;
   if v_branch_id is null then
-    select id into v_branch_id from public."Branch" order by "isDefault" desc,"createdAt" asc limit 1;
+    select id into v_branch_id from public."Branch"
+    order by "isDefault" desc,"createdAt" asc limit 1;
   end if;
+
+  select coalesce(jsonb_agg(jsonb_build_object(
+    'id',b.id,'code',b.code,'nameFa',b."nameFa",'nameTr',b."nameTr",'nameEn',b."nameEn",'nameAr',b."nameAr",
+    'currency',b.currency,'isPublished',b."isPublished"
+  ) order by b."isDefault" desc,b."createdAt"),'[]'::jsonb)
+  into v_branches from public."Branch" b;
+
   if v_branch_id is null then
-    return jsonb_build_object('branch',null,'branches','[]'::jsonb,'warehouses','[]'::jsonb,'products','[]'::jsonb,'summary',jsonb_build_object('total',0,'ready',0,'blocked',0));
+    return jsonb_build_object('branch',null,'branches',v_branches,'warehouses',v_warehouses,'products',v_products,'summary',jsonb_build_object('total',0,'ready',0,'blocked',0));
   end if;
 
   select * into v_branch from public."Branch" where id=v_branch_id;
@@ -49,20 +64,24 @@ begin
       exists(
         select 1 from public."ProductVariant" pv
         where pv."productId"=p.id and pv."isPublished"=true
-          and coalesce((select bvp.price from public."BranchVariantPrice" bvp where bvp."branchId"=v_branch_id and bvp."variantId"=pv.id and bvp."isActive"=true),(select bp.price from public."BranchProductPrice" bp where bp."branchId"=v_branch_id and bp."productId"=p.id and bp."isActive"=true),pv.price,p.price)>0
-          and coalesce((select sum(greatest(i."onHand"-i.reserved,0))::int from public."WarehouseVariantInventory" i join public."Warehouse" w on w.id=i."warehouseId" where w."branchId"=v_branch_id and w."isActive"=true and i."variantId"=pv.id),0)>0
+          and coalesce(
+            (select bvp.price from public."BranchVariantPrice" bvp where bvp."branchId"=v_branch_id and bvp."variantId"=pv.id and bvp."isActive"=true),
+            (select bp.price from public."BranchProductPrice" bp where bp."branchId"=v_branch_id and bp."productId"=p.id and bp."isActive"=true),
+            pv.price,p.price
+          ) > 0
+          and coalesce((select sum(greatest(i."onHand"-i.reserved,0))::int from public."WarehouseVariantInventory" i join public."Warehouse" w on w.id=i."warehouseId" where w."branchId"=v_branch_id and w."isActive"=true and i."variantId"=pv.id),0) > 0
       ) as has_ready_variant
     from public."Product" p
-    where (p_search is null or btrim(p_search)='' or concat_ws(' ',p.sku,p."nameFa",p."nameTr",p."nameEn",p."nameAr",p.brand,p."modelNumber") ilike '%'||btrim(p_search)||'%')
+    where p_search is null or btrim(p_search)='' or concat_ws(' ',p.sku,p."nameFa",p."nameTr",p."nameEn",p."nameAr",p.brand,p."modelNumber") ilike '%'||btrim(p_search)||'%'
     order by p."isPublished" desc,p."nameEn",p.sku
     limit 500
-  ), rows as (
+  ), readiness as (
     select pb.*,
       (pb."isPublished"=true and pb.has_image=true
        and coalesce(v_policy."salesEnabled",false)=true
        and coalesce(v_policy."paymentGateway",'DISABLED')='ZARINPAL'
        and v_branch.currency='IRT'
-       and case when pb.has_variants then pb.has_ready_variant else pb.effective_price>0 and pb.product_available>0 end) as ready,
+       and case when pb.has_variants then pb.has_ready_variant else pb.effective_price>0 and pb.product_available>0 end) as is_ready,
       array_remove(array[
         case when pb."isPublished"<>true then 'NOT_PUBLISHED' end,
         case when pb.has_image<>true then 'IMAGE_MISSING' end,
@@ -75,19 +94,27 @@ begin
       ],null) as blockers
     from product_base pb
   )
-  select coalesce(jsonb_agg(jsonb_build_object(
-    'id',r.id,'sku',r.sku,'slug',r.slug,'nameFa',r."nameFa",'nameTr',r."nameTr",'nameEn',r."nameEn",'nameAr',r."nameAr",
-    'published',r."isPublished",'hasImage',r.has_image,'hasVariants',r.has_variants,'effectivePrice',r.effective_price,
-    'compareAtPrice',coalesce(r.branch_compare_at,r."compareAtPrice"),'available',r.product_available,'ready',r.ready,'blockers',to_jsonb(r.blockers)
-  ) order by r.ready desc,r."isPublished" desc,r."nameEn",r.sku),'[]'::jsonb)
-  into v_products from rows r;
+  select
+    coalesce(jsonb_agg(jsonb_build_object(
+      'id',r.id,'sku',r.sku,'slug',r.slug,'nameFa',r."nameFa",'nameTr',r."nameTr",'nameEn',r."nameEn",'nameAr',r."nameAr",
+      'published',r."isPublished",'hasImage',r.has_image,'hasVariants',r.has_variants,'effectivePrice',r.effective_price,
+      'compareAtPrice',coalesce(r.branch_compare_at,r."compareAtPrice"),'available',r.product_available,'ready',r.is_ready,'blockers',to_jsonb(r.blockers)
+    ) order by r.is_ready desc,r."isPublished" desc,r."nameEn",r.sku),'[]'::jsonb),
+    count(*)::int,
+    count(*) filter (where r.is_ready)::int
+  into v_products,v_total,v_ready
+  from readiness r;
 
   return jsonb_build_object(
-    'branch',jsonb_build_object('id',v_branch.id,'code',v_branch.code,'nameFa',v_branch."nameFa",'nameTr',v_branch."nameTr",'nameEn',v_branch."nameEn",'nameAr',v_branch."nameAr",'currency',v_branch.currency,'countryCode',v_branch."countryCode",'isPublished',v_branch."isPublished",'salesEnabled',coalesce(v_policy."salesEnabled",false),'paymentGateway',coalesce(v_policy."paymentGateway",'DISABLED')),
-    'branches',coalesce((select jsonb_agg(jsonb_build_object('id',b.id,'code',b.code,'nameFa',b."nameFa",'nameTr',b."nameTr",'nameEn',b."nameEn",'nameAr',b."nameAr",'currency',b.currency,'isPublished',b."isPublished") order by b."isDefault" desc,b."createdAt") from public."Branch" b),'[]'::jsonb),
+    'branch',jsonb_build_object(
+      'id',v_branch.id,'code',v_branch.code,'nameFa',v_branch."nameFa",'nameTr',v_branch."nameTr",'nameEn',v_branch."nameEn",'nameAr',v_branch."nameAr",
+      'currency',v_branch.currency,'countryCode',v_branch."countryCode",'isPublished',v_branch."isPublished",
+      'salesEnabled',coalesce(v_policy."salesEnabled",false),'paymentGateway',coalesce(v_policy."paymentGateway",'DISABLED')
+    ),
+    'branches',v_branches,
     'warehouses',v_warehouses,
     'products',v_products,
-    'summary',jsonb_build_object('total',jsonb_array_length(v_products),'ready',(select count(*) from jsonb_array_elements(v_products) x where coalesce((x->>'ready')::boolean,false)),'blocked',(select count(*) from jsonb_array_elements(v_products) x where not coalesce((x->>'ready')::boolean,false)))
+    'summary',jsonb_build_object('total',v_total,'ready',v_ready,'blocked',v_total-v_ready)
   );
 end;
 $function$;
