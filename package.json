@@ -13,7 +13,8 @@
     "test:security-grants": "tsx scripts/audit-public-rpc-grants.ts",
     "test:catalog-packs": "tsx scripts/audit-verified-catalog-packs.ts",
     "test:commerce-readiness": "tsx scripts/audit-commerce-readiness.ts",
-    "test:launch-commerce": "tsx scripts/audit-launch-commerce.ts"
+    "test:launch-commerce": "tsx scripts/audit-launch-commerce.ts",
+    "test:verified-media": "tsx scripts/audit-verified-product-media.ts"
   },
   "prisma": { "seed": "tsx prisma/seed.ts" },
   "dependencies": {
