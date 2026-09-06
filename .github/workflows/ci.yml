@@ -55,4 +55,5 @@ jobs:
       - run: npm run test:commerce-readiness
       - run: npm run test:launch-commerce
       - run: npm run test:verified-media
+      - run: npm run test:launch-ops
       - run: npm run build
