@@ -15,7 +15,8 @@
     "test:commerce-readiness": "tsx scripts/audit-commerce-readiness.ts",
     "test:launch-commerce": "tsx scripts/audit-launch-commerce.ts",
     "test:verified-media": "tsx scripts/audit-verified-product-media.ts",
-    "test:launch-ops": "tsx scripts/audit-launch-operations.ts"
+    "test:launch-ops": "tsx scripts/audit-launch-operations.ts",
+    "test:seo-index": "tsx scripts/audit-seo-index.ts"
   },
   "prisma": { "seed": "tsx prisma/seed.ts" },
   "dependencies": {
