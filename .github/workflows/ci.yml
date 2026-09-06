@@ -61,4 +61,5 @@ jobs:
       - run: npm run test:payment-prod
       - run: npm run test:private-route-seo
       - run: npm run test:site-sku-identity
+      - run: npm run test:legacy-identity
       - run: npm run build
