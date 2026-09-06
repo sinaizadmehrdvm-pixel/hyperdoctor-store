@@ -24,7 +24,8 @@
     "test:identity-reconciliation": "tsx scripts/audit-identity-reconciliation.ts",
     "test:legacy-identity": "tsx scripts/audit-legacy-identity-registry.ts",
     "test:catalog-provenance": "tsx scripts/audit-catalog-asset-provenance.ts",
-    "test:source-evidence-reconciliation": "tsx scripts/audit-product-source-evidence-reconciliation.ts"
+    "test:source-evidence-reconciliation": "tsx scripts/audit-product-source-evidence-reconciliation.ts",
+    "test:jts-verified-media": "tsx scripts/audit-jts-verified-media.ts"
   },
   "prisma": { "seed": "tsx prisma/seed.ts" },
   "dependencies": {
