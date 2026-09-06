@@ -1,29 +1,28 @@
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const migrationPath = resolve('supabase/migrations/20260907023000_jts_verified_product_media.sql');
-const preparePath = resolve('scripts/prepare-jts-verified-media.ts');
-const partsDir = resolve('assets/catalog/jts-v281');
-
-for (const path of [migrationPath, preparePath]) {
+const routePath = resolve('src/app/api/catalog-media/[mediaId]/route.ts');
+for (const path of [migrationPath, routePath]) {
   if (!existsSync(path)) throw new Error(`Missing Version 281 file: ${path}`);
 }
-if (!existsSync(partsDir)) throw new Error('Missing Version 281 JTS media bundle parts');
 
 const migration = readFileSync(migrationPath, 'utf8');
-const prepare = readFileSync(preparePath, 'utf8');
-const parts = readdirSync(partsDir).filter((name) => /^part-\d{2}\.b64$/.test(name)).sort();
-
-const mappings = [...migration.matchAll(/\('JTS-[^']+',\d+,'JTS-[^']+\.webp'\)/g)];
+const route = readFileSync(routePath, 'utf8');
+const mappings = [...migration.matchAll(/\('JTS-[^']+',\d+\)/g)];
 if (mappings.length !== 53) throw new Error(`Expected 53 JTS media mappings, found ${mappings.length}`);
-if (parts.length !== 10) throw new Error(`Expected 10 bundle parts, found ${parts.length}`);
 
 const requiredMigrationTokens = [
+  'ProductMediaBlob',
+  'service_verified_product_media_blob',
   'file_0000000098d481f4a1baa422ec264c0d',
-  '/catalog/verified/jts/',
+  '/api/catalog-media/',
   "'CATALOG'",
   "'VERIFIED'",
   'No generated, synthetic, stock, or substitute imagery.',
+  'enable row level security',
+  'revoke all on table public."ProductMediaBlob" from public, anon, authenticated',
+  'grant execute on function public.service_verified_product_media_blob(text) to service_role',
   'refuses to publish JTS products',
   'refuses nonzero current JTS product price/stock',
 ];
@@ -37,10 +36,9 @@ for (const forbidden of ['BranchProductPrice', 'WarehouseInventory', 'insert int
   }
 }
 
-if (!prepare.includes('8e143d452b03e5638d6d03519377469d3ded854af7f5c03f842ed0bf10914b11')) {
-  throw new Error('Version 281 media preparation must pin the verified archive checksum');
+for (const token of ['supabaseServiceRpc', 'service_verified_product_media_blob', 'Buffer.from', 'Content-Type', 'Cache-Control', 'X-Content-Type-Options']) {
+  if (!route.includes(token)) throw new Error(`Version 281 media route missing token: ${token}`);
 }
-if (!prepare.includes('expectedFiles = 53')) throw new Error('Version 281 media preparation must verify 53 files');
-if (!prepare.includes("'WEBP'")) throw new Error('Version 281 media preparation must verify WEBP containers');
+if (!route.includes('/^media-v281-jts-')) throw new Error('Version 281 media route must restrict IDs to JTS Version 281 media');
 
-console.log('Version 281 JTS verified-media audit passed: 53 exact source mappings, pinned archive, no commerce/publication writes.');
+console.log('Version 281 JTS verified-media audit passed: 53 exact source mappings, private blob storage, verified-only API, no commerce/publication writes.');
