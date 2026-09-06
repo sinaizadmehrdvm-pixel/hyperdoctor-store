@@ -81,14 +81,16 @@ export async function supabaseSelect<T>(table: string, params: Record<string, st
   return (await response.json()) as T[];
 }
 
-export async function supabaseRpc<T>(fn: string, payload: Record<string, unknown>): Promise<T> {
-  return rpcWithKey<T>(fn, payload, getPublishableKey());
-}
-
 export async function supabaseServiceRpc<T>(fn: string, payload: Record<string, unknown>): Promise<T> {
   const serviceRoleKey = getServiceRoleKey();
-  if (!serviceRoleKey) throw new Error("SUPABASE_SERVICE_ROLE_KEY is required for privileged RPC access");
+  if (!serviceRoleKey) throw new Error("SUPABASE_SERVICE_ROLE_KEY is required for server RPC access");
   return rpcWithKey<T>(fn, payload, serviceRoleKey);
+}
+
+// RPCs are always executed server-side in this application. Keeping one server transport
+// prevents browser-facing roles from needing EXECUTE on SECURITY DEFINER functions.
+export async function supabaseRpc<T>(fn: string, payload: Record<string, unknown>): Promise<T> {
+  return supabaseServiceRpc<T>(fn, payload);
 }
 
 export async function supabasePrivilegedRpc<T>(fn: string, payload: Record<string, unknown>): Promise<T> {
