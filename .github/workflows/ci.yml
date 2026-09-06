@@ -57,4 +57,5 @@ jobs:
       - run: npm run test:verified-media
       - run: npm run test:launch-ops
       - run: npm run test:seo-index
+      - run: npm run test:runtime-a11y
       - run: npm run build
