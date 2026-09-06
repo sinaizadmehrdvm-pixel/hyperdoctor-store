@@ -33,6 +33,8 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
+function siteOrigin(){const raw=process.env.NEXT_PUBLIC_SITE_URL||"https://hyperdoctor-store.vercel.app";try{return new URL(raw).origin}catch{return "https://hyperdoctor-store.vercel.app"}}
+
 export async function generateMetadata({
   params,
 }: {
@@ -40,9 +42,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "brand" });
+  const base=siteOrigin();
   return {
+    metadataBase:new URL(base),
     title: `${t("subBrand")} | ${t("holding")}`,
     description: t("tagline"),
+    alternates:{canonical:`/${locale}`,languages:{fa:"/fa",tr:"/tr",en:"/en",ar:"/ar","x-default":"/fa"}},
+    robots:{index:true,follow:true},
+    openGraph:{type:"website",url:`/${locale}`,title:`${t("subBrand")} | ${t("holding")}`,description:t("tagline"),siteName:t("subBrand"),locale},
   };
 }
 
@@ -59,6 +66,7 @@ export default async function LocaleLayout({
   }
   setRequestLocale(locale);
   const dir = locale === "fa" || locale === "ar" ? "rtl" : "ltr";
+  const skip=locale==="fa"?"رفتن به محتوای اصلی":locale==="ar"?"الانتقال إلى المحتوى الرئيسي":locale==="tr"?"Ana içeriğe geç":"Skip to main content";
 
   return (
     <html
@@ -67,10 +75,11 @@ export default async function LocaleLayout({
       className={`${vazirmatn.variable} ${inter.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <a href="#main-content" className="fixed start-3 top-3 z-[9999] -translate-y-24 rounded-xl bg-[#001736] px-4 py-3 text-sm font-black text-white shadow-xl transition focus:translate-y-0">{skip}</a>
         <NextIntlClientProvider>
           <CartProvider>
             <Header />
-            {children}
+            <div id="main-content" tabIndex={-1} className="contents">{children}</div>
             <Footer />
           </CartProvider>
         </NextIntlClientProvider>
