@@ -19,7 +19,8 @@
     "test:seo-index": "tsx scripts/audit-seo-index.ts",
     "test:runtime-a11y": "tsx scripts/audit-runtime-accessibility.ts",
     "test:payment-prod": "tsx scripts/audit-production-payment.ts",
-    "test:private-route-seo": "tsx scripts/audit-private-route-seo.ts"
+    "test:private-route-seo": "tsx scripts/audit-private-route-seo.ts",
+    "test:site-sku-identity": "tsx scripts/audit-site-sku-identity.ts"
   },
   "prisma": { "seed": "tsx prisma/seed.ts" },
   "dependencies": {
