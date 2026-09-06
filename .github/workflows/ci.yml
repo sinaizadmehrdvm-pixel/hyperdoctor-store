@@ -50,4 +50,5 @@ jobs:
           if-no-files-found: error
       - run: npx prisma db push
       - run: npm run test:catalog-smoke
+      - run: npm run test:security-grants
       - run: npm run build
