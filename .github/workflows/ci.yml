@@ -65,4 +65,5 @@ jobs:
       - run: npm run test:legacy-identity
       - run: npm run test:catalog-provenance
       - run: npm run test:source-evidence-reconciliation
+      - run: npm run test:jts-verified-media
       - run: npm run build
