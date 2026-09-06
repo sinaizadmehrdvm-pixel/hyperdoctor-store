@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "prepare:verified-media": "tsx scripts/prepare-jts-verified-media.ts",
+    "build": "npm run prepare:verified-media && prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
     "seed": "tsx prisma/seed.ts",
