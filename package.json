@@ -26,7 +26,8 @@
     "test:legacy-identity": "tsx scripts/audit-legacy-identity-registry.ts",
     "test:catalog-provenance": "tsx scripts/audit-catalog-asset-provenance.ts",
     "test:source-evidence-reconciliation": "tsx scripts/audit-product-source-evidence-reconciliation.ts",
-    "test:jts-verified-media": "tsx scripts/audit-jts-verified-media.ts"
+    "test:jts-verified-media": "tsx scripts/audit-jts-verified-media.ts",
+    "test:jts-static-media": "npm run prepare:verified-media && tsx scripts/verify-jts-static-media-manifest.ts"
   },
   "prisma": { "seed": "tsx prisma/seed.ts" },
   "dependencies": {
