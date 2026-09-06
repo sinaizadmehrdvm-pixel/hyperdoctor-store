@@ -18,7 +18,8 @@
     "test:launch-ops": "tsx scripts/audit-launch-operations.ts",
     "test:seo-index": "tsx scripts/audit-seo-index.ts",
     "test:runtime-a11y": "tsx scripts/audit-runtime-accessibility.ts",
-    "test:payment-prod": "tsx scripts/audit-production-payment.ts"
+    "test:payment-prod": "tsx scripts/audit-production-payment.ts",
+    "test:private-route-seo": "tsx scripts/audit-private-route-seo.ts"
   },
   "prisma": { "seed": "tsx prisma/seed.ts" },
   "dependencies": {
