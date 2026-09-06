@@ -39,3 +39,9 @@ export async function deletePage(id: string) {
   revalidatePath("/admin/pages");
   revalidatePath("/", "layout");
 }
+
+export async function clonePage(id:string){
+  const cloned=await adminRpc<{id:string;slug:string;isPublished:false;showInNav:false}>("admin_page_clone",{p_page_id:id});
+  revalidatePath("/admin/pages");
+  redirect(`/admin/editor/${cloned.id}`);
+}
