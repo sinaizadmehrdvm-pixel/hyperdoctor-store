@@ -1,5 +1,8 @@
 const IS_PRODUCTION = process.env.VERCEL_ENV === "production" || process.env.NODE_ENV === "production";
-const SANDBOX = process.env.ZARINPAL_SANDBOX !== "false";
+const SANDBOX_REQUESTED = process.env.ZARINPAL_SANDBOX !== "false";
+// Production is intentionally locked to the live Zarinpal endpoints. Preview/dev may use sandbox.
+// Disabling Production commerce should be done through BranchCommercePolicy, not by pointing live traffic at sandbox.
+const SANDBOX = IS_PRODUCTION ? false : SANDBOX_REQUESTED;
 const MERCHANT_ID = (process.env.ZARINPAL_MERCHANT_ID ?? "").trim();
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").trim();
 const PLACEHOLDER_MERCHANT_IDS = new Set(["00000000-0000-0000-0000-000000000000"]);
@@ -24,6 +27,7 @@ export type ZarinpalRuntimeStatus = {
   ready: boolean;
   production: boolean;
   sandbox: boolean;
+  sandboxRequested: boolean;
   merchantConfigured: boolean;
   siteUrlValid: boolean;
   blockers: string[];
@@ -48,13 +52,13 @@ export function getZarinpalRuntimeStatus(): ZarinpalRuntimeStatus {
   const siteUrlValid = !IS_PRODUCTION || isValidProductionSiteUrl(SITE_URL);
 
   if (!merchantOk) blockers.push("MERCHANT_NOT_CONFIGURED");
-  if (IS_PRODUCTION && SANDBOX) blockers.push("SANDBOX_ENABLED_IN_PRODUCTION");
   if (!siteUrlValid) blockers.push("PRODUCTION_SITE_URL_INVALID");
 
   return {
     ready: blockers.length === 0,
     production: IS_PRODUCTION,
     sandbox: SANDBOX,
+    sandboxRequested: SANDBOX_REQUESTED,
     merchantConfigured: merchantOk,
     siteUrlValid,
     blockers,
