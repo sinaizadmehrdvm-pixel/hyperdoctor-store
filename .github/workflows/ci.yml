@@ -53,4 +53,5 @@ jobs:
       - run: npm run test:security-grants
       - run: npm run test:catalog-packs
       - run: npm run test:commerce-readiness
+      - run: npm run test:launch-commerce
       - run: npm run build
