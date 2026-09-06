@@ -1,6 +1,8 @@
+const IS_PRODUCTION = process.env.VERCEL_ENV === "production" || process.env.NODE_ENV === "production";
 const SANDBOX = process.env.ZARINPAL_SANDBOX !== "false";
-const MERCHANT_ID = process.env.ZARINPAL_MERCHANT_ID ?? "";
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const MERCHANT_ID = (process.env.ZARINPAL_MERCHANT_ID ?? "").trim();
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").trim();
+const PLACEHOLDER_MERCHANT_IDS = new Set(["00000000-0000-0000-0000-000000000000"]);
 const API_BASE = SANDBOX
   ? "https://sandbox.zarinpal.com/pg/v4/payment"
   : "https://payment.zarinpal.com/pg/v4/payment";
@@ -17,6 +19,52 @@ export type ZarinpalVerification =
   | { status: "verified"; refId: string }
   | { status: "rejected" }
   | { status: "unavailable" };
+
+export type ZarinpalRuntimeStatus = {
+  ready: boolean;
+  production: boolean;
+  sandbox: boolean;
+  merchantConfigured: boolean;
+  siteUrlValid: boolean;
+  blockers: string[];
+};
+
+function isValidProductionSiteUrl(value: string) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && url.hostname !== "localhost" && url.hostname !== "127.0.0.1";
+  } catch {
+    return false;
+  }
+}
+
+function merchantConfigured() {
+  return MERCHANT_ID.length > 0 && !PLACEHOLDER_MERCHANT_IDS.has(MERCHANT_ID);
+}
+
+export function getZarinpalRuntimeStatus(): ZarinpalRuntimeStatus {
+  const blockers: string[] = [];
+  const merchantOk = merchantConfigured();
+  const siteUrlValid = !IS_PRODUCTION || isValidProductionSiteUrl(SITE_URL);
+
+  if (!merchantOk) blockers.push("MERCHANT_NOT_CONFIGURED");
+  if (IS_PRODUCTION && SANDBOX) blockers.push("SANDBOX_ENABLED_IN_PRODUCTION");
+  if (!siteUrlValid) blockers.push("PRODUCTION_SITE_URL_INVALID");
+
+  return {
+    ready: blockers.length === 0,
+    production: IS_PRODUCTION,
+    sandbox: SANDBOX,
+    merchantConfigured: merchantOk,
+    siteUrlValid,
+    blockers,
+  };
+}
+
+function assertPaymentRuntimeReady() {
+  const status = getZarinpalRuntimeStatus();
+  if (!status.ready) throw new Error(`Zarinpal runtime is not ready: ${status.blockers.join(",")}`);
+}
 
 function tomanToRial(amountToman: number) {
   if (
@@ -74,7 +122,7 @@ export async function requestZarinpalPayment(opts: {
   mobile?: string;
   email?: string;
 }): Promise<{ authority: string; redirectUrl: string }> {
-  if (!MERCHANT_ID) throw new Error("ZARINPAL_MERCHANT_ID is not configured");
+  assertPaymentRuntimeReady();
   const amount = tomanToRial(opts.amountToman);
   const callback = new URL(`${SITE_URL}/api/payments/zarinpal/callback`);
   callback.searchParams.set("order", safeText(opts.orderNumber, 160));
@@ -101,7 +149,7 @@ export async function verifyZarinpalPayment(opts: {
   amountToman: number;
   authority: string;
 }): Promise<ZarinpalVerification> {
-  if (!MERCHANT_ID) return { status: "unavailable" };
+  if (!getZarinpalRuntimeStatus().ready) return { status: "unavailable" };
   const authority = safeText(opts.authority, 128);
   if (!authority) return { status: "rejected" };
 
