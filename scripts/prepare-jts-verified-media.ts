@@ -6,7 +6,7 @@ import { join, resolve } from 'node:path';
 
 const archiveB64Path = resolve('assets/catalog/jts-v281/jts-v281-media-300q15.tar.gz.b64');
 const targetDir = resolve('public/catalog/verified/jts');
-const expectedArchiveSha256 = 'c97a2320f842bd2ef2657de17dd3173d051e8bf3d2b65f8b911666260e2d7eef';
+const expectedArchiveSha256 = '37a12bf9869eeabe4363d770d924819ec2eff9e57add134515df56e10fc4531d';
 const expectedFiles = 53;
 
 if (!existsSync(archiveB64Path)) throw new Error(`Missing canonical JTS media archive: ${archiveB64Path}`);
