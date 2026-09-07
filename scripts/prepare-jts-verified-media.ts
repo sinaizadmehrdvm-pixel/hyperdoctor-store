@@ -1,7 +1,6 @@
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, renameSync } from 'node:fs';
-import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
 const archivePath = resolve('assets/catalog/jts-v281/jts-v281-media-240q85.tar.gz');
@@ -25,7 +24,9 @@ if (manifest.assets.map((asset: { filename: string }) => asset.filename).sort().
 const entries = execFileSync('tar', ['-tzf', archivePath], { encoding: 'utf8' }).trim().split('\n').sort();
 if (entries.join('\n') !== expectedFilenames.join('\n')) throw new Error('Unexpected JTS archive entries');
 
-const staging = mkdtempSync(join(tmpdir(), 'hyperdoctor-jts-v281-'));
+// Keep staging on the destination filesystem; Vercel mounts /tmp separately.
+mkdirSync(resolve('public/catalog/verified'), { recursive: true });
+const staging = mkdtempSync(resolve('public/catalog/verified/.jts-staging-'));
 try {
   execFileSync('tar', ['-xzf', archivePath, '-C', staging], { stdio: 'inherit' });
 
