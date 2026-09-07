@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 const mediaMigrationPath = resolve('supabase/migrations/20260907023000_jts_verified_product_media.sql');
 const staticMigrationPath = resolve('supabase/migrations/20260907025000_jts_static_verified_media.sql');
 const preparePath = resolve('scripts/prepare-jts-verified-media.ts');
-const archivePath = resolve('assets/catalog/jts-v281/jts-v281-media-300q80.tar.gz.b64');
+const archivePath = resolve('assets/catalog/jts-v281/jts-v281-media-240q35.tar.gz');
 for (const path of [mediaMigrationPath, staticMigrationPath, preparePath, archivePath]) {
   if (!existsSync(path)) throw new Error(`Missing Version 281 completion file: ${path}`);
 }
@@ -13,9 +13,9 @@ for (const path of [mediaMigrationPath, staticMigrationPath, preparePath, archiv
 const mediaMigration = readFileSync(mediaMigrationPath, 'utf8');
 const staticMigration = readFileSync(staticMigrationPath, 'utf8');
 const prepare = readFileSync(preparePath, 'utf8');
-const archive = Buffer.from(readFileSync(archivePath, 'utf8').replace(/\s+/g, ''), 'base64');
+const archive = readFileSync(archivePath);
 const archiveSha256 = createHash('sha256').update(archive).digest('hex');
-const expectedArchiveSha256 = '8bccad6d57f3423d009d4704ce66f0bfdcee57b5996baecd2591398ac26a0aa1';
+const expectedArchiveSha256 = '97d74907fb5d24175873044c1e0f664ef6e1d5389bd6f2e3525480e01518c4ec';
 if (archiveSha256 !== expectedArchiveSha256) throw new Error(`Version 281 archive checksum mismatch: ${archiveSha256}`);
 
 const mappings = [...mediaMigration.matchAll(/\('JTS-[^']+',\d+\)/g)];

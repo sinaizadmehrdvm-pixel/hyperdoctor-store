@@ -1,6 +1,6 @@
 -- Version 281 completion — serve the 53 verified JTS media files as immutable static assets.
 -- Bytes are deterministically reconstructed during build from the checksum-pinned source-derived archive.
--- This migration changes only Media delivery URLs; it does not publish products or create current commerce state.
+-- This migration changes only Media delivery URL/dimensions; it does not publish products or create current commerce state.
 
 do $$
 declare
@@ -21,7 +21,7 @@ begin
 end $$;
 
 update public."Media" m
-set url='/catalog/verified/jts/'||p.sku||'.webp'
+set url='/catalog/verified/jts/'||p.sku||'.webp', width=240, height=240
 from public."Product" p
 join public."ProductMediaEvidence" e on e."productId"=p.id
 where m."productId"=p.id
@@ -41,7 +41,8 @@ begin
   join public."ProductMediaEvidence" e on e."mediaId"=m.id
   where p.sku like 'JTS-%'
     and e."verificationStatus"='VERIFIED'
-    and m.url='/catalog/verified/jts/'||p.sku||'.webp';
+    and m.url='/catalog/verified/jts/'||p.sku||'.webp'
+    and m.width=240 and m.height=240;
 
   if v_static <> 53 then
     raise exception 'Version 281 completion expected 53 static JTS media URLs; found %', v_static;

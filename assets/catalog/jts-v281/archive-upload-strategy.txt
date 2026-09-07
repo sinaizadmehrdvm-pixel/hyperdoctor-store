@@ -1,1 +1,0 @@
-Canonical archive is binary and checksum-pinned; do not reconstruct from truncated text payloads.
