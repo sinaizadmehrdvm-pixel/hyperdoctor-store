@@ -6,7 +6,7 @@ import { join, resolve } from 'node:path';
 
 const archivePath = resolve('assets/catalog/jts-v281/jts-v281-media-240q35.tar.gz');
 const targetDir = resolve('public/catalog/verified/jts');
-const expectedArchiveSha256 = '97d74907fb5d24175873044c1e0f664ef6e1d5389bd6f2e3525480e01518c4ec';
+const expectedArchiveSha256 = '03995ac266317c4bd2bd7e620dbeef8554dcba9c4b855f7a1c14cc1998371640';
 const expectedFilenames = [
   'JTS-105.webp','JTS-1120.webp','JTS-112A.webp','JTS-117L.webp','JTS-411-LAJ.webp','JTS-413-LAJ.webp','JTS-602LGC.webp','JTS-608GC.webp','JTS-608L.webp','JTS-681.webp','JTS-695L.webp','JTS-695U.webp','JTS-695Z.webp','JTS-809A.webp','JTS-809B.webp','JTS-809C.webp','JTS-809E.webp','JTS-809P.webp','JTS-809R-12.webp','JTS-809R-16.webp','JTS-809R-METAL-SPOKE.webp','JTS-809R.webp','JTS-863-12E.webp','JTS-863-20E.webp','JTS-863LA-12.webp','JTS-874A.webp','JTS-874B.webp','JTS-874C.webp','JTS-901A.webp','JTS-901B.webp','JTS-901B55.webp','JTS-901M.webp','JTS-901MB.webp','JTS-901S.webp','JTS-901XS.webp','JTS-908-12.webp','JTS-908AQ.webp','JTS-908LAJQE.webp','JTS-951L.webp','JTS-958-38G44.webp','JTS-980AC-35.webp','JTS-CANE-DERBY.webp','JTS-CANE-QUAD.webp','JTS-CRUTCH-AXILLARY.webp','JTS-PEDAL-EXERCISER.webp','JTS-PEDIATRIC-WALKER-2W.webp','JTS-ROLLATOR-FOOTREST.webp','JTS-ROLLATOR.webp','JTS-WALKER-2W-SEAT.webp','JTS-WALKER-ALUMINIUM-WHEELED.webp','JTS-WALKER-ALUMINIUM.webp','JTS-WALKER-STEEL-WHEELED.webp','JTS-WALKER-STEEL.webp'
 ].sort();
