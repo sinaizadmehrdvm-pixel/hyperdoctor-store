@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 const mediaMigrationPath = resolve('supabase/migrations/20260907023000_jts_verified_product_media.sql');
 const staticMigrationPath = resolve('supabase/migrations/20260907025000_jts_static_verified_media.sql');
 const preparePath = resolve('scripts/prepare-jts-verified-media.ts');
-const archivePath = resolve('assets/catalog/jts-v281/jts-v281-media-300q15.tar.gz.b64');
+const archivePath = resolve('assets/catalog/jts-v281/jts-v281-media-300q80.tar.gz.b64');
 for (const path of [mediaMigrationPath, staticMigrationPath, preparePath, archivePath]) {
   if (!existsSync(path)) throw new Error(`Missing Version 281 completion file: ${path}`);
 }
@@ -15,7 +15,7 @@ const staticMigration = readFileSync(staticMigrationPath, 'utf8');
 const prepare = readFileSync(preparePath, 'utf8');
 const archive = Buffer.from(readFileSync(archivePath, 'utf8').replace(/\s+/g, ''), 'base64');
 const archiveSha256 = createHash('sha256').update(archive).digest('hex');
-const expectedArchiveSha256 = '37a12bf9869eeabe4363d770d924819ec2eff9e57add134515df56e10fc4531d';
+const expectedArchiveSha256 = '8bccad6d57f3423d009d4704ce66f0bfdcee57b5996baecd2591398ac26a0aa1';
 if (archiveSha256 !== expectedArchiveSha256) throw new Error(`Version 281 archive checksum mismatch: ${archiveSha256}`);
 
 const mappings = [...mediaMigration.matchAll(/\('JTS-[^']+',\d+\)/g)];
@@ -42,7 +42,16 @@ for (const token of [
   if (!staticMigration.includes(token)) throw new Error(`Version 281 static-media migration missing token: ${token}`);
 }
 
-for (const token of [expectedArchiveSha256, 'expectedFiles = 53', "'RIFF'", "'WEBP'", "tar', ['-xzf'", 'public/catalog/verified/jts']) {
+for (const token of [
+  expectedArchiveSha256,
+  'expectedFilenames = [',
+  'JTS-809R-METAL-SPOKE.webp',
+  'JTS-PEDAL-EXERCISER.webp',
+  "'RIFF'",
+  "'WEBP'",
+  "tar', ['-xzf'",
+  'public/catalog/verified/jts',
+]) {
   if (!prepare.includes(token)) throw new Error(`Version 281 preparation script missing token: ${token}`);
 }
 
@@ -61,4 +70,4 @@ for (const pattern of forbiddenWrites) {
   if (pattern.test(combined)) throw new Error(`Version 281 must not mutate current commerce/publication data: ${pattern}`);
 }
 
-console.log(`Version 281 JTS verified-media completion audit passed: 53 exact source mappings, checksum-pinned static bundle ${archiveSha256}, fail-closed commerce.`);
+console.log(`Version 281 JTS verified-media completion audit passed: 53 exact source mappings, checksum-pinned static bundle ${archiveSha256}, exact filename manifest, fail-closed commerce.`);
