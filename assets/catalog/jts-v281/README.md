@@ -1,7 +1,7 @@
 # JTS Version 281 media bundle
 
-Canonical bundle: `jts-v281-media-source-derived.tar.gz`
+Canonical bundle: `jts-v281-media-300q80.tar.gz.b64`
 
-SHA-256: `8c86c161ae694febd3e1ea008e973ffabb8740fec6e3cf40ccb2ee3ac993548a`
+Decoded archive SHA-256: `8bccad6d57f3423d009d4704ce66f0bfdcee57b5996baecd2591398ac26a0aa1`
 
-Contains exactly 53 WEBP storefront media files derived only from the verified 55-page JTS catalog source `file_0000000098d481f4a1baa422ec264c0d`. No generated, stock, substitute, or inferred imagery is allowed.
+The decoded archive contains exactly 53 WEBP storefront media files derived only from the verified 55-page JTS catalog source `file_0000000098d481f4a1baa422ec264c0d`. The preparation audit locks both the archive checksum and the exact 53 expected JTS filenames. No generated, stock, substitute, or inferred imagery is allowed.
