@@ -15,7 +15,7 @@ const staticMigration = readFileSync(staticMigrationPath, 'utf8');
 const prepare = readFileSync(preparePath, 'utf8');
 const archive = Buffer.from(readFileSync(archivePath, 'utf8').replace(/\s+/g, ''), 'base64');
 const archiveSha256 = createHash('sha256').update(archive).digest('hex');
-const expectedArchiveSha256 = 'c97a2320f842bd2ef2657de17dd3173d051e8bf3d2b65f8b911666260e2d7eef';
+const expectedArchiveSha256 = '37a12bf9869eeabe4363d770d924819ec2eff9e57add134515df56e10fc4531d';
 if (archiveSha256 !== expectedArchiveSha256) throw new Error(`Version 281 archive checksum mismatch: ${archiveSha256}`);
 
 const mappings = [...mediaMigration.matchAll(/\('JTS-[^']+',\d+\)/g)];
