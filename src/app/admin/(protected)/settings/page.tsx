@@ -3,7 +3,7 @@ import { CheckCircle2, CircleAlert, ExternalLink } from "lucide-react";
 import { TextField, SelectField } from "@/components/admin/form-field";
 import { ImageUploadField } from "@/components/admin/image-upload-field";
 import { adminRpc } from "@/lib/admin-data";
-import { updateSiteSettings } from "./actions";
+import { SettingsForm } from "./settings-form";
 import { currentAdminLocale } from "@/lib/admin-locale-server";
 import type { AdminLocale } from "@/lib/admin-i18n";
 
@@ -25,12 +25,11 @@ export default async function Page(){
  return <div className="space-y-6 pb-12">
   <div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-[.16em] text-muted">{t.eyebrow}</p><h1 className="mt-2 text-2xl font-black">{t.title}</h1></div><div className="flex gap-2"><Link href="/admin/pages" className="inline-flex min-h-10 items-center rounded-xl border border-border bg-card px-4 text-xs font-black">{t.pages}</Link><a href="/fa" target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-foreground px-4 text-xs font-black text-background">{t.live}<ExternalLink className="h-3.5 w-3.5"/></a></div></div>
   <section className={`rounded-2xl border p-5 ${missing.length?"border-amber-300 bg-amber-50/60":"border-emerald-300 bg-emerald-50/60"}`}><div className="flex items-start gap-3">{missing.length?<CircleAlert className="mt-0.5 h-5 w-5 text-amber-700"/>:<CheckCircle2 className="mt-0.5 h-5 w-5 text-emerald-700"/>}<div><h2 className="font-black text-foreground">{t.readiness}</h2><p className="mt-1 text-sm text-muted">{missing.length?t.missing:t.ready}</p>{missing.length?<div className="mt-3 flex flex-wrap gap-2">{missing.map(v=><span key={v.key} className="rounded-full border border-amber-300 bg-white px-3 py-1 text-xs font-bold text-amber-800">{v.label}</span>)}</div>:null}</div></div></section>
-  <form action={updateSiteSettings} className="max-w-5xl space-y-5">
+  <SettingsForm locale={l} saveLabel={t.save}>
    <section className="rounded-2xl border bg-card p-5"><h2 className="mb-4 font-black">{t.brand}</h2><div className="grid gap-4 sm:grid-cols-2"><TextField label={t.holding} name="holdingName" defaultValue={x.holdingName} required/><TextField label={t.store} name="subBrandName" defaultValue={x.subBrandName} required/><ImageUploadField label={t.holdingLogo} name="holdingLogoUrl" defaultValue={x.holdingLogoUrl}/><ImageUploadField label={t.storeLogo} name="subBrandLogoUrl" defaultValue={x.subBrandLogoUrl}/></div></section>
    <section className="rounded-2xl border bg-card p-5"><h2 className="mb-4 font-black">{t.contact}</h2><div className="grid gap-4 sm:grid-cols-2"><TextField label={t.phone} name="contactPhone" defaultValue={x.contactPhone} type="tel" dir="ltr" inputMode="tel"/><TextField label={t.email} name="contactEmail" defaultValue={x.contactEmail} type="email" dir="ltr" inputMode="email"/></div><TextField label={t.address} name="address" defaultValue={x.address}/></section>
    <section className="rounded-2xl border bg-card p-5"><h2 className="mb-4 font-black">{t.social}</h2><div className="grid gap-4 sm:grid-cols-3"><TextField label="Instagram" name="instagramUrl" defaultValue={x.instagramUrl} type="url" dir="ltr" inputMode="url"/><TextField label="Telegram" name="telegramUrl" defaultValue={x.telegramUrl} type="url" dir="ltr" inputMode="url"/><TextField label="WhatsApp" name="whatsappUrl" defaultValue={x.whatsappUrl} type="url" dir="ltr" inputMode="url"/></div></section>
    <section className="rounded-2xl border bg-card p-5"><h2 className="mb-4 font-black">{t.language}</h2><div className="grid gap-4 sm:grid-cols-3"><SelectField label={t.default} name="defaultLocale" defaultValue={x.defaultLocale} options={[{value:"fa",label:"فارسی"},{value:"tr",label:"Türkçe"},{value:"en",label:"English"},{value:"ar",label:"العربية"}]}/><SelectField label={t.currency} name="currency" defaultValue={x.currency} options={[{value:"IRT",label:"IRT"},{value:"TRY",label:"TRY"},{value:"USD",label:"USD"},{value:"EUR",label:"EUR"}]}/><SelectField label={t.timezone} name="businessTimeZone" defaultValue={x.businessTimeZone||"Asia/Tehran"} options={TIME_ZONES}/></div><p className="mt-3 text-xs leading-6 text-muted">{t.note}</p></section>
-   <div className="sticky bottom-4 flex justify-end"><button className="min-h-12 rounded-xl bg-primary px-7 text-sm font-black text-white shadow-lg">{t.save}</button></div>
-  </form>
+  </SettingsForm>
  </div>;
 }
