@@ -52,3 +52,5 @@ next-env.d.ts
 # uploaded media
 /public/uploads/*
 !/public/uploads/.gitkeep
+# Reconstructed from the checksum-pinned JTS source archive during builds.
+/public/catalog/verified/jts/

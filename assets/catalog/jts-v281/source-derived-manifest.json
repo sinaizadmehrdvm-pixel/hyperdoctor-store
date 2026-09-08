@@ -1,0 +1,810 @@
+{
+  "archive": "jts-v281-media-240q85.tar.gz",
+  "sha256": "43acbc1a958b6e558c6965670661a1cdcfd524d34602067f6ab96bc6cb1fdee2",
+  "source": "file_0000000098d481f4a1baa422ec264c0d",
+  "sourceSha256": "19503c090e87bfe8923d0624b91c1935aad5ee98d47bb542d1e3e61011e598ac",
+  "sourcePageCount": 55,
+  "files": 53,
+  "encoding": {
+    "format": "WEBP",
+    "quality": 85
+  },
+  "policy": "Exact catalog regions only; no generated, substitute or inferred imagery.",
+  "assets": [
+    {
+      "sku": "JTS-105",
+      "filename": "JTS-105.webp",
+      "page": 38,
+      "crop": [
+        0.24,
+        0.27,
+        0.58,
+        0.575
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 6608,
+      "sha256": "e4b78e2d78a822cdabd8f3d7d256a05941d99069c3b12df1a9db7fc04bb54236"
+    },
+    {
+      "sku": "JTS-1120",
+      "filename": "JTS-1120.webp",
+      "page": 39,
+      "crop": [
+        0.25,
+        0.235,
+        0.73,
+        0.625
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 8984,
+      "sha256": "9ee7a6a8ec654158098dab9d48e75c599d26b0fae5652b773f8e8ad1b16df507"
+    },
+    {
+      "sku": "JTS-112A",
+      "filename": "JTS-112A.webp",
+      "page": 41,
+      "crop": [
+        0.28,
+        0.25,
+        0.7,
+        0.59
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 8194,
+      "sha256": "e6dd6c2ac5920733ded540c7f6e987d3daab0efd33979687de70991699a28c28"
+    },
+    {
+      "sku": "JTS-117L",
+      "filename": "JTS-117L.webp",
+      "page": 40,
+      "crop": [
+        0.35,
+        0.23,
+        0.72,
+        0.56
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 7386,
+      "sha256": "8e890d2a1395af9dff5f5da6bfe9a1da984acf81bdde8393c67331d76f910987"
+    },
+    {
+      "sku": "JTS-411-LAJ",
+      "filename": "JTS-411-LAJ.webp",
+      "page": 31,
+      "crop": [
+        0.16,
+        0.285,
+        0.56,
+        0.64
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 7410,
+      "sha256": "b0c00de3d33fb1a083be2c97f3384f98781aedb7802a5d4dfad5eb95551fc471"
+    },
+    {
+      "sku": "JTS-413-LAJ",
+      "filename": "JTS-413-LAJ.webp",
+      "page": 32,
+      "crop": [
+        0.45,
+        0.245,
+        0.87,
+        0.66
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 7516,
+      "sha256": "8a4f201a4cdf4c47d89d93c78002eb24cf6b034f581d0c6feda907b5076a4e79"
+    },
+    {
+      "sku": "JTS-602LGC",
+      "filename": "JTS-602LGC.webp",
+      "page": 43,
+      "crop": [
+        0.31,
+        0.22,
+        0.81,
+        0.63
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 7818,
+      "sha256": "2316bc2cb7e8df29683d930e22130b1adc4b0daf301c049e34bb1e0032c2bf52"
+    },
+    {
+      "sku": "JTS-608GC",
+      "filename": "JTS-608GC.webp",
+      "page": 42,
+      "crop": [
+        0.26,
+        0.26,
+        0.8,
+        0.66
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 8768,
+      "sha256": "79e8e2e4037803c3bb5a957d97e7caa161eb30c110b27d13173d2b61bad389f4"
+    },
+    {
+      "sku": "JTS-608L",
+      "filename": "JTS-608L.webp",
+      "page": 36,
+      "crop": [
+        0.08,
+        0.2,
+        0.65,
+        0.66
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 8314,
+      "sha256": "45c67aa180e7cfb84ec310fd1189e66034afd319b9ee10759407cf1ac04d24c0"
+    },
+    {
+      "sku": "JTS-681",
+      "filename": "JTS-681.webp",
+      "page": 37,
+      "crop": [
+        0.2,
+        0.25,
+        0.69,
+        0.685
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 8874,
+      "sha256": "bbfd9abe8a342fca25239d34269c3b7c64ee2827e1a2b9e7447418e29eb69b1a"
+    },
+    {
+      "sku": "JTS-695L",
+      "filename": "JTS-695L.webp",
+      "page": 34,
+      "crop": [
+        0.46,
+        0.24,
+        0.93,
+        0.6
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 6140,
+      "sha256": "000508634ef83ce0cd6d5c1ec3d447fe4a82b233ff510508c8cbd81464d5c2c8"
+    },
+    {
+      "sku": "JTS-695U",
+      "filename": "JTS-695U.webp",
+      "page": 33,
+      "crop": [
+        0.39,
+        0.23,
+        0.79,
+        0.565
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 5984,
+      "sha256": "6bd1676b6b18b501cefd5089b01c7f6bf70dec3a1a689c6ec21b0d981ffc8f8d"
+    },
+    {
+      "sku": "JTS-695Z",
+      "filename": "JTS-695Z.webp",
+      "page": 35,
+      "crop": [
+        0.16,
+        0.27,
+        0.48,
+        0.7
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 3650,
+      "sha256": "acd98f3e2d27cfedc63b7c55814f4d1609f9711eb9fe94ee263dcab3b1c272d9"
+    },
+    {
+      "sku": "JTS-809A",
+      "filename": "JTS-809A.webp",
+      "page": 9,
+      "crop": [
+        0.17,
+        0.25,
+        0.78,
+        0.675
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 9428,
+      "sha256": "a9a2a8654f01af460a744aa21d9a4aa0c494caf855742d1fceab8dc913e0b50d"
+    },
+    {
+      "sku": "JTS-809B",
+      "filename": "JTS-809B.webp",
+      "page": 6,
+      "crop": [
+        0.2,
+        0.205,
+        0.72,
+        0.645
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 9042,
+      "sha256": "b9788e399f2984fdb21a8da34a1ec13722d84cbf2c915fc323be8707e3b3ce84"
+    },
+    {
+      "sku": "JTS-809C",
+      "filename": "JTS-809C.webp",
+      "page": 7,
+      "crop": [
+        0.14,
+        0.26,
+        0.65,
+        0.62
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 9750,
+      "sha256": "8012a9c505635659b8bb2918466276dbe6718f6dbfed427f39afc3e856e55163"
+    },
+    {
+      "sku": "JTS-809E",
+      "filename": "JTS-809E.webp",
+      "page": 4,
+      "crop": [
+        0.34,
+        0.29,
+        0.76,
+        0.6
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 7876,
+      "sha256": "ab51908cd374903a37c94107c2024607bcd5fdcf8d209abc871c520208e2dc86"
+    },
+    {
+      "sku": "JTS-809P",
+      "filename": "JTS-809P.webp",
+      "page": 8,
+      "crop": [
+        0.15,
+        0.25,
+        0.7,
+        0.64
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 10088,
+      "sha256": "7e6043c3e793bcdcc5066421f64964816dd2b966e63c163ea8024633fabc6045"
+    },
+    {
+      "sku": "JTS-809R-12",
+      "filename": "JTS-809R-12.webp",
+      "page": 27,
+      "crop": [
+        0.36,
+        0.285,
+        0.79,
+        0.63
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 8180,
+      "sha256": "e70f7feda9642df044354d657451f70f39d4d1e7b630ddc24bcacfa5b8976ca5"
+    },
+    {
+      "sku": "JTS-809R-16",
+      "filename": "JTS-809R-16.webp",
+      "page": 28,
+      "crop": [
+        0.44,
+        0.23,
+        0.92,
+        0.64
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 8246,
+      "sha256": "60986894d54fed4ac8f10fe7adcd68b0534dde04af6a276ac396656177aa9d36"
+    },
+    {
+      "sku": "JTS-809R-METAL-SPOKE",
+      "filename": "JTS-809R-METAL-SPOKE.webp",
+      "page": 3,
+      "crop": [
+        0.24,
+        0.23,
+        0.75,
+        0.635
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 8314,
+      "sha256": "48c16ac0053387b4332de08d7ac8168b859e38a935c289d5fa7acabe343caf19"
+    },
+    {
+      "sku": "JTS-809R",
+      "filename": "JTS-809R.webp",
+      "page": 5,
+      "crop": [
+        0.38,
+        0.25,
+        0.9,
+        0.63
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 8878,
+      "sha256": "e0d8c4bf6a65fb21bae351267fbcaeb06652754a8b440507d01a143b792699de"
+    },
+    {
+      "sku": "JTS-863-12E",
+      "filename": "JTS-863-12E.webp",
+      "page": 25,
+      "crop": [
+        0.45,
+        0.23,
+        0.9,
+        0.59
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 8618,
+      "sha256": "9ca441cd8b3ff4c98a4a2407a049dbdb83e7932650a1d626dc6728761b5fd96f"
+    },
+    {
+      "sku": "JTS-863-20E",
+      "filename": "JTS-863-20E.webp",
+      "page": 26,
+      "crop": [
+        0.46,
+        0.27,
+        0.94,
+        0.63
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 8686,
+      "sha256": "2d3495b6505dfc13e7d1440060c9b465addded176519fcaa59be5109db975c1c"
+    },
+    {
+      "sku": "JTS-863LA-12",
+      "filename": "JTS-863LA-12.webp",
+      "page": 29,
+      "crop": [
+        0.4,
+        0.24,
+        0.86,
+        0.635
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 7004,
+      "sha256": "ccda4cece1a92a46035054cf18983d8e41c7188f5a3921421588626ade90dad5"
+    },
+    {
+      "sku": "JTS-874A",
+      "filename": "JTS-874A.webp",
+      "page": 10,
+      "crop": [
+        0.18,
+        0.235,
+        0.8,
+        0.675
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 10470,
+      "sha256": "807160ce5185f47397d07f4576934b0d2598a0bd399903fb2118cd395e4e4ffd"
+    },
+    {
+      "sku": "JTS-874B",
+      "filename": "JTS-874B.webp",
+      "page": 11,
+      "crop": [
+        0.19,
+        0.25,
+        0.78,
+        0.66
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 10572,
+      "sha256": "4f9fd97ac6c993bab6e98a1bcda2718f4e548e7b87b2913fc379d6e14dee49a3"
+    },
+    {
+      "sku": "JTS-874C",
+      "filename": "JTS-874C.webp",
+      "page": 12,
+      "crop": [
+        0.31,
+        0.26,
+        0.79,
+        0.635
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 10254,
+      "sha256": "008c6d6f74dcc43d1b3cc8d4f19776bbd3997c0691801a43527d0f95cda0e6ea"
+    },
+    {
+      "sku": "JTS-901A",
+      "filename": "JTS-901A.webp",
+      "page": 20,
+      "crop": [
+        0.29,
+        0.26,
+        0.83,
+        0.66
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 9572,
+      "sha256": "b8968a0deebaf5c36eed311bcfadfdbfd7d7dea71a8313a1c8ec8dbead7c9bb6"
+    },
+    {
+      "sku": "JTS-901B",
+      "filename": "JTS-901B.webp",
+      "page": 15,
+      "crop": [
+        0.36,
+        0.22,
+        0.89,
+        0.64
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 9588,
+      "sha256": "1846635915e2dc31466f1f0df0a07d910cfd8d2aa1fb682483e4de09b4c8449d"
+    },
+    {
+      "sku": "JTS-901B55",
+      "filename": "JTS-901B55.webp",
+      "page": 13,
+      "crop": [
+        0.26,
+        0.3,
+        0.82,
+        0.645
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 8742,
+      "sha256": "4ee5e4bc70c151ca0c436853ce8dcfecf2f1ce204758a90858d69aa05956d871"
+    },
+    {
+      "sku": "JTS-901M",
+      "filename": "JTS-901M.webp",
+      "page": 21,
+      "crop": [
+        0.19,
+        0.22,
+        0.8,
+        0.65
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 10172,
+      "sha256": "4968776747f56ecc05e7c388b0fae25d8c786d69e1734310127b8890a3afc58b"
+    },
+    {
+      "sku": "JTS-901MB",
+      "filename": "JTS-901MB.webp",
+      "page": 16,
+      "crop": [
+        0.35,
+        0.25,
+        0.77,
+        0.62
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 7740,
+      "sha256": "7c38505c0a59ef0414cb74e39747624468b49c3b0ef9850fab945f7b34bd7aca"
+    },
+    {
+      "sku": "JTS-901S",
+      "filename": "JTS-901S.webp",
+      "page": 17,
+      "crop": [
+        0.2,
+        0.225,
+        0.75,
+        0.65
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 9698,
+      "sha256": "aa27f3a5e1cc6f4fa4a0194d91696042cce8323d04c9c0ab0e6f22d6ec1cff46"
+    },
+    {
+      "sku": "JTS-901XS",
+      "filename": "JTS-901XS.webp",
+      "page": 18,
+      "crop": [
+        0.28,
+        0.22,
+        0.75,
+        0.66
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 7796,
+      "sha256": "408efbcbd9b1da957a9e997b75863d8e634d4033aade7f5ed0073c281cad1c7e"
+    },
+    {
+      "sku": "JTS-908-12",
+      "filename": "JTS-908-12.webp",
+      "page": 30,
+      "crop": [
+        0.43,
+        0.245,
+        0.89,
+        0.61
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 8526,
+      "sha256": "6c4f25c1370b39b0adaa2cfcc5058b1b6c7bb0d401049a4ea4a8c9a72a8e9d02"
+    },
+    {
+      "sku": "JTS-908AQ",
+      "filename": "JTS-908AQ.webp",
+      "page": 22,
+      "crop": [
+        0.22,
+        0.22,
+        0.82,
+        0.65
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 10552,
+      "sha256": "de2159f6a40e68893483ff433f9ba73c44942f5fecc7d5d52bf135cfa5c3f437"
+    },
+    {
+      "sku": "JTS-908LAJQE",
+      "filename": "JTS-908LAJQE.webp",
+      "page": 23,
+      "crop": [
+        0.37,
+        0.28,
+        0.93,
+        0.63
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 8596,
+      "sha256": "36c1aca3483b7f3d71ce0e97ef2cb7e641fd7bcd722e035d2f4ef1af14e8b777"
+    },
+    {
+      "sku": "JTS-951L",
+      "filename": "JTS-951L.webp",
+      "page": 14,
+      "crop": [
+        0.43,
+        0.27,
+        0.86,
+        0.61
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 8104,
+      "sha256": "4b8c17fcd7d9e4e640e1d821c6b8e18117abf31618fa89471561d02cd3d77d20"
+    },
+    {
+      "sku": "JTS-958-38G44",
+      "filename": "JTS-958-38G44.webp",
+      "page": 44,
+      "crop": [
+        0.46,
+        0.25,
+        0.89,
+        0.6
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 8436,
+      "sha256": "3b0290113fb89aedcfca8fcff7ceeab7aa3e3042466f3eee146432b0d1c0b77b"
+    },
+    {
+      "sku": "JTS-980AC-35",
+      "filename": "JTS-980AC-35.webp",
+      "page": 24,
+      "crop": [
+        0.45,
+        0.27,
+        0.94,
+        0.61
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 10934,
+      "sha256": "f51e00d339023fbf1c70fe5dea90280a9186cc77ee99b73c7ca5fca31fd44004"
+    },
+    {
+      "sku": "JTS-CANE-DERBY",
+      "filename": "JTS-CANE-DERBY.webp",
+      "page": 51,
+      "crop": [
+        0.56,
+        0.265,
+        0.7,
+        0.65
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 964,
+      "sha256": "2235809a24339fa51b3adb7c1859cba78df54b314bfd9f21c98e54c636f26939"
+    },
+    {
+      "sku": "JTS-CANE-QUAD",
+      "filename": "JTS-CANE-QUAD.webp",
+      "page": 51,
+      "crop": [
+        0.35,
+        0.265,
+        0.5,
+        0.625
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 1722,
+      "sha256": "c560dba7a3320b67a1a530c083a49d38c22411556c24ca3cf4bad23f63b14d68"
+    },
+    {
+      "sku": "JTS-CRUTCH-AXILLARY",
+      "filename": "JTS-CRUTCH-AXILLARY.webp",
+      "page": 52,
+      "crop": [
+        0.33,
+        0.26,
+        0.65,
+        0.66
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 3452,
+      "sha256": "f75ca33ae5652d51064ad5a8824311c414c3a2cdc66add3f0b7e874061a0b8dd"
+    },
+    {
+      "sku": "JTS-PEDAL-EXERCISER",
+      "filename": "JTS-PEDAL-EXERCISER.webp",
+      "page": 53,
+      "crop": [
+        0.16,
+        0.29,
+        0.83,
+        0.67
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 4628,
+      "sha256": "1d1750d87cddcd766c363d2df5b4327402296f34406ad212748da39919c522d9"
+    },
+    {
+      "sku": "JTS-PEDIATRIC-WALKER-2W",
+      "filename": "JTS-PEDIATRIC-WALKER-2W.webp",
+      "page": 48,
+      "crop": [
+        0.15,
+        0.26,
+        0.59,
+        0.68
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 4086,
+      "sha256": "a09e0f0160818b33f3716164279815c1d42d499282cc3c604dbfdc2ea286e5c3"
+    },
+    {
+      "sku": "JTS-ROLLATOR-FOOTREST",
+      "filename": "JTS-ROLLATOR-FOOTREST.webp",
+      "page": 45,
+      "crop": [
+        0.32,
+        0.265,
+        0.74,
+        0.64
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 7634,
+      "sha256": "37544d4f7b8745e9073c6de0195135a32216f985f7259ebdaae2ae3da909ab38"
+    },
+    {
+      "sku": "JTS-ROLLATOR",
+      "filename": "JTS-ROLLATOR.webp",
+      "page": 46,
+      "crop": [
+        0.29,
+        0.27,
+        0.68,
+        0.645
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 6460,
+      "sha256": "3b1a69b8667870cbafe0913540275fb61eee34e1732f3a66efd1c65a4ff978f2"
+    },
+    {
+      "sku": "JTS-WALKER-2W-SEAT",
+      "filename": "JTS-WALKER-2W-SEAT.webp",
+      "page": 47,
+      "crop": [
+        0.45,
+        0.245,
+        0.88,
+        0.65
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 4912,
+      "sha256": "516c70f3f440cd7be6ab3c34139cd8e4e7ca993ee28df6eaf318560d1c71fe85"
+    },
+    {
+      "sku": "JTS-WALKER-ALUMINIUM-WHEELED",
+      "filename": "JTS-WALKER-ALUMINIUM-WHEELED.webp",
+      "page": 50,
+      "crop": [
+        0.43,
+        0.275,
+        0.65,
+        0.455
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 4472,
+      "sha256": "834142cf9971f79565f447d55e7e3e939276ed73960f87a8077a64df25b2bcfa"
+    },
+    {
+      "sku": "JTS-WALKER-ALUMINIUM",
+      "filename": "JTS-WALKER-ALUMINIUM.webp",
+      "page": 50,
+      "crop": [
+        0.43,
+        0.515,
+        0.65,
+        0.715
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 2752,
+      "sha256": "e396d4c59ded6ee3b1f7966c6f01faa764ada8fe8003bb30cee9166620a3c9cf"
+    },
+    {
+      "sku": "JTS-WALKER-STEEL-WHEELED",
+      "filename": "JTS-WALKER-STEEL-WHEELED.webp",
+      "page": 49,
+      "crop": [
+        0.14,
+        0.25,
+        0.38,
+        0.53
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 3734,
+      "sha256": "808252b1737fcdb4c83d72f166e78f727a1410ce687d039b9e1ee7c091645b97"
+    },
+    {
+      "sku": "JTS-WALKER-STEEL",
+      "filename": "JTS-WALKER-STEEL.webp",
+      "page": 49,
+      "crop": [
+        0.62,
+        0.57,
+        0.88,
+        0.81
+      ],
+      "width": 240,
+      "height": 240,
+      "byteSize": 5054,
+      "sha256": "78c191eb05021df811a9aeded987f65b16ce1258f20e10b944f2d75403c91795"
+    }
+  ]
+}
