@@ -36,7 +36,7 @@ export function ImageUploadField({
   }
 
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-1.5" data-uploading={uploading || undefined}>
       <span className="text-xs font-medium text-muted">{label}</span>
       <input type="hidden" name={name} value={url} />
       <div className="flex items-center gap-4">
