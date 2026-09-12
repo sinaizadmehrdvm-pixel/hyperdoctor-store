@@ -17,6 +17,7 @@
     "test:launch-commerce": "tsx scripts/audit-launch-commerce.ts",
     "test:verified-media": "tsx scripts/audit-verified-product-media.ts",
     "test:launch-ops": "tsx scripts/audit-launch-operations.ts",
+    "test:catalog-preflight": "tsx scripts/audit-version-283-production-catalog-preflight.ts",
     "test:seo-index": "tsx scripts/audit-seo-index.ts",
     "test:runtime-a11y": "tsx scripts/audit-runtime-accessibility.ts",
     "test:payment-prod": "tsx scripts/audit-production-payment.ts",

@@ -1,0 +1,86 @@
+{
+  "version": 283,
+  "scope": "Production catalog launch preflight",
+  "verifiedAt": "2026-09-12",
+  "productionProject": "hyperdoctor-production",
+  "catalog": {
+    "stagingItems": 175,
+    "verifiedIdentities": 175,
+    "promotedStagingItems": 170,
+    "needsReviewStagingItems": 5,
+    "products": 170,
+    "sourceBackedProducts": 170,
+    "fourLanguageNameProducts": 170,
+    "fourLanguageDescriptionProducts": 147,
+    "productsWithVerifiedMedia": 53,
+    "productsMissingVerifiedMedia": 117,
+    "productsWithCurrentBranchPrice": 0,
+    "productsWithAvailableInventory": 0,
+    "publishReadyProducts": 0,
+    "publishedProducts": 0
+  },
+  "blockers": {
+    "sourceEvidenceMissing": 0,
+    "translationMissing": 0,
+    "verifiedMediaMissing": 117,
+    "variantReviewRequired": 0,
+    "currentPriceMissing": 170,
+    "availableInventoryMissing": 170,
+    "descriptionWarning": 23
+  },
+  "branch": {
+    "code": "IRAN",
+    "currency": "IRT",
+    "published": true,
+    "salesEnabled": true,
+    "paymentGateway": "ZARINPAL",
+    "activePricedProducts": 0,
+    "availableProducts": 0
+  },
+  "byBrand": [
+    {
+      "brand": "JTS",
+      "products": 53,
+      "fourLanguageDescriptions": 53,
+      "verifiedMedia": 53,
+      "missingVerifiedMedia": 0
+    },
+    {
+      "brand": "B.Well",
+      "products": 50,
+      "fourLanguageDescriptions": 27,
+      "verifiedMedia": 0,
+      "missingVerifiedMedia": 50
+    },
+    {
+      "brand": "Hooshmand",
+      "products": 43,
+      "fourLanguageDescriptions": 43,
+      "verifiedMedia": 0,
+      "missingVerifiedMedia": 43
+    },
+    {
+      "brand": "EGT",
+      "products": 24,
+      "fourLanguageDescriptions": 24,
+      "verifiedMedia": 0,
+      "missingVerifiedMedia": 24
+    }
+  ],
+  "blockedStagingSkus": [
+    "HOO-COOLER-CLASSIC",
+    "HOO-COOLER-WAVE-L",
+    "HOO-COOLER-WAVE-XL",
+    "HOO-SLEEP-NECK",
+    "HOO-WAVE-MASSAGER"
+  ],
+  "releaseDecision": "PREFLIGHT_ONLY_NOT_READY_TO_PUBLISH",
+  "nextPriority": [
+    "Obtain exact source-backed media for 117 products: B.Well 50, Hooshmand 43, EGT 24.",
+    "Complete four-language descriptions for 23 B.Well products.",
+    "Import current branch prices only from current verified commerce evidence.",
+    "Import real warehouse inventory only from current verified stock evidence.",
+    "Keep the five Hooshmand NEEDS_REVIEW staging rows blocked until exact model-specific technical evidence exists.",
+    "Publish only through the existing database-authoritative launch gate after all hard blockers are cleared."
+  ]
+}
