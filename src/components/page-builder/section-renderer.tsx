@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { CSSProperties, MouseEvent, ReactNode } from "react";
 import type { BuilderLocale, BuilderSection, BuilderViewport } from "@/lib/page-builder";
 import { localize } from "@/lib/page-builder";
+import { sanitizeBuilderHref, sanitizeBuilderImageSrc, sanitizeRichTextHtml } from "@/lib/page-builder-safety";
 
 type ImageTarget = { kind: "section" } | { kind: "card"; cardId: string };
 type Props = {
@@ -25,14 +26,15 @@ const surfaceCard: CSSProperties = { background: "var(--builder-surface, #ffffff
 
 function EditableText({ value, editable, html = false, className, onChange, children }: { value: string; editable: boolean; html?: boolean; className?: string; onChange?: (value: string) => void; children?: ReactNode }) {
   if (!editable) return <>{children}</>;
-  if (html) return <div className={`${className || ""} rounded-md outline-none focus:ring-2 focus:ring-sky-400/60`} contentEditable suppressContentEditableWarning dangerouslySetInnerHTML={{ __html: value }} onClick={e=>e.stopPropagation()} onBlur={e=>onChange?.(e.currentTarget.innerHTML)} />;
+  if (html) return <div className={`${className || ""} rounded-md outline-none focus:ring-2 focus:ring-sky-400/60`} contentEditable suppressContentEditableWarning dangerouslySetInnerHTML={{ __html: value }} onClick={e=>e.stopPropagation()} onBlur={e=>onChange?.(sanitizeRichTextHtml(e.currentTarget.innerHTML))} />;
   return <span className={`${className || ""} min-w-[1ch] rounded-md outline-none focus:ring-2 focus:ring-sky-400/60`} contentEditable suppressContentEditableWarning onClick={e=>e.stopPropagation()} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();e.currentTarget.blur()}}} onBlur={e=>onChange?.(e.currentTarget.textContent || "")}>{value || " "}</span>;
 }
 
 function ReplaceableImage({ src, alt, editable, onReplace, className, placeholder = "Image" }: { src?: string; alt: string; editable: boolean; onReplace?: () => void; className: string; placeholder?: string }) {
+  const safeSrc = sanitizeBuilderImageSrc(src);
   const stop = (e: MouseEvent) => { e.stopPropagation(); if (editable) onReplace?.(); };
-  if (!src) return <button type="button" onClick={stop} className={`${className} flex items-center justify-center border-2 border-dashed border-sky-300 bg-sky-50/70 text-sm font-black text-sky-700`}>{editable ? "+ Replace image" : placeholder}</button>;
-  return <div className="group/image relative"><img src={src} alt={alt} className={className}/>{editable?<button type="button" onClick={stop} className="absolute inset-0 flex items-center justify-center bg-slate-950/0 text-xs font-black text-white opacity-0 transition group-hover/image:bg-slate-950/35 group-hover/image:opacity-100">Replace image</button>:null}</div>;
+  if (!safeSrc) return <button type="button" onClick={stop} className={`${className} flex items-center justify-center border-2 border-dashed border-sky-300 bg-sky-50/70 text-sm font-black text-sky-700`}>{editable ? "+ Replace image" : placeholder}</button>;
+  return <div className="group/image relative"><img src={safeSrc} alt={alt} className={className}/>{editable?<button type="button" onClick={stop} className="absolute inset-0 flex items-center justify-center bg-slate-950/0 text-xs font-black text-white opacity-0 transition group-hover/image:bg-slate-950/35 group-hover/image:opacity-100">Replace image</button>:null}</div>;
 }
 
 export function SectionRenderer({ section, locale, viewport = "desktop", editable = false, selected = false, onSelect, onInlineChange, onRequestImage }: Props) {
@@ -51,18 +53,20 @@ export function SectionRenderer({ section, locale, viewport = "desktop", editabl
 
   if (section.type === "hero") {
     const eyebrow = localize(section.content.eyebrow, locale), title = localize(section.content.title, locale), body = localize(section.content.body, locale), button = localize(section.content.buttonLabel, locale);
+    const safeButtonHref = sanitizeBuilderHref(section.content.buttonHref);
     return <section {...common}><div className={inner} style={{ maxWidth, paddingInline: "24px", justifyContent: "center" }}>
       {(eyebrow || editable) ? <p className="text-xs font-black uppercase tracking-[.2em] opacity-65"><EditableText value={eyebrow} editable={editable} onChange={inline("eyebrow")}>{eyebrow}</EditableText></p> : null}
       <h2 className="mt-4 max-w-4xl text-4xl font-black leading-tight sm:text-5xl lg:text-6xl"><EditableText value={title} editable={editable} onChange={inline("title")}>{title}</EditableText></h2>
       {(body || editable) ? <p className="mt-5 max-w-2xl text-base leading-8 opacity-75 sm:text-lg"><EditableText value={body} editable={editable} onChange={inline("body")}>{body}</EditableText></p> : null}
-      {(button || editable) ? editable ? <span className="mt-7 inline-flex min-h-12 items-center px-6 text-sm font-black text-white" style={darkButton}><EditableText value={button} editable onChange={inline("buttonLabel")}>{button}</EditableText></span> : <Link href={String(section.content.buttonHref || "/")} className="mt-7 inline-flex min-h-12 items-center px-6 text-sm font-black text-white" style={darkButton}>{button}</Link> : null}
+      {(button || editable) ? editable ? <span className="mt-7 inline-flex min-h-12 items-center px-6 text-sm font-black text-white" style={darkButton}><EditableText value={button} editable onChange={inline("buttonLabel")}>{button}</EditableText></span> : safeButtonHref ? <Link href={safeButtonHref} className="mt-7 inline-flex min-h-12 items-center px-6 text-sm font-black text-white" style={darkButton}>{button}</Link> : <span aria-disabled="true" className="mt-7 inline-flex min-h-12 cursor-not-allowed items-center px-6 text-sm font-black text-white opacity-60" style={darkButton}>{button}</span> : null}
     </div></section>;
   }
 
   if (section.type === "richText") {
     const text = localize(section.content.text as never, locale);
     const isHtml = text.includes("<");
-    return <section {...common}><div className="mx-auto w-full" style={{ maxWidth, paddingInline: "24px" }}>{editable ? <EditableText value={text} editable html={isHtml} className={isHtml ? "prose prose-slate max-w-none" : "whitespace-pre-wrap text-base leading-8"} onChange={inline("text")}/> : isHtml ? <div className="prose prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: text }}/> : <div className="whitespace-pre-wrap text-base leading-8">{text}</div>}</div></section>;
+    const safeHtml = isHtml ? sanitizeRichTextHtml(text) : text;
+    return <section {...common}><div className="mx-auto w-full" style={{ maxWidth, paddingInline: "24px" }}>{editable ? <EditableText value={safeHtml} editable html={isHtml} className={isHtml ? "prose prose-slate max-w-none" : "whitespace-pre-wrap text-base leading-8"} onChange={inline("text")}/> : isHtml ? <div className="prose prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: safeHtml }}/> : <div className="whitespace-pre-wrap text-base leading-8">{text}</div>}</div></section>;
   }
 
   if (section.type === "imageText") {
@@ -78,9 +82,10 @@ export function SectionRenderer({ section, locale, viewport = "desktop", editabl
     const cards = Array.isArray(section.content.cards) ? section.content.cards : [];
     const cols = s.columns === 2 ? "md:grid-cols-2" : s.columns === 4 ? "md:grid-cols-2 xl:grid-cols-4" : "md:grid-cols-3";
     const title = localize(section.content.title, locale);
-    return <section {...common}><div className="mx-auto w-full" style={{ maxWidth, paddingInline: "24px" }}>{(title || editable) ? <h2 className="mb-8 text-3xl font-black"><EditableText value={title} editable={editable} onChange={inline("title")}>{title}</EditableText></h2> : null}<div className={`grid gap-5 ${cols}`}>{cards.map(card=><div key={card.id} className="overflow-hidden border border-black/10 shadow-sm" style={surfaceCard}>{card.imageUrl || editable ? <ReplaceableImage src={card.imageUrl} alt="" editable={editable} onReplace={()=>onRequestImage?.({ kind: "card", cardId: card.id })} className="aspect-[16/10] w-full object-cover"/> : null}<div className="p-5"><h3 className="text-lg font-black"><EditableText value={localize(card.title, locale)} editable={editable} onChange={inline(`card:${card.id}:title`)}>{localize(card.title, locale)}</EditableText></h3><p className="mt-2 text-sm leading-7" style={{color:"var(--builder-muted, currentColor)"}}><EditableText value={localize(card.body, locale)} editable={editable} onChange={inline(`card:${card.id}:body`)}>{localize(card.body, locale)}</EditableText></p>{card.href && !editable ? <Link href={card.href} className="mt-4 inline-flex text-xs font-black underline" style={{color:"var(--builder-accent, currentColor)"}}>Open</Link> : null}</div></div>)}</div></div></section>;
+    return <section {...common}><div className="mx-auto w-full" style={{ maxWidth, paddingInline: "24px" }}>{(title || editable) ? <h2 className="mb-8 text-3xl font-black"><EditableText value={title} editable={editable} onChange={inline("title")}>{title}</EditableText></h2> : null}<div className={`grid gap-5 ${cols}`}>{cards.map(card=>{const safeCardHref=sanitizeBuilderHref(card.href);return <div key={card.id} className="overflow-hidden border border-black/10 shadow-sm" style={surfaceCard}>{card.imageUrl || editable ? <ReplaceableImage src={card.imageUrl} alt="" editable={editable} onReplace={()=>onRequestImage?.({ kind: "card", cardId: card.id })} className="aspect-[16/10] w-full object-cover"/> : null}<div className="p-5"><h3 className="text-lg font-black"><EditableText value={localize(card.title, locale)} editable={editable} onChange={inline(`card:${card.id}:title`)}>{localize(card.title, locale)}</EditableText></h3><p className="mt-2 text-sm leading-7" style={{color:"var(--builder-muted, currentColor)"}}><EditableText value={localize(card.body, locale)} editable={editable} onChange={inline(`card:${card.id}:body`)}>{localize(card.body, locale)}</EditableText></p>{card.href && !editable ? safeCardHref ? <Link href={safeCardHref} className="mt-4 inline-flex text-xs font-black underline" style={{color:"var(--builder-accent, currentColor)"}}>Open</Link> : <span aria-disabled="true" className="mt-4 inline-flex cursor-not-allowed text-xs font-black opacity-50">Open</span> : null}</div></div>;})}</div></div></section>;
   }
 
   const title = localize(section.content.title, locale), body = localize(section.content.body, locale), button = localize(section.content.buttonLabel, locale);
-  return <section {...common}><div className={inner} style={{ maxWidth, paddingInline: "24px" }}><h2 className="text-3xl font-black sm:text-4xl"><EditableText value={title} editable={editable} onChange={inline("title")}>{title}</EditableText></h2><p className="mt-4 max-w-2xl text-base leading-8 opacity-75"><EditableText value={body} editable={editable} onChange={inline("body")}>{body}</EditableText></p>{button || editable ? editable ? <span className="mt-6 inline-flex min-h-12 items-center px-6 text-sm font-black text-white" style={accentButton}><EditableText value={button} editable onChange={inline("buttonLabel")}>{button}</EditableText></span> : <Link href={String(section.content.buttonHref || "/")} className="mt-6 inline-flex min-h-12 items-center px-6 text-sm font-black text-white" style={accentButton}>{button}</Link> : null}</div></section>;
+  const safeButtonHref = sanitizeBuilderHref(section.content.buttonHref);
+  return <section {...common}><div className={inner} style={{ maxWidth, paddingInline: "24px" }}><h2 className="text-3xl font-black sm:text-4xl"><EditableText value={title} editable={editable} onChange={inline("title")}>{title}</EditableText></h2><p className="mt-4 max-w-2xl text-base leading-8 opacity-75"><EditableText value={body} editable={editable} onChange={inline("body")}>{body}</EditableText></p>{button || editable ? editable ? <span className="mt-6 inline-flex min-h-12 items-center px-6 text-sm font-black text-white" style={accentButton}><EditableText value={button} editable onChange={inline("buttonLabel")}>{button}</EditableText></span> : safeButtonHref ? <Link href={safeButtonHref} className="mt-6 inline-flex min-h-12 items-center px-6 text-sm font-black text-white" style={accentButton}>{button}</Link> : <span aria-disabled="true" className="mt-6 inline-flex min-h-12 cursor-not-allowed items-center px-6 text-sm font-black text-white opacity-60" style={accentButton}>{button}</span> : null}</div></section>;
 }
