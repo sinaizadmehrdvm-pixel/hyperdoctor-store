@@ -6,7 +6,9 @@ const index = JSON.parse(readFileSync("assets/catalog/v285/manifest-index.json",
 const bwell = [...JSON.parse(readFileSync("assets/catalog/v285/bwell-media-1.json", "utf8")), ...JSON.parse(readFileSync("assets/catalog/v285/bwell-media-2.json", "utf8"))] as any[];
 const hooshmand = [...JSON.parse(readFileSync("assets/catalog/v285/hooshmand-media-1.json", "utf8")), ...JSON.parse(readFileSync("assets/catalog/v285/hooshmand-media-2.json", "utf8"))] as any[];
 const egt = JSON.parse(readFileSync("assets/catalog/v285/egt-media.json", "utf8")) as any[];
-const migration = readFileSync("supabase/migrations/20260912165000_catalog_enrichment_v285.sql", "utf8");
+const descriptionMigration = readFileSync("supabase/migrations/20260912165000_catalog_descriptions_v285.sql", "utf8");
+const mediaMigration = readFileSync("supabase/migrations/20260912165100_catalog_media_v285.sql", "utf8");
+const migration = `${descriptionMigration}\n${mediaMigration}`;
 const route = readFileSync("src/app/api/catalog-media/[mediaId]/route.ts", "utf8");
 const assets = [...bwell, ...hooshmand, ...egt].sort((a, b) => a.sku.localeCompare(b.sku));
 
@@ -26,7 +28,7 @@ if (new Set(skus).size !== 117) throw new Error("Version 285 manifest contains d
 if (assets.filter((a) => a.visualScope === "EXACT_PRODUCT_VISUAL").length !== 106 || assets.filter((a) => a.visualScope === "OFFICIAL_FAMILY_VISUAL").length !== 11) throw new Error("Version 285 visual-scope count mismatch");
 for (const a of assets) {
   if (!a.sourceFileId || !Number.isInteger(a.sourcePage) || a.sourcePage < 1 || !a.sourceModel || !/^[0-9a-f]{64}$/.test(a.sha256) || a.width !== 240 || a.height !== 240 || a.byteSize <= 0) throw new Error(`Invalid Version 285 asset provenance: ${a.sku}`);
-  if (!migration.includes(`('${a.sku}','${a.sourceFileId}',${a.sourcePage},'${a.visualScope}')`)) throw new Error(`Version 285 migration missing exact source mapping: ${a.sku}`);
+  if (!mediaMigration.includes(`('${a.sku}','${a.sourceFileId}',${a.sourcePage},'${a.visualScope}')`)) throw new Error(`Version 285 migration missing exact source mapping: ${a.sku}`);
 }
 
 const blocked = ["HOO-COOLER-CLASSIC","HOO-COOLER-WAVE-L","HOO-COOLER-WAVE-XL","HOO-SLEEP-NECK","HOO-WAVE-MASSAGER"].sort();
@@ -36,11 +38,11 @@ for (const sku of blocked) {
   if (!migration.includes(sku)) throw new Error(`Migration does not preserve blocked SKU: ${sku}`);
 }
 for (const token of ["Version 285 — Catalog Enrichment & Launch Readiness","expected exactly 23 B.Well description gaps","expected exactly 117 source-derived v285 target media rows","expected 170/170 complete four-language descriptions","expected 170/170 Product Master rows with verified media","version-285-source-derived-media"]) if (!migration.includes(token)) throw new Error(`Version 285 migration missing token: ${token}`);
-if ((migration.match(/\('BW-[^']+','/g) ?? []).length < 23) throw new Error("Version 285 migration is missing B.Well description rows");
-if (!migration.includes("'media-v285-'||lower(p.sku)")) throw new Error("Version 285 migration is missing deterministic media ID generation");
-const mappedRows = migration.match(/\('(?:BW|HOO|EGT)-[^']+','file_[0-9a-f]+',\d+,'(?:EXACT_PRODUCT_VISUAL|OFFICIAL_FAMILY_VISUAL)'\)/g) ?? [];
+if ((descriptionMigration.match(/\('BW-[^']+','/g) ?? []).length !== 23) throw new Error("Version 285 description migration must contain exactly 23 B.Well localized rows");
+if (!mediaMigration.includes("'media-v285-'||lower(p.sku)")) throw new Error("Version 285 media migration is missing deterministic media ID generation");
+const mappedRows = mediaMigration.match(/\('(?:BW|HOO|EGT)-[^']+','file_[0-9a-f]+',\d+,'(?:EXACT_PRODUCT_VISUAL|OFFICIAL_FAMILY_VISUAL)'\)/g) ?? [];
 if (mappedRows.length !== 117) throw new Error(`Version 285 migration expected 117 source media rows, found ${mappedRows.length}`);
 const lower = migration.toLowerCase();
 for (const pattern of [/insert\s+into\s+public\."branchproductprice"/,/update\s+public\."branchproductprice"/,/insert\s+into\s+public\."warehouseinventory"/,/update\s+public\."warehouseinventory"/,/insert\s+into\s+public\."order"/,/"ispublished"\s*=\s*true/]) if (pattern.test(lower)) throw new Error(`Version 285 must not mutate live commerce/publication: ${pattern}`);
-if (!migration.includes("/api/catalog-media/media-v285-") || !route.includes("v285") || !route.includes("service_verified_product_media_blob")) throw new Error("Version 285 verified blob delivery is incomplete");
+if (!mediaMigration.includes("/api/catalog-media/media-v285-") || !route.includes("v285") || !route.includes("service_verified_product_media_blob")) throw new Error("Version 285 verified blob delivery is incomplete");
 console.log(`Version 285 catalog enrichment audit passed: 23 descriptions, 117 source-derived media mappings, asset-set ${assetSetSha}, 170/170 media+descriptions, commerce remains fail-closed.`);
