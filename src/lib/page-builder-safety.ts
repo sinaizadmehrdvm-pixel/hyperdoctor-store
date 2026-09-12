@@ -9,10 +9,15 @@ const SAFE_RICH_TEXT_TAGS = new Set([
 ]);
 const VOID_TAGS = new Set(["br", "hr"]);
 
+function decodeCodePoint(value: string, radix: number) {
+  const point = Number.parseInt(value, radix);
+  return Number.isInteger(point) && point >= 0 && point <= 0x10ffff ? String.fromCodePoint(point) : "�";
+}
+
 function decodeUrlEntities(value: string) {
   return value
-    .replace(/&#x([0-9a-f]+);?/gi, (_, hex: string) => String.fromCodePoint(Number.parseInt(hex, 16)))
-    .replace(/&#([0-9]+);?/g, (_, decimal: string) => String.fromCodePoint(Number.parseInt(decimal, 10)))
+    .replace(/&#x([0-9a-f]+);?/gi, (_, hex: string) => decodeCodePoint(hex, 16))
+    .replace(/&#([0-9]+);?/g, (_, decimal: string) => decodeCodePoint(decimal, 10))
     .replace(/&colon;?/gi, ":")
     .replace(/&tab;?/gi, "\t")
     .replace(/&newline;?/gi, "\n")
