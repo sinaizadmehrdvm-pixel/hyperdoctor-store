@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
 
 const release = JSON.parse(readFileSync("docs/releases/version-285-catalog-enrichment.json","utf8")) as any;
 const sourceManifest = JSON.parse(readFileSync("assets/catalog/v285/source-derived-manifest.json","utf8")) as any;
@@ -13,8 +14,10 @@ if (release.catalog.productsWithCurrentBranchPrice !== 0 || release.catalog.prod
 if (release.delta.fourLanguageDescriptionsAdded !== 23 || release.delta.verifiedMediaAdded !== 117 || release.delta.exactProductVisualsAdded !== 106 || release.delta.officialFamilyVisualsAdded !== 11) throw new Error("Version 285 delta mismatch");
 
 if (sourceManifest.version !== 285 || sourceManifest.archive !== "catalog-enrichment-v285-media-240q85.tar.gz" || sourceManifest.archiveSha256 !== "8da7b80946989d80778aba8942ad4a6c7cf2f2b8e5980b36273650d308f30b4f" || sourceManifest.files !== 117 || sourceManifest.assets.length !== 117) throw new Error("Version 285 source manifest count/archive mismatch");
-const archive = readFileSync("assets/catalog/v285/catalog-enrichment-v285-media-240q85.tar.gz");
-if (createHash("sha256").update(archive).digest("hex") !== sourceManifest.archiveSha256) throw new Error("Version 285 archive checksum mismatch");
+const partNames = readdirSync("assets/catalog/v285/archive.parts").filter((name:string)=>name.endsWith(".b64")).sort();
+if (partNames.length !== 8) throw new Error(`Version 285 expected 8 archive parts, found ${partNames.length}`);
+const archive = Buffer.from(partNames.map((name:string)=>readFileSync(join("assets/catalog/v285/archive.parts",name),"utf8").trim()).join(""),"base64");
+if (createHash("sha256").update(archive).digest("hex") !== sourceManifest.archiveSha256) throw new Error("Version 285 reconstructed archive checksum mismatch");
 const assets = [...sourceManifest.assets].sort((a:any,b:any)=>a.sku.localeCompare(b.sku));
 const assetSetPayload = assets.map((a:any)=>`${a.sku}:${a.sha256}:${a.byteSize}:${a.sourceFileId}:${a.sourcePage}:${a.sourceModel}:${a.visualScope}`).join("\n");
 const assetSetSha = createHash("sha256").update(assetSetPayload).digest("hex");
