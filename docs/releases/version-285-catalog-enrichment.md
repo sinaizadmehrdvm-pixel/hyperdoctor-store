@@ -18,14 +18,14 @@ Version 285 closes the two source-content gaps identified by Version 283 without
 
 Version 285 adds 117 source-derived 240×240 WEBP files to the existing verified-media delivery path.
 
-- Runtime storage: `ProductMediaBlob`
-- Delivery path: `/api/catalog-media/media-v285-<sku>`
+- Runtime delivery: immutable static source-derived bundle reconstructed during build
+- Delivery path: `/catalog/verified/v285/<SKU>.webp`
 - Asset-set SHA-256: `9361ab2f6c9c65e83559b4954d38ea876a7b414463180062ce00820aadcc5471`
 - B.Well: 50 assets from `file_00000000607081f4a272b35d4ba49b7b`
 - Hooshmand: 43 assets from `file_000000000f288246ba4de06e2f1113ce` plus the three explicitly mapped `+` products from `file_00000000937881f4a2e5682e049d7c42`
 - EGT: 24 assets from `file_0000000061dc81f4b64b0e8c03428808`
 
-The repository manifest records source file ID, page, model, PDF crop box, asset SHA-256, byte size, and visual scope for every asset. Production blob rows are accepted only when their byte size and SHA-256 exactly match that manifest. No generated, stock, synthetic, or sibling-model-substitute imagery is used.
+The repository manifest records source file ID, page, model, PDF crop box, asset SHA-256, byte size, and visual scope for every asset. The build verifies and extracts the checksum-pinned repository archive and refuses any file whose byte size or SHA-256 differs from the manifest. No generated, stock, synthetic, or sibling-model-substitute imagery is used.
 
 ### EGT shared family visuals
 
@@ -61,4 +61,4 @@ The remaining launch blockers after this phase are operational data: **170 curre
 - the five blocked Hooshmand SKUs remain fail-closed;
 - no price, inventory, order, or product-publication writes are introduced.
 
-Production closeout additionally verifies all 117 `ProductMediaBlob` rows against the manifest SHA-256/byte-size values and checks representative v285 media endpoints after deployment.
+Production closeout additionally verifies representative static v285 media endpoints after deployment and confirms the database media URLs exactly match the checksum-pinned source manifest.
