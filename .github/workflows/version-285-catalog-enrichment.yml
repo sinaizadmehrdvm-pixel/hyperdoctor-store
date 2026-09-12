@@ -5,8 +5,8 @@ on:
     paths:
       - 'assets/catalog/v285/**'
       - 'docs/releases/version-285-catalog-enrichment.*'
+      - 'src/app/api/catalog-media/[mediaId]/route.ts'
       - 'scripts/audit-version-285-catalog-enrichment.ts'
-      - 'scripts/prepare-v285-verified-media.ts'
       - 'supabase/migrations/20260912165000_catalog_enrichment_v285.sql'
       - 'package.json'
       - '.github/workflows/ci.yml'
@@ -17,8 +17,8 @@ on:
     paths:
       - 'assets/catalog/v285/**'
       - 'docs/releases/version-285-catalog-enrichment.*'
+      - 'src/app/api/catalog-media/[mediaId]/route.ts'
       - 'scripts/audit-version-285-catalog-enrichment.ts'
-      - 'scripts/prepare-v285-verified-media.ts'
       - 'supabase/migrations/20260912165000_catalog_enrichment_v285.sql'
       - 'package.json'
       - '.github/workflows/ci.yml'
