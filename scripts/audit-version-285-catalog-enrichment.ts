@@ -38,7 +38,8 @@ for (const sku of blocked) {
   if (!migration.includes(sku)) throw new Error(`Migration does not preserve blocked SKU: ${sku}`);
 }
 for (const token of ["Version 285 — Catalog Enrichment & Launch Readiness","expected exactly 23 B.Well description gaps","expected exactly 117 source-derived v285 target media rows","expected 170/170 complete four-language descriptions","expected 170/170 Product Master rows with verified media","version-285-source-derived-media"]) if (!migration.includes(token)) throw new Error(`Version 285 migration missing token: ${token}`);
-if ((descriptionMigration.match(/\('BW-[^']+','/g) ?? []).length !== 23) throw new Error("Version 285 description migration must contain exactly 23 B.Well localized rows");
+const localizedValues = descriptionMigration.slice(descriptionMigration.indexOf("with descriptions"));
+if ((localizedValues.match(/\('BW-[^']+','/g) ?? []).length !== 23) throw new Error("Version 285 description migration must contain exactly 23 B.Well localized rows");
 if (!mediaMigration.includes("'media-v285-'||lower(p.sku)")) throw new Error("Version 285 media migration is missing deterministic media ID generation");
 const mappedRows = mediaMigration.match(/\('(?:BW|HOO|EGT)-[^']+','file_[0-9a-f]+',\d+,'(?:EXACT_PRODUCT_VISUAL|OFFICIAL_FAMILY_VISUAL)'\)/g) ?? [];
 if (mappedRows.length !== 117) throw new Error(`Version 285 migration expected 117 source media rows, found ${mappedRows.length}`);
