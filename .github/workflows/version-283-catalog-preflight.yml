@@ -1,0 +1,35 @@
+name: Version 283 Catalog Preflight
+
+on:
+  pull_request:
+    paths:
+      - 'docs/releases/version-283-production-catalog-preflight.json'
+      - 'docs/releases/version-283-production-catalog-preflight.md'
+      - 'scripts/audit-version-283-production-catalog-preflight.ts'
+      - 'src/app/admin/(protected)/products/preflight/page.tsx'
+      - 'src/lib/admin-permissions.ts'
+      - 'supabase/migrations/20260912124500_catalog_launch_preflight_v283.sql'
+      - '.github/workflows/version-283-catalog-preflight.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/releases/version-283-production-catalog-preflight.json'
+      - 'docs/releases/version-283-production-catalog-preflight.md'
+      - 'scripts/audit-version-283-production-catalog-preflight.ts'
+      - 'src/app/admin/(protected)/products/preflight/page.tsx'
+      - 'src/lib/admin-permissions.ts'
+      - 'supabase/migrations/20260912124500_catalog_launch_preflight_v283.sql'
+      - '.github/workflows/version-283-catalog-preflight.yml'
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - run: npm run test:catalog-preflight
