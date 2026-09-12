@@ -25,7 +25,7 @@ Version 285 adds 117 source-derived 240×240 WEBP files to the existing verified
 - Hooshmand: 43 assets from `file_000000000f288246ba4de06e2f1113ce` plus the three explicitly mapped `+` products from `file_00000000937881f4a2e5682e049d7c42`
 - EGT: 24 assets from `file_0000000061dc81f4b64b0e8c03428808`
 
-The repository manifest records source file ID, page, model, PDF crop box, asset SHA-256, byte size, and visual scope for every asset. The build verifies and extracts the checksum-pinned repository archive and refuses any file whose byte size or SHA-256 differs from the manifest. No generated, stock, synthetic, or sibling-model-substitute imagery is used.
+The repository manifest records source file ID, page, model, PDF crop box, asset SHA-256, byte size, and visual scope for every asset. The build reconstructs the checksum-pinned archive from eight repository base64 parts and refuses any file whose byte size or SHA-256 differs from the manifest. No generated, stock, synthetic, or sibling-model-substitute imagery is used.
 
 ### EGT shared family visuals
 
