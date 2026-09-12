@@ -1,0 +1,63 @@
+{
+  "version": 282,
+  "scope": "SKU verification and fail-closed Product Master promotion",
+  "verifiedAt": "2026-09-12",
+  "production": {
+    "stagingItems": 175,
+    "verifiedIdentities": 175,
+    "unresolvedIdentities": 0,
+    "promotedStagingItems": 170,
+    "products": 170,
+    "publishedProducts": 0,
+    "branchProductPrices": 0,
+    "warehouseInventoryRows": 0,
+    "productSourceEvidenceRows": 170,
+    "productsWithSourceEvidence": 170,
+    "productMediaEvidenceRows": 53,
+    "productsWithMediaEvidence": 53
+  },
+  "productMasterByBrand": {
+    "B.Well": 50,
+    "EGT": 24,
+    "Hooshmand": 43,
+    "JTS": 53
+  },
+  "blockedStagingItems": [
+    {
+      "siteSku": "HOO-WAVE-MASSAGER",
+      "reason": "technical_source_unverified",
+      "policy": "Do not infer exact technical specifications from sibling Wave variants."
+    },
+    {
+      "siteSku": "HOO-COOLER-WAVE-L",
+      "reason": "technical_source_unverified",
+      "policy": "Detailed dimensions remain pending until an exact model-specific source is verified."
+    },
+    {
+      "siteSku": "HOO-COOLER-WAVE-XL",
+      "reason": "technical_source_unverified",
+      "policy": "Technical detail remains pending until an exact model-specific source is verified."
+    },
+    {
+      "siteSku": "HOO-COOLER-CLASSIC",
+      "reason": "technical_source_unverified",
+      "policy": "Price-list identity evidence is not technical evidence."
+    },
+    {
+      "siteSku": "HOO-SLEEP-NECK",
+      "reason": "technical_source_unverified",
+      "policy": "Do not substitute technical specifications from M, L, Pulse, Travel or other neck variants."
+    }
+  ],
+  "commercePolicy": {
+    "historicalPriceIsCurrent": false,
+    "historicalStockIsCurrent": false,
+    "currentPriceRequiresCurrentEvidence": true,
+    "currentInventoryRequiresCurrentEvidence": true,
+    "promotionMayNotPublishProducts": true,
+    "promotionMayNotCreateBranchPrice": true,
+    "promotionMayNotCreateWarehouseInventory": true
+  },
+  "releaseDecision": "COMPLETE_FAIL_CLOSED",
+  "releaseNote": "Version 282 is complete with every identity verified and every source-supported staging item promoted. Five Hooshmand SKUs remain intentionally in NEEDS_REVIEW because exact model-specific technical evidence is absent; forcing promotion would violate catalog provenance rules."
+}
