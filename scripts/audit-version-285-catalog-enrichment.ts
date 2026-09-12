@@ -3,8 +3,8 @@ import { readFileSync } from "node:fs";
 
 const release = JSON.parse(readFileSync("docs/releases/version-285-catalog-enrichment.json", "utf8")) as any;
 const index = JSON.parse(readFileSync("assets/catalog/v285/manifest-index.json", "utf8")) as any;
-const bwell = JSON.parse(readFileSync("assets/catalog/v285/bwell-media.json", "utf8")) as any[];
-const hooshmand = JSON.parse(readFileSync("assets/catalog/v285/hooshmand-media.json", "utf8")) as any[];
+const bwell = [...JSON.parse(readFileSync("assets/catalog/v285/bwell-media-1.json", "utf8")), ...JSON.parse(readFileSync("assets/catalog/v285/bwell-media-2.json", "utf8"))] as any[];
+const hooshmand = [...JSON.parse(readFileSync("assets/catalog/v285/hooshmand-media-1.json", "utf8")), ...JSON.parse(readFileSync("assets/catalog/v285/hooshmand-media-2.json", "utf8"))] as any[];
 const egt = JSON.parse(readFileSync("assets/catalog/v285/egt-media.json", "utf8")) as any[];
 const migration = readFileSync("supabase/migrations/20260912165000_catalog_enrichment_v285.sql", "utf8");
 const route = readFileSync("src/app/api/catalog-media/[mediaId]/route.ts", "utf8");
