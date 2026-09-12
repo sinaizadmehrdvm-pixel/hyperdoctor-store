@@ -1,0 +1,41 @@
+name: Version 284 Visual Editor
+
+on:
+  pull_request:
+    paths:
+      - 'docs/releases/version-284-lovable-visual-editor-closeout.md'
+      - 'docs/releases/version-284-lovable-visual-editor-closeout.json'
+      - 'scripts/audit-version-284-visual-editor.ts'
+      - 'src/lib/page-builder-safety.ts'
+      - 'src/components/page-builder/section-renderer.tsx'
+      - 'src/app/admin/(protected)/editor/[id]/layout.tsx'
+      - 'src/app/admin/(protected)/editor/[id]/preview/page.tsx'
+      - 'package.json'
+      - '.github/workflows/ci.yml'
+      - '.github/workflows/version-284-visual-editor.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/releases/version-284-lovable-visual-editor-closeout.md'
+      - 'docs/releases/version-284-lovable-visual-editor-closeout.json'
+      - 'scripts/audit-version-284-visual-editor.ts'
+      - 'src/lib/page-builder-safety.ts'
+      - 'src/components/page-builder/section-renderer.tsx'
+      - 'src/app/admin/(protected)/editor/[id]/layout.tsx'
+      - 'src/app/admin/(protected)/editor/[id]/preview/page.tsx'
+      - 'package.json'
+      - '.github/workflows/ci.yml'
+      - '.github/workflows/version-284-visual-editor.yml'
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - run: npm run test:visual-editor
