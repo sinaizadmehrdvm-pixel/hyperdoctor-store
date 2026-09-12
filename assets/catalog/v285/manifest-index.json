@@ -1,0 +1,16 @@
+{
+  "version": 285,
+  "files": 117,
+  "format": "image/webp",
+  "dimensions": {"width":240,"height":240},
+  "quality": 85,
+  "assetSetSha256": "9361ab2f6c9c65e83559b4954d38ea876a7b414463180062ce00820aadcc5471",
+  "sourcePolicy": "Every asset is a deterministic crop of the cited official catalogue/technical source page. Shared EGT family visuals are explicitly marked OFFICIAL_FAMILY_VISUAL and are used only where the same source page explicitly lists those variants.",
+  "sources": {
+    "B.Well": {"fileId":"file_00000000607081f4a272b35d4ba49b7b","sha256":"3c48428355f4c91ac46fe507ebef33d9edff5dcfe24d6cf5bfb2e5269a529c38","reference":"B.Well Swiss Official Catalogue 2025–2026"},
+    "HooshmandMain": {"fileId":"file_000000000f288246ba4de06e2f1113ce","sha256":"c4c707c06047a53c903be875ea492b1962e84f28bc7c790b6750570f1cdadf32","reference":"Hooshmand Product Technical Sheets"},
+    "HooshmandSecondary": {"fileId":"file_00000000937881f4a2e5682e049d7c42","sha256":"5cd10a62f21d202264a087c940ccddfb6c8dc784976fe0a28616273df2ad648a","reference":"Hooshmand secondary product source"},
+    "EGT": {"fileId":"file_0000000061dc81f4b64b0e8c03428808","sha256":"86f9e50a39d0e255c4e4befadf2c31be27b0ca3e37e5478a728c066abeeef5b6","reference":"EGT 16-page catalogue"}
+  },
+  "storage": "ProductMediaBlob"
+}

@@ -18,6 +18,7 @@
     "test:verified-media": "tsx scripts/audit-verified-product-media.ts",
     "test:launch-ops": "tsx scripts/audit-launch-operations.ts",
     "test:catalog-preflight": "tsx scripts/audit-version-283-production-catalog-preflight.ts",
+    "test:catalog-enrichment": "tsx scripts/audit-version-285-catalog-enrichment.ts",
     "test:visual-editor": "tsx scripts/audit-version-284-visual-editor.ts",
     "test:seo-index": "tsx scripts/audit-seo-index.ts",
     "test:runtime-a11y": "tsx scripts/audit-runtime-accessibility.ts",

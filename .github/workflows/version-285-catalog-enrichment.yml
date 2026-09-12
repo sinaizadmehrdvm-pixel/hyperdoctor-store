@@ -1,0 +1,39 @@
+name: Version 285 Catalog Enrichment
+
+on:
+  pull_request:
+    paths:
+      - 'assets/catalog/v285/**'
+      - 'docs/releases/version-285-catalog-enrichment.*'
+      - 'src/app/api/catalog-media/[mediaId]/route.ts'
+      - 'scripts/audit-version-285-catalog-enrichment.ts'
+      - 'supabase/migrations/20260912165000_catalog_descriptions_v285.sql'
+      - 'supabase/migrations/20260912165100_catalog_media_v285.sql'
+      - 'package.json'
+      - '.github/workflows/ci.yml'
+      - '.github/workflows/version-285-catalog-enrichment.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'assets/catalog/v285/**'
+      - 'docs/releases/version-285-catalog-enrichment.*'
+      - 'src/app/api/catalog-media/[mediaId]/route.ts'
+      - 'scripts/audit-version-285-catalog-enrichment.ts'
+      - 'supabase/migrations/20260912165000_catalog_descriptions_v285.sql'
+      - 'supabase/migrations/20260912165100_catalog_media_v285.sql'
+      - 'package.json'
+      - '.github/workflows/ci.yml'
+      - '.github/workflows/version-285-catalog-enrichment.yml'
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - run: npm run test:catalog-enrichment

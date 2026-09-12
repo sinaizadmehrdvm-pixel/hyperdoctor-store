@@ -1,0 +1,17 @@
+{
+  "version": 285,
+  "status": "PENDING_PRODUCTION_VERIFICATION",
+  "required": {
+    "ci": true,
+    "merge": true,
+    "exactMergeShaProductionDeployment": true,
+    "supabaseMigrations": 2,
+    "verifiedBlobRows": 117,
+    "fourLanguageDescriptions": 170,
+    "productsWithVerifiedMedia": 170,
+    "publishedProducts": 0,
+    "inferredCurrentPrices": 0,
+    "inferredInventoryRows": 0,
+    "blockedHooshmandRows": 5
+  }
+}

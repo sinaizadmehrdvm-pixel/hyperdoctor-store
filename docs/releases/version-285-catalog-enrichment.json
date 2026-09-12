@@ -1,0 +1,63 @@
+{
+  "version": 285,
+  "name": "Catalog Enrichment & Launch Readiness",
+  "date": "2026-09-12",
+  "branch": "phase-285-catalog-enrichment-launch-readiness",
+  "baseCommit": "b487cc38477b1008c63fb92ec7e10adad1db9ae1",
+  "releaseDecision": "ENRICHMENT_COMPLETE_FAIL_CLOSED_COMMERCE",
+  "catalog": {
+    "products": 170,
+    "sourceBackedProducts": 170,
+    "fourLanguageNameProducts": 170,
+    "fourLanguageDescriptionProducts": 170,
+    "productsWithVerifiedMedia": 170,
+    "productsMissingVerifiedMedia": 0,
+    "productsWithCurrentBranchPrice": 0,
+    "productsWithAvailableInventory": 0,
+    "publishReadyProducts": 0,
+    "publishedProducts": 0
+  },
+  "delta": {
+    "fourLanguageDescriptionsAdded": 23,
+    "verifiedMediaAdded": 117,
+    "exactProductVisualsAdded": 106,
+    "officialFamilyVisualsAdded": 11
+  },
+  "byBrand": [
+    {"brand":"JTS","products":53,"fourLanguageDescriptions":53,"verifiedMedia":53},
+    {"brand":"B.Well","products":50,"fourLanguageDescriptions":50,"verifiedMedia":50},
+    {"brand":"Hooshmand","products":43,"fourLanguageDescriptions":43,"verifiedMedia":43},
+    {"brand":"EGT","products":24,"fourLanguageDescriptions":24,"verifiedMedia":24}
+  ],
+  "remainingBlockers": {
+    "currentPriceMissing": 170,
+    "availableInventoryMissing": 170,
+    "descriptionWarnings": 0,
+    "verifiedMediaMissing": 0
+  },
+  "blockedStagingSkus": [
+    "HOO-COOLER-CLASSIC",
+    "HOO-COOLER-WAVE-L",
+    "HOO-COOLER-WAVE-XL",
+    "HOO-SLEEP-NECK",
+    "HOO-WAVE-MASSAGER"
+  ],
+  "mediaBundle": {
+    "storage": "ProductMediaBlob",
+    "files": 117,
+    "width": 240,
+    "height": 240,
+    "exactProductVisuals": 106,
+    "officialFamilyVisuals": 11,
+    "assetSetSha256": "9361ab2f6c9c65e83559b4954d38ea876a7b414463180062ce00820aadcc5471",
+    "deliveryPrefix": "/api/catalog-media/media-v285-"
+  },
+  "sourceFiles": [
+    {"brand":"B.Well","fileId":"file_00000000607081f4a272b35d4ba49b7b","sha256":"3c48428355f4c91ac46fe507ebef33d9edff5dcfe24d6cf5bfb2e5269a529c38"},
+    {"brand":"Hooshmand","fileId":"file_000000000f288246ba4de06e2f1113ce","sha256":"c4c707c06047a53c903be875ea492b1962e84f28bc7c790b6750570f1cdadf32"},
+    {"brand":"Hooshmand","fileId":"file_00000000937881f4a2e5682e049d7c42","sha256":"5cd10a62f21d202264a087c940ccddfb6c8dc784976fe0a28616273df2ad648a"},
+    {"brand":"EGT","fileId":"file_0000000061dc81f4b64b0e8c03428808","sha256":"86f9e50a39d0e255c4e4befadf2c31be27b0ca3e37e5478a728c066abeeef5b6"}
+  ],
+  "commerceMutations": {"price":false,"inventory":false,"publication":false,"orders":false},
+  "automaticPublishing": false
+}
