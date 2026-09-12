@@ -1,0 +1,27 @@
+name: Version 282 Product Master Audit
+
+on:
+  pull_request:
+    paths:
+      - 'docs/releases/version-282-product-master.json'
+      - 'scripts/audit-version-282-product-master-release.ts'
+      - '.github/workflows/version-282-product-master.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/releases/version-282-product-master.json'
+      - 'scripts/audit-version-282-product-master-release.ts'
+      - '.github/workflows/version-282-product-master.yml'
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - run: npx tsx scripts/audit-version-282-product-master-release.ts
