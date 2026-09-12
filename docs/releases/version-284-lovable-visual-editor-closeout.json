@@ -1,0 +1,51 @@
+{
+  "version": 284,
+  "name": "Lovable-grade Visual Editor Closeout",
+  "date": "2026-09-12",
+  "branch": "phase-284-visual-site-editor",
+  "baseCommit": "f51afd2b52d3339537a8abd998ec2df31ada938d",
+  "releaseDecision": "MERGE_ONLY_AFTER_GREEN_CI",
+  "scope": {
+    "visualEditorUx": true,
+    "renderSafety": true,
+    "secureDraftPreview": true,
+    "fourLanguageAdminUx": true,
+    "catalogData": false,
+    "pricing": false,
+    "inventory": false,
+    "automaticPublishing": false,
+    "databaseMigration": false
+  },
+  "supportedLocales": ["fa", "tr", "en", "ar"],
+  "security": {
+    "links": ["local", "http", "https", "mailto", "tel"],
+    "images": ["local", "http", "https"],
+    "blockedSchemes": ["javascript", "data", "vbscript"],
+    "protocolRelativeUrlsBlocked": true,
+    "backslashObfuscationBlocked": true,
+    "controlCharactersBlocked": true,
+    "htmlEntitySchemeDecoding": true,
+    "richTextAllowlist": ["p", "br", "strong", "b", "em", "i", "u", "s", "ul", "ol", "li", "blockquote", "h1", "h2", "h3", "h4", "h5", "h6", "pre", "code", "hr", "a", "span"]
+  },
+  "preview": {
+    "tokenGated": true,
+    "draftOnly": true,
+    "explicitExpiry": true,
+    "revocable": true,
+    "tokenFormatCheckedBeforeLinkRendering": true,
+    "localizedManager": true
+  },
+  "tests": {
+    "command": "npm run test:visual-editor",
+    "mainCi": true,
+    "dedicatedWorkflow": ".github/workflows/version-284-visual-editor.yml"
+  },
+  "productionVerificationRequired": [
+    "deployment READY",
+    "/api/health HTTP 200",
+    "public storefront HTTP 200",
+    "admin editor authentication boundary intact",
+    "secure draft preview authentication/token boundary intact",
+    "no new runtime errors"
+  ]
+}
