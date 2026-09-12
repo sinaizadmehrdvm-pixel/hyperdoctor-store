@@ -43,16 +43,14 @@
     "HOO-WAVE-MASSAGER"
   ],
   "mediaBundle": {
-    "storage": "STATIC_SOURCE_DERIVED_BUNDLE",
+    "storage": "ProductMediaBlob",
     "files": 117,
     "width": 240,
     "height": 240,
     "exactProductVisuals": 106,
     "officialFamilyVisuals": 11,
     "assetSetSha256": "9361ab2f6c9c65e83559b4954d38ea876a7b414463180062ce00820aadcc5471",
-    "deliveryPrefix": "/catalog/verified/v285/",
-    "archive": "catalog-enrichment-v285-media-240q85.tar.gz",
-    "archiveSha256": "8da7b80946989d80778aba8942ad4a6c7cf2f2b8e5980b36273650d308f30b4f"
+    "deliveryPrefix": "/api/catalog-media/media-v285-"
   },
   "sourceFiles": [
     {"brand":"B.Well","fileId":"file_00000000607081f4a272b35d4ba49b7b","sha256":"3c48428355f4c91ac46fe507ebef33d9edff5dcfe24d6cf5bfb2e5269a529c38"},
