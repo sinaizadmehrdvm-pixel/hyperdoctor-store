@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET(_request: Request, context: { params: Promise<{ mediaId: string }> }) {
   const { mediaId } = await context.params;
-  if (!/^media-v281-jts-[a-z0-9-]+$/i.test(mediaId)) {
+  if (!/^media-(?:v281-jts|v285)-[a-z0-9-]+$/i.test(mediaId)) {
     return new NextResponse(null, { status: 404 });
   }
 
