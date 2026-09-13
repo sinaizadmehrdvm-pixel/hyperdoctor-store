@@ -1,8 +1,8 @@
--- Version 286 — public catalog visibility separated from commerce publication.
+-- Version 286 — public catalog visibility schema and RLS foundation.
 --
--- catalogVisible means a product may be browsed as verified catalog content.
--- isPublished remains the commerce-ready gate. This migration intentionally does
--- not publish products and does not create price or inventory data.
+-- This migration is intentionally safe to apply before the Version 286 app deploy:
+-- catalogVisible defaults to false, so no new product becomes public until the
+-- separate activation migration runs after the storefront code is live.
 
 alter table public."Product"
   add column if not exists "catalogVisible" boolean not null default false;
@@ -14,96 +14,9 @@ create index if not exists "Product_catalogVisible_idx"
   on public."Product" ("catalogVisible")
   where "catalogVisible" = true;
 
-do $v286_preflight$
-declare
-  v_products integer;
-  v_media integer;
-  v_evidence integer;
-  v_blobs integer;
-begin
-  select count(distinct p.id), count(distinct m.id), count(distinct e.id), count(distinct b."mediaId")
-    into v_products, v_media, v_evidence, v_blobs
-  from public."Product" p
-  join public."Media" m
-    on m."productId" = p.id
-   and m.id like 'media-v285-%'
-  join public."ProductMediaEvidence" e
-    on e."productId" = p.id
-   and e."mediaId" = m.id
-   and e."verificationStatus" = 'VERIFIED'
-  join public."ProductMediaBlob" b
-    on b."mediaId" = m.id
-   and b."mimeType" = 'image/webp'
-   and b."byteSize" = octet_length(b.bytes)
-   and b.sha256 = encode(digest(b.bytes, 'sha256'), 'hex')
-  left join public."Brand" brand on brand.id = p."brandId"
-  where coalesce(brand.name, p.brand) in ('B.Well','Hooshmand','EGT');
-
-  if v_products <> 117 or v_media <> 117 or v_evidence <> 117 or v_blobs <> 117 then
-    raise exception 'V286 preflight failed: products %, media %, evidence %, blobs %; expected 117 each',
-      v_products, v_media, v_evidence, v_blobs;
-  end if;
-
-  if exists (
-    select 1
-    from public."Product" p
-    left join public."Brand" brand on brand.id = p."brandId"
-    where coalesce(brand.name, p.brand) in ('B.Well','Hooshmand','EGT')
-      and (p."isPublished" = true or coalesce(p.price,0) <> 0 or coalesce(p.stock,0) <> 0)
-  ) then
-    raise exception 'V286 refuses to catalog-expose source products with commerce publication, price, or legacy stock enabled';
-  end if;
-end
-$v286_preflight$;
-
-with eligible as (
-  select distinct p.id
-  from public."Product" p
-  join public."Media" m
-    on m."productId" = p.id
-   and m.id like 'media-v285-%'
-  join public."ProductMediaEvidence" e
-    on e."productId" = p.id
-   and e."mediaId" = m.id
-   and e."verificationStatus" = 'VERIFIED'
-  join public."ProductMediaBlob" b
-    on b."mediaId" = m.id
-   and b."mimeType" = 'image/webp'
-   and b."byteSize" = octet_length(b.bytes)
-   and b.sha256 = encode(digest(b.bytes, 'sha256'), 'hex')
-  left join public."Brand" brand on brand.id = p."brandId"
-  where coalesce(brand.name, p.brand) in ('B.Well','Hooshmand','EGT')
-)
-update public."Product" p
-set "catalogVisible" = true,
-    "updatedAt" = current_timestamp
-from eligible e
-where p.id = e.id;
-
-do $v286_verify$
-declare
-  v_visible integer;
-begin
-  select count(*) into v_visible
-  from public."Product"
-  where "catalogVisible" = true;
-
-  if v_visible <> 117 then
-    raise exception 'V286 verification failed: expected exactly 117 catalogVisible products, found %', v_visible;
-  end if;
-
-  if exists (
-    select 1 from public."Product"
-    where "catalogVisible" = true
-      and ("isPublished" = true or coalesce(price,0) <> 0 or coalesce(stock,0) <> 0)
-  ) then
-    raise exception 'V286 verification failed: catalog-only product crossed the commerce gate';
-  end if;
-end
-$v286_verify$;
-
 -- Public catalog rows are readable, but commerce publication remains independent.
 drop policy if exists "public_read_published_products" on public."Product";
+drop policy if exists "public_read_catalog_products" on public."Product";
 create policy "public_read_catalog_products"
   on public."Product"
   for select
@@ -113,6 +26,7 @@ create policy "public_read_catalog_products"
 -- A brand can be displayed when it is itself published or referenced by a
 -- public catalog product. This does not make any product commerce-ready.
 drop policy if exists "public_read_published_brands" on public."Brand";
+drop policy if exists "public_read_catalog_brands" on public."Brand";
 create policy "public_read_catalog_brands"
   on public."Brand"
   for select
@@ -195,6 +109,7 @@ create policy "public_read_attribute_values"
 
 -- Relations and approved reviews may be shown for public catalog products.
 drop policy if exists "public published product relations" on public."ProductRelation";
+drop policy if exists "public catalog product relations" on public."ProductRelation";
 create policy "public catalog product relations"
   on public."ProductRelation"
   for select
