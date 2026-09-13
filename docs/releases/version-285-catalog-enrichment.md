@@ -20,12 +20,12 @@ Version 285 adds 117 source-derived 240×240 WEBP files to the existing verified
 
 - Runtime storage: `ProductMediaBlob`
 - Delivery path: `/api/catalog-media/media-v285-<sku>`
-- Asset-set SHA-256: `9361ab2f6c9c65e83559b4954d38ea876a7b414463180062ce00820aadcc5471`
+- Asset-set SHA-256: `168edb625790215ed53327a302162e8f0fae588b9188df796d81e2d424e28736`
 - B.Well: 50 assets from `file_00000000607081f4a272b35d4ba49b7b`
 - Hooshmand: 43 assets from `file_000000000f288246ba4de06e2f1113ce` plus the three explicitly mapped `+` products from `file_00000000937881f4a2e5682e049d7c42`
 - EGT: 24 assets from `file_0000000061dc81f4b64b0e8c03428808`
 
-The repository manifests record source file ID, page, model, PDF crop box, asset SHA-256, byte size, and visual scope for every asset. Production blob rows are verified against those values before closeout. No generated, stock, synthetic, or sibling-model-substitute imagery is used.
+The repository manifests record source file ID, page, model, PDF crop box, asset SHA-256, byte size, and visual scope for every asset. On 2026-09-13 the runtime bytes were regenerated deterministically from the checksum-verified source PDFs and the recorded crop coordinates, visually reviewed, and the per-file hashes were re-pinned to those real bytes before Production blob seeding. No generated, stock, synthetic, or sibling-model-substitute imagery is used.
 
 ### EGT shared family visuals
 
