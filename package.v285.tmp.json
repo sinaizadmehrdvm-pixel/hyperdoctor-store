@@ -1,0 +1,12 @@
+{
+  "name": "hyperdoctor-store",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "prepare:verified-media": "tsx scripts/prepare-jts-verified-media.ts",
+    "prepare:v285-static-media": "tsx scripts/prepare-v285-static-media.ts",
+    "build": "npm run prepare:verified-media && npm run prepare:v285-static-media && prisma generate && next build",
+    "start": "next start"
+  }
+}
