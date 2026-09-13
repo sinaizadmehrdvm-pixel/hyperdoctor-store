@@ -4,7 +4,7 @@
   "format": "image/webp",
   "dimensions": {"width":240,"height":240},
   "quality": 85,
-  "assetSetSha256": "9361ab2f6c9c65e83559b4954d38ea876a7b414463180062ce00820aadcc5471",
+  "assetSetSha256": "168edb625790215ed53327a302162e8f0fae588b9188df796d81e2d424e28736",
   "sourcePolicy": "Every asset is a deterministic crop of the cited official catalogue/technical source page. Shared EGT family visuals are explicitly marked OFFICIAL_FAMILY_VISUAL and are used only where the same source page explicitly lists those variants.",
   "sources": {
     "B.Well": {"fileId":"file_00000000607081f4a272b35d4ba49b7b","sha256":"3c48428355f4c91ac46fe507ebef33d9edff5dcfe24d6cf5bfb2e5269a529c38","reference":"B.Well Swiss Official Catalogue 2025–2026"},
