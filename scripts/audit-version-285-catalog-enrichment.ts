@@ -22,7 +22,7 @@ if (bwell.length !== 50 || hooshmand.length !== 43 || egt.length !== 24) throw n
 
 const assetSetPayload = assets.map((a) => `${a.sku}:${a.sha256}:${a.byteSize}:${a.sourceFileId}:${a.sourcePage}:${a.sourceModel}:${a.visualScope}`).join("\n");
 const assetSetSha = createHash("sha256").update(assetSetPayload).digest("hex");
-if (assetSetSha !== "9361ab2f6c9c65e83559b4954d38ea876a7b414463180062ce00820aadcc5471" || index.assetSetSha256 !== assetSetSha || release.mediaBundle.assetSetSha256 !== assetSetSha) throw new Error("Version 285 asset-set checksum mismatch");
+if (assetSetSha !== "168edb625790215ed53327a302162e8f0fae588b9188df796d81e2d424e28736" || index.assetSetSha256 !== assetSetSha || release.mediaBundle.assetSetSha256 !== assetSetSha) throw new Error("Version 285 asset-set checksum mismatch");
 const skus = assets.map((a) => a.sku);
 if (new Set(skus).size !== 117) throw new Error("Version 285 manifest contains duplicate SKUs");
 if (assets.filter((a) => a.visualScope === "EXACT_PRODUCT_VISUAL").length !== 106 || assets.filter((a) => a.visualScope === "OFFICIAL_FAMILY_VISUAL").length !== 11) throw new Error("Version 285 visual-scope count mismatch");
