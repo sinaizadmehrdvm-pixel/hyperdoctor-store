@@ -60,5 +60,5 @@ with eligible as (
 select coalesce(jsonb_agg(item order by (item->>'createdAt') desc), '[]'::jsonb) from rows;
 $$;
 
-revoke all on function public.public_catalog_v286(text) from public;
-grant execute on function public.public_catalog_v286(text) to anon, authenticated, service_role;
+revoke all on function public.public_catalog_v286(text) from public, anon, authenticated;
+grant execute on function public.public_catalog_v286(text) to service_role;
