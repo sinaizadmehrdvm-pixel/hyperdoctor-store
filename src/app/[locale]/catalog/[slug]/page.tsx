@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { BadgeCheck, Box, ChevronLeft, ChevronRight, Headphones, ShieldCheck } from "lucide-react";
+import { BadgeCheck, Box, ChevronLeft, ChevronRight, Headphones, RefreshCw, ShieldCheck, TriangleAlert } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { Container } from "@/components/ui/container";
 import { ProductGallery } from "@/components/site/product-gallery";
@@ -13,12 +13,17 @@ function specValue(locale:string,value:any){if(value==null)return"—";if(typeof
 
 export async function generateMetadata({params}:{params:Promise<{locale:string;slug:string}>}):Promise<Metadata>{
   const{locale,slug}=await params;if(!isValidSlug(slug))return{robots:{index:false,follow:true}};
-  const product=await getCatalogProductV286(slug);if(!product)return{robots:{index:false,follow:true}};
+  const lookup=await getCatalogProductV286(slug);
+  if(lookup.status==="unavailable")return{title:l(locale,"کاتالوگ موقتاً در دسترس نیست","Catalog temporarily unavailable","Katalog geçici olarak kullanılamıyor","الكتالوج غير متاح مؤقتاً"),robots:{index:false,follow:true}};
+  const product=lookup.product;if(!product)return{robots:{index:false,follow:true}};
   return{title:localizedName(locale,product),alternates:{canonical:`/${locale}/catalog/${slug}`},robots:{index:product.isPublished===true,follow:true}};
 }
 
 export default async function CatalogProductPage({params}:{params:Promise<{locale:string;slug:string}>}){
-  const{locale,slug}=await params;if(!isValidSlug(slug))notFound();const product=await getCatalogProductV286(slug);if(!product)notFound();
+  const{locale,slug}=await params;if(!isValidSlug(slug))notFound();
+  const lookup=await getCatalogProductV286(slug);
+  if(lookup.status==="unavailable")return <main className="flex-1 bg-[#f7fafd] py-8 sm:py-12"><Container><section role="status" className="mx-auto max-w-3xl rounded-3xl border border-[#f0c36a] bg-[#fffaf0] p-6 shadow-[0_18px_48px_rgba(0,23,54,.07)] sm:p-9"><span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#fff0c9] text-[#8a5a00]"><TriangleAlert className="h-6 w-6"/></span><h1 className="mt-5 text-2xl font-black text-[#001736] sm:text-3xl">{l(locale,"اطلاعات این محصول موقتاً در دسترس نیست","This product is temporarily unavailable","Bu ürün bilgileri geçici olarak kullanılamıyor","معلومات هذا المنتج غير متاحة مؤقتاً")}</h1><p className="mt-3 text-sm leading-8 text-[#5d6169]">{l(locale,"ارتباط با منبع داده تأییدشده موقتاً برقرار نیست. برای جلوگیری از نمایش اطلاعات حدسی، محصول تا بازیابی اتصال از همان منبع بارگذاری نمی‌شود.","The verified data source is temporarily unreachable. To avoid showing guessed information, this product will not be rendered until that source is reachable again.","Doğrulanmış veri kaynağına geçici olarak ulaşılamıyor. Tahmini bilgi göstermemek için kaynak yeniden erişilebilir olana kadar ürün oluşturulmaz.","يتعذر الوصول مؤقتاً إلى مصدر البيانات الموثق. لتجنب عرض معلومات تقديرية، لن يتم عرض المنتج حتى يعود المصدر متاحاً.")}</p><div className="mt-6 flex flex-wrap gap-3"><Link href={`/catalog/${slug}`} className="vitalis-focus inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#002b5b] px-5 text-xs font-black text-white"><RefreshCw className="h-4 w-4"/>{l(locale,"تلاش دوباره","Try again","Tekrar dene","إعادة المحاولة")}</Link><Link href="/shop" className="vitalis-focus inline-flex min-h-11 items-center rounded-xl border border-[#c4c6d0] bg-white px-5 text-xs font-black text-[#001736]">{l(locale,"بازگشت به فروشگاه","Back to shop","Mağazaya dön","العودة إلى المتجر")}</Link></div></section></Container></main>;
+  const product=lookup.product;if(!product)notFound();
   const name=localizedName(locale,product),description=localizedDescription(locale,product),categoryName=product.category?localizedName(locale,product.category):"",brand=product.brandEntity?.name||product.brand||"",Arrow=locale==="fa"||locale==="ar"?ChevronLeft:ChevronRight;
   let specs:Record<string,any>={};try{specs=typeof product.specs==="string"?JSON.parse(product.specs):(product.specs??{})}catch{specs={}}
   const entries=Object.entries(specs).filter(([,value])=>value!=null&&String(specValue(locale,value)).trim()!=="").slice(0,40),priceKnown=product.commerceReady===true&&Number(product.price)>0;
