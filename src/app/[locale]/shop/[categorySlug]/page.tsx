@@ -14,6 +14,6 @@ export async function generateMetadata({params,searchParams}:{params:Promise<{lo
 
 export default async function ShopCategoryPage({params,searchParams}:{params:Promise<{locale:string;categorySlug:string}>;searchParams:Promise<SP>}){
   const{locale,categorySlug}=await params;if(!SAFE_SLUG.test(categorySlug))notFound();
-  const check=await getCatalogV286({categorySlug});if(!check.activeCategory)notFound();
+  const check=await getCatalogV286({categorySlug});if(check.status==="ok"&&!check.activeCategory)notFound();
   return <CatalogStorefrontV286 locale={locale} categorySlug={categorySlug} searchParams={searchParams}/>;
 }
