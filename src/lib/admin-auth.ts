@@ -31,6 +31,14 @@ export async function bootstrapFirstAdmin(input: { token: string; email: string;
   });
 }
 
+export async function recoverAdminPassword(input: { token: string; email: string; password: string }) {
+  return supabasePrivilegedRpc<{ ok: boolean; email: string }>("admin_recover_password", {
+    p_token: input.token,
+    p_email: input.email,
+    p_password: input.password,
+  });
+}
+
 export async function loginAdmin(email: string, password: string) {
   const result = await supabasePrivilegedRpc<AdminLoginResult | null>("admin_login", { p_email: email, p_password: password });
   if (!result?.token) return null;
