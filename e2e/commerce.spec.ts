@@ -472,7 +472,8 @@ test("public brand filter shows only published matching products and accurate co
   await createProduct(hiddenName, `hidden-${runKey}`, false);
 
   await page.goto(`/fa/shop?brand=${brandSlug}`);
-  await expect(page.getByRole("link", { name: new RegExp(brandName) })).toContainText("1");
+  const brandFilterLink = page.locator("aside nav").last().getByRole("link", { name: new RegExp(brandName) });
+  await expect(brandFilterLink).toContainText("1");
   await expect(page.getByText(visibleName)).toBeVisible();
   await expect(page.getByText(hiddenName)).toHaveCount(0);
   await expect(page.getByText(brandName).last()).toBeVisible();
