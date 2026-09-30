@@ -291,3 +291,71 @@ test("category deletion is guarded until its product is deleted", async ({ page 
   await emptyCategoryRow.getByRole("button", { name: "حذف" }).click();
   await expect(page.getByRole("row").filter({ hasText: categoryName })).toHaveCount(0);
 });
+
+
+test("gallery reorder, unpublish, delete and primary fallback stay consistent", async ({ page }, testInfo) => {
+  const runKey = `media-${testInfo.workerIndex}-${Date.now()}`;
+  const categoryName = `دسته مدیا ${runKey}`;
+  const productName = `محصول مدیا ${runKey}`;
+  const productSlug = `media-${runKey}`;
+  const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=", "base64");
+  await login(page);
+
+  await page.goto("/admin/categories/new");
+  await page.getByLabel("نام (فارسی)").fill(categoryName);
+  await page.getByLabel("نام (English)").fill(`Media ${runKey}`);
+  await page.getByLabel("اسلاگ (آدرس)").fill(`media-cat-${runKey}`);
+  await page.getByRole("button", { name: "ذخیره" }).click();
+
+  await page.goto("/admin/products/new");
+  await page.getByLabel("نام (فارسی)").fill(productName);
+  await page.getByLabel("نام (English)").fill(`Media Product ${runKey}`);
+  await page.getByLabel("اسلاگ").fill(productSlug);
+  await page.getByLabel("دسته‌بندی").selectOption({ label: categoryName });
+  await page.getByLabel("کد کالا (SKU)").fill(`MEDIA-${runKey}`);
+  await page.getByLabel("قیمت (تومان)").fill("1000");
+  await page.getByLabel("موجودی انبار").fill("1");
+  await page.getByLabel("منتشر شده (در سایت نمایش داده شود)").check();
+  await page.getByRole("button", { name: "ذخیره" }).click();
+
+  const row = page.getByRole("row").filter({ hasText: productName });
+  const editHref = await row.getByRole("link").getAttribute("href");
+  await page.goto(editHref!);
+  const gallery = page.getByRole("heading", { name: "گالری محصول" }).locator("..").locator("..");
+
+  for (const [n, alt] of [[1, "اول"], [2, "دوم"], [3, "سوم"]] as const) {
+    await gallery.locator('input[type="file"]').first().setInputFiles({ name: `media-${n}.png`, mimeType: "image/png", buffer: png });
+    await gallery.getByLabel("Alt فارسی").first().fill(`تصویر ${alt} ${runKey}`);
+    await gallery.getByLabel("Alt English").first().fill(`Image ${n} ${runKey}`);
+    await gallery.getByRole("button", { name: "افزودن به گالری" }).click();
+  }
+
+  let cards = gallery.locator("article");
+  await expect(cards).toHaveCount(3);
+  await expect(cards.nth(0)).toContainText(`تصویر اول ${runKey}`);
+  await expect(cards.nth(1)).toContainText(`تصویر دوم ${runKey}`);
+  await cards.nth(1).getByRole("button", { name: "↑" }).click();
+  cards = gallery.locator("article");
+  await expect(cards.nth(0)).toContainText(`تصویر دوم ${runKey}`);
+
+  const secondCard = cards.filter({ hasText: `تصویر دوم ${runKey}` });
+  await secondCard.getByRole("button", { name: "انتخاب به‌عنوان تصویر اصلی" }).click();
+  await expect(secondCard.getByText("اصلی")).toBeVisible();
+
+  const thirdCard = gallery.locator("article").filter({ hasText: `تصویر سوم ${runKey}` });
+  await thirdCard.getByLabel("انتشار در سایت").uncheck();
+  await thirdCard.getByRole("button", { name: "ذخیره تصویر" }).click();
+
+  await page.goto(`/fa/product/${productSlug}`);
+  const publicGallery = page.getByLabel("گالری تصاویر محصول");
+  await expect(publicGallery.getByRole("tab")).toHaveCount(2);
+
+  await page.goto(editHref!);
+  const primaryCard = page.locator("article").filter({ hasText: `تصویر دوم ${runKey}` });
+  await primaryCard.getByRole("button", { name: "حذف" }).click();
+  await expect(page.locator("article").filter({ hasText: `تصویر دوم ${runKey}` })).toHaveCount(0);
+  await expect(page.locator("article").filter({ hasText: `تصویر اول ${runKey}` }).getByText("اصلی")).toBeVisible();
+
+  await page.goto(`/fa/product/${productSlug}`);
+  await expect(page.getByLabel("گالری تصاویر محصول").getByRole("tab")).toHaveCount(0);
+});
