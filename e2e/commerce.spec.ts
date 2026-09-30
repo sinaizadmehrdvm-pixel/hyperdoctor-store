@@ -196,3 +196,57 @@ test("Persian shop remains RTL and usable on a mobile viewport", async ({ page }
   await expect(page.locator("body")).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBeTruthy();
 });
+
+
+test("product gallery supports real uploads, primary selection and published visibility", async ({ page }, testInfo) => {
+  const runKey = `gallery-${testInfo.workerIndex}-${Date.now()}`;
+  const categoryName = `دسته گالری ${runKey}`;
+  const productName = `محصول گالری ${runKey}`;
+  const productSlug = `gallery-${runKey}`;
+  const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=", "base64");
+  await login(page);
+
+  await page.goto("/admin/categories/new");
+  await page.getByLabel("نام (فارسی)").fill(categoryName);
+  await page.getByLabel("نام (English)").fill(`Gallery ${runKey}`);
+  await page.getByLabel("اسلاگ (آدرس)").fill(`gallery-cat-${runKey}`);
+  await page.getByRole("button", { name: "ذخیره" }).click();
+
+  await page.goto("/admin/products/new");
+  await page.getByLabel("نام (فارسی)").fill(productName);
+  await page.getByLabel("نام (English)").fill(`Gallery Product ${runKey}`);
+  await page.getByLabel("اسلاگ").fill(productSlug);
+  await page.getByLabel("دسته‌بندی").selectOption({ label: categoryName });
+  await page.getByLabel("کد کالا (SKU)").fill(`GALLERY-${runKey}`);
+  await page.getByLabel("قیمت (تومان)").fill("100000");
+  await page.getByLabel("موجودی انبار").fill("5");
+  await page.getByLabel("منتشر شده (در سایت نمایش داده شود)").check();
+  await page.getByRole("button", { name: "ذخیره" }).click();
+
+  const row = page.getByRole("row").filter({ hasText: productName });
+  const editHref = await row.getByRole("link").getAttribute("href");
+  await page.goto(editHref!);
+  const gallery = page.getByRole("heading", { name: "گالری محصول" }).locator("..").locator("..");
+  const fileInput = gallery.locator('input[type="file"]').first();
+  await fileInput.setInputFiles({ name: "gallery-1.png", mimeType: "image/png", buffer: png });
+  await expect(gallery.getByText("حذف تصویر").first()).toBeVisible();
+  await gallery.getByLabel("Alt فارسی").first().fill(`تصویر اول ${runKey}`);
+  await gallery.getByLabel("Alt English").first().fill(`First image ${runKey}`);
+  await gallery.getByRole("button", { name: "افزودن به گالری" }).click();
+  await expect(gallery.getByText("اصلی")).toBeVisible();
+
+  await gallery.locator('input[type="file"]').first().setInputFiles({ name: "gallery-2.png", mimeType: "image/png", buffer: png });
+  await gallery.getByLabel("Alt فارسی").first().fill(`تصویر دوم ${runKey}`);
+  await gallery.getByLabel("Alt English").first().fill(`Second image ${runKey}`);
+  await gallery.getByRole("button", { name: "افزودن به گالری" }).click();
+  await expect(gallery.getByRole("button", { name: "انتخاب به‌عنوان تصویر اصلی" })).toHaveCount(1);
+  await gallery.getByRole("button", { name: "انتخاب به‌عنوان تصویر اصلی" }).click();
+
+  await page.goto(`/fa/product/${productSlug}`);
+  const publicGallery = page.getByLabel("گالری تصاویر محصول");
+  await expect(publicGallery).toBeVisible();
+  await expect(publicGallery.getByRole("tab")).toHaveCount(2);
+  await expect(publicGallery.getByText("1 / 2")).toBeVisible();
+  await publicGallery.getByRole("button", { name: "تصویر بعدی" }).click();
+  await expect(publicGallery.getByText("2 / 2")).toBeVisible();
+});
