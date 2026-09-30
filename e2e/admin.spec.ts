@@ -15,7 +15,8 @@ async function login(page: import("@playwright/test").Page) {
   await expect(page.getByRole("button", { name: /خروج/ })).toBeVisible();
 }
 
-test("admin can create a page and publish a managed section", async ({ page }) => {
+test("admin can create a page and publish a managed section", async ({ page }, testInfo) => {
+  const runKey = `e2e-page-${testInfo.workerIndex}-${Date.now()}`;
   await login(page);
   await page.goto("/admin/pages/new");
   await page.getByLabel("عنوان (فارسی)").fill(`صفحه تست خودکار ${runKey}`);
