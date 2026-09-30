@@ -59,7 +59,7 @@ test("category and product lifecycle enforces safe pricing, stock, cart and uplo
   await page.getByRole("button", { name: "ذخیره" }).click();
   await expect(page).toHaveURL(/\/admin\/products$/);
 
-  const productRow = page.getByRole("row").filter({ hasText: "محصول تست قیمت امن" });
+  const productRow = page.getByRole("row").filter({ hasText: sku });
   await expect(productRow).toBeVisible();
   const editHref = await productRow.getByRole("link").getAttribute("href");
   expect(editHref).toMatch(/^\/admin\/products\//);
@@ -94,11 +94,12 @@ test("category and product lifecycle enforces safe pricing, stock, cart and uplo
 
   // Cart quantity controls are real client-side state, not mocked.
   await page.goto("/fa/cart");
-  await expect(page.getByText("محصول تست قیمت امن")).toBeVisible();
-  await page.getByRole("button", { name: "+" }).click();
-  await expect(page.getByText("2", { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "-" }).click();
-  await expect(page.getByText("1", { exact: true })).toBeVisible();
+  const cartItem = page.getByText("محصول تست قیمت امن").locator("..");
+  await expect(cartItem).toBeVisible();
+  await cartItem.getByRole("button", { name: "+" }).click();
+  await expect(cartItem.getByText("2", { exact: true })).toBeVisible();
+  await cartItem.getByRole("button", { name: "-" }).click();
+  await expect(cartItem.getByText("1", { exact: true })).toBeVisible();
 
   // Server-side stock validation must reject quantities above inventory.
   const stockCheckout = await request.post("/api/checkout", {
