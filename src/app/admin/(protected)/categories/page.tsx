@@ -53,7 +53,8 @@ export default async function AdminCategoriesPage() {
                     <DeleteButton
                       action={deleteCategory.bind(null, cat.id)}
                       disabled={cat._count.products > 0}
-                      disabledReason={cat._count.products > 0 ? "ابتدا محصولات این دسته را منتقل یا حذف کنید." : undefined}\n                    />
+                      disabledReason={cat._count.products > 0 ? "ابتدا محصولات این دسته را منتقل یا حذف کنید." : undefined}
+                    />
                   </div>
                 </td>
               </tr>
