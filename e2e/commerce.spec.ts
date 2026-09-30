@@ -401,9 +401,8 @@ test("brand CRUD, product assignment and delete guard work end to end", async ({
   await page.getByLabel("اسلاگ").fill(`brand-product-${runKey}`);
   await page.getByLabel("دسته‌بندی").selectOption({ label: categoryName });
   const brandSelect = page.getByLabel("برند", { exact: true });
-  const brandOptions = await brandSelect.locator("option").evaluateAll((options) => options.map((option) => ({ value: (option as HTMLOptionElement).value, text: option.textContent })));
-  expect(brandOptions, `Expected persisted brand ${brandId} in product form options`).toContainEqual(expect.objectContaining({ value: brandId }));
-  await brandSelect.selectOption(brandId);
+  await expect(brandSelect).toContainText(editedBrandName);
+  await brandSelect.selectOption({ label: editedBrandName });
   await page.getByLabel("کد کالا (SKU)").fill(`BRAND-${runKey}`);
   await page.getByLabel("قیمت (تومان)").fill("1000");
   await page.getByLabel("موجودی انبار").fill("1");
