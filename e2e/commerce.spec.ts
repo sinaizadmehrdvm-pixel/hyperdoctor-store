@@ -399,7 +399,10 @@ test("brand CRUD, product assignment and delete guard work end to end", async ({
   await page.getByLabel("نام (English)").fill(`Brand Product ${runKey}`);
   await page.getByLabel("اسلاگ").fill(`brand-product-${runKey}`);
   await page.getByLabel("دسته‌بندی").selectOption({ label: categoryName });
-  await page.getByLabel("برند", { exact: true }).selectOption({ label: editedBrandName });
+  const brandSelect = page.getByLabel("برند", { exact: true });
+  const brandOption = brandSelect.locator("option").filter({ hasText: editedBrandName });
+  await expect(brandOption).toHaveCount(1);
+  await brandSelect.selectOption(await brandOption.getAttribute("value") ?? "");
   await page.getByLabel("کد کالا (SKU)").fill(`BRAND-${runKey}`);
   await page.getByLabel("قیمت (تومان)").fill("1000");
   await page.getByLabel("موجودی انبار").fill("1");
