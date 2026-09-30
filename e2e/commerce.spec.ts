@@ -96,7 +96,7 @@ test("category and product lifecycle enforces safe pricing, stock, cart and uplo
 
   // Cart quantity controls are real client-side state, not mocked.
   await page.goto("/fa/cart");
-  const cartItem = page.getByText(productName, { exact: true }).locator("..");
+  const cartItem = page.getByRole("listitem").filter({ hasText: productName });
   await expect(cartItem).toBeVisible();
   await cartItem.getByRole("button", { name: "+" }).click();
   await expect(cartItem.getByText("2", { exact: true })).toBeVisible();
