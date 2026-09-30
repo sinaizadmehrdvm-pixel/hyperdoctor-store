@@ -8,7 +8,7 @@ const publicImageInclude = {
 export function getCategories() {
   return prisma.category.findMany({
     orderBy: { order: "asc" },
-    include: { _count: { select: { products: true } } },
+    include: { _count: { select: { products: { where: { isPublished: true } } } } },
   });
 }
 
@@ -17,7 +17,7 @@ export function getCategoryBySlug(slug: string) {
 }
 
 export function getBrands() {
-  return prisma.brand.findMany({ orderBy: [{ order: "asc" }, { nameEn: "asc" }], include: { _count: { select: { products: true } } } });
+  return prisma.brand.findMany({ orderBy: [{ order: "asc" }, { nameEn: "asc" }], include: { _count: { select: { products: { where: { isPublished: true } } } } } });
 }
 
 export type ProductSort = "newest" | "price-asc" | "price-desc";

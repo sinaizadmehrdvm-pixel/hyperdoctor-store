@@ -431,3 +431,49 @@ test("brand CRUD, product assignment and delete guard work end to end", async ({
   await brandRow.getByRole("button", { name: "حذف" }).click();
   await expect(page.getByRole("row").filter({ hasText: editedBrandName })).toHaveCount(0);
 });
+
+
+test("public brand filter shows only published matching products and accurate counts", async ({ page }, testInfo) => {
+  const runKey = `public-brand-${testInfo.workerIndex}-${Date.now()}`;
+  const brandName = `برند عمومی ${runKey}`;
+  const brandSlug = `public-brand-${runKey}`;
+  const categoryName = `دسته عمومی ${runKey}`;
+  await login(page);
+
+  await page.goto("/admin/brands/new");
+  await page.getByLabel("نام برند (فارسی)").fill(brandName);
+  await page.getByLabel("نام برند (English)").fill(`Public Brand ${runKey}`);
+  await page.getByLabel("اسلاگ برند").fill(brandSlug);
+  await page.getByRole("button", { name: "ذخیره" }).click();
+
+  await page.goto("/admin/categories/new");
+  await page.getByLabel("نام (فارسی)").fill(categoryName);
+  await page.getByLabel("نام (English)").fill(`Public Category ${runKey}`);
+  await page.getByLabel("اسلاگ (آدرس)").fill(`public-category-${runKey}`);
+  await page.getByRole("button", { name: "ذخیره" }).click();
+
+  const createProduct = async (name: string, slug: string, published: boolean) => {
+    await page.goto("/admin/products/new");
+    await page.getByLabel("نام (فارسی)").fill(name);
+    await page.getByLabel("نام (English)").fill(name);
+    await page.getByLabel("اسلاگ").fill(slug);
+    await page.getByLabel("دسته‌بندی").selectOption({ label: categoryName });
+    await page.getByRole("combobox", { name: "برند", exact: true }).selectOption({ label: brandName });
+    await page.getByLabel("کد کالا (SKU)").fill(`SKU-${slug}`);
+    await page.getByLabel("قیمت (تومان)").fill("1000");
+    await page.getByLabel("موجودی انبار").fill("2");
+    if (published) await page.getByLabel("منتشر شده (در سایت نمایش داده شود)").check();
+    await page.getByRole("button", { name: "ذخیره" }).click();
+  };
+
+  const visibleName = `محصول عمومی ${runKey}`;
+  const hiddenName = `محصول مخفی ${runKey}`;
+  await createProduct(visibleName, `visible-${runKey}`, true);
+  await createProduct(hiddenName, `hidden-${runKey}`, false);
+
+  await page.goto(`/fa/shop?brand=${brandSlug}`);
+  await expect(page.getByRole("link", { name: new RegExp(brandName) })).toContainText("1");
+  await expect(page.getByText(visibleName)).toBeVisible();
+  await expect(page.getByText(hiddenName)).toHaveCount(0);
+  await expect(page.getByText(brandName).last()).toBeVisible();
+});
