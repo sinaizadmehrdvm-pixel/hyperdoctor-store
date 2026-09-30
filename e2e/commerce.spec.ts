@@ -11,7 +11,11 @@ async function login(page: Page) {
   await expect(page.getByRole("button", { name: /خروج/ })).toBeVisible();
 }
 
-test("category and product lifecycle enforces safe pricing, stock, cart and upload security", async ({ page, request }, testInfo) => {\n  const runKey = `e2e-${testInfo.workerIndex}-${Date.now()}`;\n  const categorySlug = `real-${runKey}`;\n  const productSlug = `safe-price-${runKey}`;\n  const sku = `SAFE-${runKey}`;
+test("category and product lifecycle enforces safe pricing, stock, cart and upload security", async ({ page, request }, testInfo) => {
+  const runKey = `e2e-${testInfo.workerIndex}-${Date.now()}`;
+  const categorySlug = `real-${runKey}`;
+  const productSlug = `safe-price-${runKey}`;
+  const sku = `SAFE-${runKey}`;
   await login(page);
 
   // Upload endpoint must reject unsupported content even for an authenticated admin.
