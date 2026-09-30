@@ -11,7 +11,7 @@ async function login(page: Page) {
   await expect(page.getByRole("button", { name: /خروج/ })).toBeVisible();
 }
 
-test("category and product lifecycle enforces safe pricing, stock, cart and upload security", async ({ page, request }) => {
+test("category and product lifecycle enforces safe pricing, stock, cart and upload security", async ({ page, request }, testInfo) => {\n  const runKey = `e2e-${testInfo.workerIndex}-${Date.now()}`;\n  const categorySlug = `real-${runKey}`;\n  const productSlug = `safe-price-${runKey}`;\n  const sku = `SAFE-${runKey}`;
   await login(page);
 
   // Upload endpoint must reject unsupported content even for an authenticated admin.
@@ -34,7 +34,7 @@ test("category and product lifecycle enforces safe pricing, stock, cart and uplo
   await page.goto("/admin/categories/new");
   await page.getByLabel("نام (فارسی)").fill("دسته تست واقعی");
   await page.getByLabel("نام (English)").fill("Real E2E Category");
-  await page.getByLabel("اسلاگ (آدرس)").fill("real-e2e-category");
+  await page.getByLabel("اسلاگ (آدرس)").fill(categorySlug);
   await page.getByRole("button", { name: "ذخیره" }).click();
   await expect(page).toHaveURL(/\/admin\/categories$/);
   await expect(page.getByText("دسته تست واقعی")).toBeVisible();
@@ -43,10 +43,10 @@ test("category and product lifecycle enforces safe pricing, stock, cart and uplo
   await page.goto("/admin/products/new");
   await page.getByLabel("نام (فارسی)").fill("محصول تست قیمت امن");
   await page.getByLabel("نام (English)").fill("Safe Price E2E Product");
-  await page.getByLabel("اسلاگ").fill("safe-price-e2e-product");
+  await page.getByLabel("اسلاگ").fill(productSlug);
   await page.getByLabel("دسته‌بندی").selectOption({ label: "دسته تست واقعی" });
   await page.getByLabel("برند").fill("E2E");
-  await page.getByLabel("کد کالا (SKU)").fill("E2E-SAFE-001");
+  await page.getByLabel("کد کالا (SKU)").fill(sku);
   await page.getByLabel("قیمت (تومان)").fill("125000");
   await page.getByLabel("موجودی انبار").fill("3");
   await page.getByLabel("منتشر شده (در سایت نمایش داده شود)").check();
@@ -61,7 +61,7 @@ test("category and product lifecycle enforces safe pricing, stock, cart and uplo
   const productId = editHref!.split("/").pop()!;
 
   // Public product must fail closed: no public price and no add-to-cart control.
-  await page.goto("/fa/product/safe-price-e2e-product");
+  await page.goto(`/fa/product/${productSlug}`);
   await expect(page.getByRole("heading", { name: "محصول تست قیمت امن" })).toBeVisible();
   await expect(page.getByText("استعلام قیمت")).toBeVisible();
   await expect(page.getByRole("button", { name: /سبد|cart/i })).toHaveCount(0);
@@ -81,7 +81,7 @@ test("category and product lifecycle enforces safe pricing, stock, cart and uplo
   await page.goto(editHref!);
   await page.getByLabel("قیمت عمومی و تأییدشده").check();
   await page.getByRole("button", { name: "ذخیره" }).click();
-  await page.goto("/fa/product/safe-price-e2e-product");
+  await page.goto(`/fa/product/${productSlug}`);
   await expect(page.getByText(/۱۲۵|125/).first()).toBeVisible();
   const addButton = page.getByRole("button").filter({ hasText: /سبد/ }).first();
   await expect(addButton).toBeVisible();
@@ -107,6 +107,6 @@ test("category and product lifecycle enforces safe pricing, stock, cart and uplo
   await expect(stockCheckout.json()).resolves.toMatchObject({ error: /Insufficient stock/ });
 
   // Remove from cart and verify the empty-cart recovery path.
-  await page.getByRole("button", { name: /حذف/ }).click();
+  await cartItem.getByRole("button", { name: /حذف/ }).click();
   await expect(page.getByText(/سبد.*خالی|خالی است/)).toBeVisible();
 });
