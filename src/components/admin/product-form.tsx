@@ -27,10 +27,11 @@ type ProductFormValues = {
   images?: { url: string }[];
 };
 
-export const dynamic = "force-dynamic";
+type CategoryOption = { id: string; nameFa: string };
+type BrandOption = { id: string; nameFa: string };
 
-export async function ProductForm({ product }: { product?: ProductFormValues }) {
-  const [categories, brands] = await Promise.all([prisma.category.findMany({ orderBy: { order: "asc" } }), prisma.brand.findMany({ orderBy: [{ order: "asc" }, { nameEn: "asc" }] })]);
+export async function ProductForm({ product, categories: suppliedCategories, brands: suppliedBrands }: { product?: ProductFormValues; categories?: CategoryOption[]; brands?: BrandOption[] }) {
+  const [categories, brands] = suppliedCategories && suppliedBrands ? [suppliedCategories, suppliedBrands] : await Promise.all([prisma.category.findMany({ orderBy: { order: "asc" } }), prisma.brand.findMany({ orderBy: [{ order: "asc" }, { nameEn: "asc" }] })]);
 
   return (
     <form action={upsertProduct} className="max-w-2xl space-y-5">
