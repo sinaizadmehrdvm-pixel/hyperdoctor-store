@@ -332,17 +332,17 @@ test("gallery reorder, unpublish, delete and primary fallback stay consistent", 
 
   let cards = gallery.locator("article");
   await expect(cards).toHaveCount(3);
-  await expect(cards.nth(0)).toContainText(`تصویر اول ${runKey}`);
-  await expect(cards.nth(1)).toContainText(`تصویر دوم ${runKey}`);
+  await expect(cards.nth(0).getByLabel("Alt فارسی")).toHaveValue(`تصویر اول ${runKey}`);
+  await expect(cards.nth(1).getByLabel("Alt فارسی")).toHaveValue(`تصویر دوم ${runKey}`);
   await cards.nth(1).getByRole("button", { name: "↑" }).click();
   cards = gallery.locator("article");
-  await expect(cards.nth(0)).toContainText(`تصویر دوم ${runKey}`);
+  await expect(cards.nth(0).getByLabel("Alt فارسی")).toHaveValue(`تصویر دوم ${runKey}`);
 
-  const secondCard = cards.filter({ hasText: `تصویر دوم ${runKey}` });
+  const secondCard = cards.filter({ has: page.getByLabel("Alt فارسی").and(page.locator(`[value="تصویر دوم ${runKey}"]`)) });
   await secondCard.getByRole("button", { name: "انتخاب به‌عنوان تصویر اصلی" }).click();
   await expect(secondCard.getByText("اصلی")).toBeVisible();
 
-  const thirdCard = gallery.locator("article").filter({ hasText: `تصویر سوم ${runKey}` });
+  const thirdCard = gallery.locator("article").filter({ has: page.locator(`input[name="altFa"][value="تصویر سوم ${runKey}"]`) });
   await thirdCard.getByLabel("انتشار در سایت").uncheck();
   await thirdCard.getByRole("button", { name: "ذخیره تصویر" }).click();
 
@@ -351,10 +351,11 @@ test("gallery reorder, unpublish, delete and primary fallback stay consistent", 
   await expect(publicGallery.getByRole("tab")).toHaveCount(2);
 
   await page.goto(editHref!);
-  const primaryCard = page.locator("article").filter({ hasText: `تصویر دوم ${runKey}` });
+  const primaryCard = page.locator("article").filter({ has: page.locator(`input[name="altFa"][value="تصویر دوم ${runKey}"]`) });
   await primaryCard.getByRole("button", { name: "حذف" }).click();
-  await expect(page.locator("article").filter({ hasText: `تصویر دوم ${runKey}` })).toHaveCount(0);
-  await expect(page.locator("article").filter({ hasText: `تصویر اول ${runKey}` }).getByText("اصلی")).toBeVisible();
+  await expect(page.locator(`input[name="altFa"][value="تصویر دوم ${runKey}"]`)).toHaveCount(0);
+  const fallbackCard = page.locator("article").filter({ has: page.locator(`input[name="altFa"][value="تصویر اول ${runKey}"]`) });
+  await expect(fallbackCard.getByText("اصلی")).toBeVisible();
 
   await page.goto(`/fa/product/${productSlug}`);
   await expect(page.getByLabel("گالری تصاویر محصول").getByRole("tab")).toHaveCount(0);
