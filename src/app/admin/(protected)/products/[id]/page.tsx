@@ -11,7 +11,7 @@ export default async function EditProductPage({
   const { id } = await params;
   const product = await prisma.product.findUnique({
     where: { id },
-    include: { images: { orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }, { createdAt: "asc" }] } },
+    include: { images: { orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] } },
   });
   if (!product) notFound();
 
