@@ -250,3 +250,44 @@ test("product gallery supports real uploads, primary selection and published vis
   await publicGallery.getByRole("button", { name: "تصویر بعدی" }).click();
   await expect(publicGallery.getByText("2 / 2")).toBeVisible();
 });
+
+
+test("category deletion is guarded until its product is deleted", async ({ page }, testInfo) => {
+  const runKey = `delete-${testInfo.workerIndex}-${Date.now()}`;
+  const categoryName = `دسته حذف ${runKey}`;
+  const productName = `محصول حذف ${runKey}`;
+  await login(page);
+
+  await page.goto("/admin/categories/new");
+  await page.getByLabel("نام (فارسی)").fill(categoryName);
+  await page.getByLabel("نام (English)").fill(`Delete ${runKey}`);
+  await page.getByLabel("اسلاگ (آدرس)").fill(`delete-cat-${runKey}`);
+  await page.getByRole("button", { name: "ذخیره" }).click();
+
+  await page.goto("/admin/products/new");
+  await page.getByLabel("نام (فارسی)").fill(productName);
+  await page.getByLabel("نام (English)").fill(`Delete Product ${runKey}`);
+  await page.getByLabel("اسلاگ").fill(`delete-product-${runKey}`);
+  await page.getByLabel("دسته‌بندی").selectOption({ label: categoryName });
+  await page.getByLabel("کد کالا (SKU)").fill(`DELETE-${runKey}`);
+  await page.getByLabel("قیمت (تومان)").fill("1");
+  await page.getByLabel("موجودی انبار").fill("0");
+  await page.getByRole("button", { name: "ذخیره" }).click();
+
+  await page.goto("/admin/categories");
+  const categoryRow = page.getByRole("row").filter({ hasText: categoryName });
+  await expect(categoryRow.getByRole("button", { name: "حذف" })).toBeDisabled();
+
+  await page.goto("/admin/products");
+  const productRow = page.getByRole("row").filter({ hasText: productName });
+  page.once("dialog", dialog => dialog.accept());
+  await productRow.getByRole("button", { name: "حذف" }).click();
+  await expect(page.getByRole("row").filter({ hasText: productName })).toHaveCount(0);
+
+  await page.goto("/admin/categories");
+  const emptyCategoryRow = page.getByRole("row").filter({ hasText: categoryName });
+  await expect(emptyCategoryRow.getByRole("button", { name: "حذف" })).toBeEnabled();
+  page.once("dialog", dialog => dialog.accept());
+  await emptyCategoryRow.getByRole("button", { name: "حذف" }).click();
+  await expect(page.getByRole("row").filter({ hasText: categoryName })).toHaveCount(0);
+});
