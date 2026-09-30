@@ -13,7 +13,7 @@ export default defineConfig({
     video: "retain-on-failure",
   },
   webServer: {
-    command: "npm run start",
+    command: "NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3000 AUTH_URL=http://127.0.0.1:3000 npm run start",
     url: "http://127.0.0.1:3000/fa",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
