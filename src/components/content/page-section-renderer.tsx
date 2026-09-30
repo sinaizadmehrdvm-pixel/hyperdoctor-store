@@ -2,7 +2,7 @@ import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { Container } from "@/components/ui/container";
 import { ProductCard } from "@/components/site/product-card";
-import { getFeaturedProducts, getServices } from "@/lib/queries";
+import { getCategories, getFeaturedProducts, getServices } from "@/lib/queries";
 import { getSiteSettings } from "@/lib/site-data";
 import type { PublicPageSection } from "@/lib/content/page-sections";
 
@@ -40,10 +40,12 @@ function Cta({ section }: { section: PublicPageSection }) {
 }
 
 export async function PageSectionRenderer({ sections, locale }: { sections: PublicPageSection[]; locale: "fa" | "en" }) {
+  const needsCategories = sections.some((section) => section.type === "categoryGrid");
   const needsProducts = sections.some((section) => section.type === "productGrid");
   const needsServices = sections.some((section) => section.type === "serviceGrid");
   const needsContact = sections.some((section) => section.type === "contact");
-  const [products, services, site] = await Promise.all([
+  const [categories, products, services, site] = await Promise.all([
+    needsCategories ? getCategories() : Promise.resolve([]),
     needsProducts ? getFeaturedProducts(8) : Promise.resolve([]),
     needsServices ? getServices() : Promise.resolve([]),
     needsContact ? getSiteSettings() : Promise.resolve(null),
@@ -60,6 +62,24 @@ export async function PageSectionRenderer({ sections, locale }: { sections: Publ
                 <Body text={section.body} />
                 <Cta section={section} />
               </div>
+            </SectionShell>
+          );
+        }
+
+        if (section.type === "categoryGrid") {
+          return (
+            <SectionShell key={section.id} section={section}>
+              {section.title ? <h2 className="text-2xl font-bold">{section.title}</h2> : null}
+              <Body text={section.body} muted={!section.backgroundUrl} />
+              <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                {categories.map((category) => (
+                  <Link key={category.id} href={`/shop/${category.slug}`} className="rounded-2xl border border-border bg-card p-5 text-foreground transition hover:shadow-lg">
+                    <h3 className="font-bold">{locale === "fa" ? category.nameFa : category.nameEn}</h3>
+                    <p className="mt-2 text-xs text-muted">{category._count.products} {locale === "fa" ? "کالا" : "products"}</p>
+                  </Link>
+                ))}
+              </div>
+              <Cta section={section} />
             </SectionShell>
           );
         }

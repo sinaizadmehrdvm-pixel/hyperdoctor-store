@@ -36,6 +36,7 @@ const TYPE_LABELS: Record<string, string> = {
   productGrid: "محصولات",
   serviceGrid: "خدمات",
   contact: "اطلاعات تماس",
+  categoryGrid: "دسته‌بندی‌ها",
 };
 
 const fieldClass =

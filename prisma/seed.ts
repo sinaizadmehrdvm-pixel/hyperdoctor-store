@@ -137,6 +137,27 @@ async function main() {
     });
   }
 
+  // Home is managed entirely through PageSection so layout/content can be
+  // changed from Admin without a code deployment.
+  const homePage = await prisma.page.upsert({
+    where: { slug: "home" },
+    update: { titleFa: "خانه", titleEn: "Home", template: "sections", isPublished: true, showInNav: false, navOrder: 0 },
+    create: { slug: "home", titleFa: "خانه", titleEn: "Home", template: "sections", isPublished: true, showInNav: false, navOrder: 0 },
+  });
+  const homeSections = [
+    { sortOrder: 0, type: "hero", titleFa: "هایپر دکتر", titleEn: "Hyper Doctor", bodyFa: "تجهیزات پزشکی و خدمات تخصصی تنفسی", bodyEn: "Medical equipment and specialist respiratory services", ctaLabelFa: "مشاهده محصولات", ctaLabelEn: "Browse products", ctaHref: "/shop" },
+    { sortOrder: 1, type: "categoryGrid", titleFa: "دسته‌بندی محصولات", titleEn: "Product categories", bodyFa: "", bodyEn: "", ctaLabelFa: "", ctaLabelEn: "", ctaHref: "" },
+    { sortOrder: 2, type: "productGrid", titleFa: "محصولات منتخب", titleEn: "Featured products", bodyFa: "", bodyEn: "", ctaLabelFa: "همه محصولات", ctaLabelEn: "All products", ctaHref: "/shop" },
+    { sortOrder: 3, type: "serviceGrid", titleFa: "خدمات", titleEn: "Services", bodyFa: "", bodyEn: "", ctaLabelFa: "مشاهده خدمات", ctaLabelEn: "View services", ctaHref: "/services" },
+    { sortOrder: 4, type: "cta", titleFa: "نیاز به مشاوره دارید؟", titleEn: "Need advice?", bodyFa: "برای راهنمایی خرید یا خدمات تنفسی با هایپر دکتر تماس بگیرید.", bodyEn: "Contact Hyper Doctor for purchasing guidance or respiratory services.", ctaLabelFa: "تماس با ما", ctaLabelEn: "Contact us", ctaHref: "/contact" },
+  ];
+  for (const item of homeSections) {
+    const existing = await prisma.pageSection.findFirst({ where: { pageId: homePage.id, sortOrder: item.sortOrder } });
+    const data = { pageId: homePage.id, ...item, enabled: true, status: "PUBLISHED" };
+    if (existing) await prisma.pageSection.update({ where: { id: existing.id }, data });
+    else await prisma.pageSection.create({ data });
+  }
+
   // Migrate the core informational pages to the managed section renderer.
   const aboutPage = await prisma.page.findUniqueOrThrow({ where: { slug: "about" } });
   const contactPage = await prisma.page.findUniqueOrThrow({ where: { slug: "contact" } });

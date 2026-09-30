@@ -7,6 +7,7 @@ export const PAGE_SECTION_TYPES = [
   "productGrid",
   "serviceGrid",
   "contact",
+  "categoryGrid",
 ] as const;
 
 export type PageSectionType = (typeof PAGE_SECTION_TYPES)[number];
