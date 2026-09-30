@@ -26,6 +26,8 @@ export async function upsertProduct(formData: FormData) {
 
   const id = String(formData.get("id") || "");
   const imageUrl = String(formData.get("imageUrl") || "");
+  const brandId = String(formData.get("brandId") || "");
+  const selectedBrand = brandId ? await prisma.brand.findUnique({ where: { id: brandId }, select: { id: true, nameEn: true } }) : null;
 
   const data = {
     vertical: String(formData.get("vertical")) as
@@ -41,7 +43,8 @@ export async function upsertProduct(formData: FormData) {
     nameEn: String(formData.get("nameEn") || ""),
     descriptionFa: String(formData.get("descriptionFa") || ""),
     descriptionEn: String(formData.get("descriptionEn") || ""),
-    brand: String(formData.get("brand") || ""),
+    brand: selectedBrand?.nameEn ?? "",
+    brandId: selectedBrand?.id ?? null,
     sku: String(formData.get("sku") || ""),
     price: Number(formData.get("price") || 0),
     priceIsPublic: formData.get("priceIsPublic") === "on",

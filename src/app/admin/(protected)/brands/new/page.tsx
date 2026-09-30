@@ -1,0 +1,1 @@
+import { BrandForm } from "@/components/admin/brand-form"; export default function NewBrandPage(){return <div><h1 className="mb-6 text-xl font-bold">برند جدید</h1><BrandForm/></div>}

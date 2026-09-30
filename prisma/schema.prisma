@@ -59,6 +59,21 @@ model Category {
   @@index([vertical])
 }
 
+model Brand {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  nameFa      String
+  nameEn      String
+  logoUrl     String?
+  websiteUrl  String    @default("")
+  descriptionFa String  @default("")
+  descriptionEn String  @default("")
+  order       Int       @default(0)
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
 model Product {
   id               String      @id @default(cuid())
   vertical         Vertical
@@ -70,6 +85,8 @@ model Product {
   descriptionFa    String      @default("")
   descriptionEn    String      @default("")
   brand            String      @default("")
+  brandId          String?
+  brandRecord      Brand?      @relation(fields: [brandId], references: [id])
   sku              String      @unique
   price            Int
   /// Prices are private by default; storefront and checkout gate on this flag.
@@ -90,6 +107,7 @@ model Product {
 
   @@index([vertical])
   @@index([categoryId])
+  @@index([brandId])
 }
 
 model Service {

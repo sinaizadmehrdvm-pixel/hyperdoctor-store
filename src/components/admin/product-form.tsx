@@ -15,6 +15,7 @@ type ProductFormValues = {
   descriptionFa?: string | null;
   descriptionEn?: string | null;
   brand?: string;
+  brandId?: string | null;
   sku?: string;
   price?: number;
   priceIsPublic?: boolean;
@@ -27,7 +28,7 @@ type ProductFormValues = {
 };
 
 export async function ProductForm({ product }: { product?: ProductFormValues }) {
-  const categories = await prisma.category.findMany({ orderBy: { order: "asc" } });
+  const [categories, brands] = await Promise.all([prisma.category.findMany({ orderBy: { order: "asc" } }), prisma.brand.findMany({ orderBy: [{ order: "asc" }, { nameEn: "asc" }] })]);
 
   return (
     <form action={upsertProduct} className="max-w-2xl space-y-5">
@@ -55,7 +56,7 @@ export async function ProductForm({ product }: { product?: ProductFormValues }) 
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <TextField label="برند" name="brand" defaultValue={product?.brand} />
+        <SelectField label="برند" name="brandId" defaultValue={product?.brandId ?? ""} options={[{ value: "", label: "بدون برند" }, ...brands.map((b) => ({ value: b.id, label: b.nameFa }))]} />
         <TextField label="کد کالا (SKU)" name="sku" defaultValue={product?.sku} dir="ltr" required />
       </div>
 
