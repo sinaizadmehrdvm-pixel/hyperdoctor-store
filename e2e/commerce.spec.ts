@@ -360,3 +360,68 @@ test("gallery reorder, unpublish, delete and primary fallback stay consistent", 
   await page.goto(`/fa/product/${productSlug}`);
   await expect(page.getByLabel("گالری تصاویر محصول").getByRole("tab")).toHaveCount(0);
 });
+
+
+test("brand CRUD, product assignment and delete guard work end to end", async ({ page }, testInfo) => {
+  const runKey = `brand-${testInfo.workerIndex}-${Date.now()}`;
+  const brandName = `برند تست ${runKey}`;
+  const editedBrandName = `برند ویرایش‌شده ${runKey}`;
+  const categoryName = `دسته برند ${runKey}`;
+  const productName = `محصول برند ${runKey}`;
+  await login(page);
+
+  await page.goto("/admin/brands/new");
+  await page.getByLabel("نام برند (فارسی)").fill(brandName);
+  await page.getByLabel("نام برند (English)").fill(`Brand ${runKey}`);
+  await page.getByLabel("اسلاگ برند").fill(`brand-${runKey}`);
+  await page.getByLabel("وب‌سایت برند").fill("https://example.com");
+  await page.getByLabel("توضیحات برند (فارسی)").fill("توضیح تست برند");
+  await page.getByLabel("ترتیب نمایش").fill("7");
+  await page.getByRole("button", { name: "ذخیره" }).click();
+  await expect(page).toHaveURL(/\/admin\/brands$/);
+
+  let brandRow = page.getByRole("row").filter({ hasText: brandName });
+  await expect(brandRow).toBeVisible();
+  const editHref = await brandRow.getByRole("link", { name: "ویرایش" }).getAttribute("href");
+  await page.goto(editHref!);
+  await page.getByLabel("نام برند (فارسی)").fill(editedBrandName);
+  await page.getByRole("button", { name: "ذخیره" }).click();
+  await expect(page.getByRole("row").filter({ hasText: editedBrandName })).toBeVisible();
+
+  await page.goto("/admin/categories/new");
+  await page.getByLabel("نام (فارسی)").fill(categoryName);
+  await page.getByLabel("نام (English)").fill(`Brand Category ${runKey}`);
+  await page.getByLabel("اسلاگ (آدرس)").fill(`brand-category-${runKey}`);
+  await page.getByRole("button", { name: "ذخیره" }).click();
+
+  await page.goto("/admin/products/new");
+  await page.getByLabel("نام (فارسی)").fill(productName);
+  await page.getByLabel("نام (English)").fill(`Brand Product ${runKey}`);
+  await page.getByLabel("اسلاگ").fill(`brand-product-${runKey}`);
+  await page.getByLabel("دسته‌بندی").selectOption({ label: categoryName });
+  await page.getByLabel("برند").selectOption({ label: editedBrandName });
+  await page.getByLabel("کد کالا (SKU)").fill(`BRAND-${runKey}`);
+  await page.getByLabel("قیمت (تومان)").fill("1000");
+  await page.getByLabel("موجودی انبار").fill("1");
+  await page.getByRole("button", { name: "ذخیره" }).click();
+
+  await page.goto("/admin/brands");
+  brandRow = page.getByRole("row").filter({ hasText: editedBrandName });
+  await expect(brandRow.getByText("1", { exact: true })).toBeVisible();
+  await expect(brandRow.getByRole("button", { name: "حذف" })).toBeDisabled();
+
+  await page.goto("/admin/products");
+  const productRow = page.getByRole("row").filter({ hasText: productName });
+  const productEditHref = await productRow.getByRole("link").getAttribute("href");
+  await page.goto(productEditHref!);
+  await expect(page.getByLabel("برند")).toHaveValue(/.+/);
+  await page.getByLabel("برند").selectOption("");
+  await page.getByRole("button", { name: "ذخیره" }).click();
+
+  await page.goto("/admin/brands");
+  brandRow = page.getByRole("row").filter({ hasText: editedBrandName });
+  await expect(brandRow.getByRole("button", { name: "حذف" })).toBeEnabled();
+  page.once("dialog", dialog => dialog.accept());
+  await brandRow.getByRole("button", { name: "حذف" }).click();
+  await expect(page.getByRole("row").filter({ hasText: editedBrandName })).toHaveCount(0);
+});
