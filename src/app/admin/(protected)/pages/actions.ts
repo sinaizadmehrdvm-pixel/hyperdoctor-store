@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { slugify, RESERVED_SLUGS } from "@/lib/slug";
-import { isPageSectionType } from "@/lib/content/page-sections";
+import { isPageSectionType, validatePageSections } from "@/lib/content/page-sections";
 
 async function requireAdmin() {
   const session = await auth();
@@ -111,6 +111,12 @@ export async function updatePageSection(formData: FormData) {
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error();
   } catch {
     throw new Error("Section settings must be a JSON object.");
+  }
+
+  if (status === "PUBLISHED") {
+    const candidate = { ...existing, type, enabled: formData.get("enabled") === "on", status, titleFa: String(formData.get("titleFa") || ""), titleEn: String(formData.get("titleEn") || ""), bodyFa: String(formData.get("bodyFa") || ""), bodyEn: String(formData.get("bodyEn") || ""), ctaLabelFa: String(formData.get("ctaLabelFa") || ""), ctaLabelEn: String(formData.get("ctaLabelEn") || ""), ctaHref: String(formData.get("ctaHref") || ""), backgroundUrl: String(formData.get("backgroundUrl") || ""), backgroundAltFa: String(formData.get("backgroundAltFa") || ""), backgroundAltEn: String(formData.get("backgroundAltEn") || ""), settings };
+    const issues = validatePageSections([candidate]);
+    if (issues.length) throw new Error(`Cannot publish invalid section: ${issues.map((issue) => issue.field).join(", ")}`);
   }
 
   await prisma.$transaction(async (tx) => {

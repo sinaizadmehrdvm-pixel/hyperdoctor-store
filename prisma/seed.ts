@@ -137,6 +137,36 @@ async function main() {
     });
   }
 
+  // Migrate the core informational pages to the managed section renderer.
+  const aboutPage = await prisma.page.findUniqueOrThrow({ where: { slug: "about" } });
+  const contactPage = await prisma.page.findUniqueOrThrow({ where: { slug: "contact" } });
+  const warrantyPage = await prisma.page.findUniqueOrThrow({ where: { slug: "warranty" } });
+
+  const managedSections = [
+    { page: aboutPage, type: "hero", titleFa: "درباره هایپر دکتر", titleEn: "About Hyper Doctor", bodyFa: "هایپر دکتر، بخش تجهیزات پزشکی VITALIS Group است.", bodyEn: "Hyper Doctor is the medical equipment division of VITALIS Group." },
+    { page: aboutPage, type: "richText", titleFa: "فعالیت ما", titleEn: "What we do", bodyFa: "تأمین تجهیزات پزشکی و ارائه خدمات تخصصی تنفسی برای بیماران و مراکز درمانی.", bodyEn: "Medical equipment supply and specialist respiratory services for patients and healthcare centres." },
+    { page: contactPage, type: "contact", titleFa: "تماس با هایپر دکتر", titleEn: "Contact Hyper Doctor", bodyFa: "برای مشاوره خرید تجهیزات پزشکی یا خدمات تنفسی با ما در ارتباط باشید.", bodyEn: "Contact us for medical equipment purchasing advice or respiratory services." },
+    { page: warrantyPage, type: "richText", titleFa: "گارانتی و خدمات پس از فروش", titleEn: "Warranty & After-Sales Service", bodyFa: "شرایط گارانتی هر کالا باید مطابق اطلاعات تأییدشده همان محصول در صفحه محصول اعلام شود.", bodyEn: "Warranty terms must follow the approved information shown for each individual product." },
+  ];
+
+  for (const item of managedSections) {
+    await prisma.page.update({ where: { id: item.page.id }, data: { template: "sections" } });
+    const existing = await prisma.pageSection.findFirst({ where: { pageId: item.page.id, sortOrder: item.page.id === aboutPage.id && item.type === "richText" ? 1 : 0 } });
+    const data = {
+      pageId: item.page.id,
+      type: item.type,
+      sortOrder: item.page.id === aboutPage.id && item.type === "richText" ? 1 : 0,
+      enabled: true,
+      status: "PUBLISHED",
+      titleFa: item.titleFa,
+      titleEn: item.titleEn,
+      bodyFa: item.bodyFa,
+      bodyEn: item.bodyEn,
+    };
+    if (existing) await prisma.pageSection.update({ where: { id: existing.id }, data });
+    else await prisma.pageSection.create({ data });
+  }
+
   console.log("Seed complete.");
   console.log(adminEmail ? `Admin provisioned: ${adminEmail}` : "Admin provisioning skipped.");
 }

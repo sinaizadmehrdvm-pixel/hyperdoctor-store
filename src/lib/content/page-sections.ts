@@ -116,13 +116,15 @@ export function toPublicPageSections(
   sections: RawPageSection[],
   locale: "fa" | "en",
 ): PublicPageSection[] {
-  const issues = validatePageSections(sections);
+  // Draft/disabled blocks must never be able to break the public page. Validate
+  // only the dataset that is actually eligible for public rendering.
+  const publicCandidates = sections.filter((section) => section.enabled && section.status === "PUBLISHED");
+  const issues = validatePageSections(publicCandidates);
   if (issues.length > 0) {
     throw new Error(`Invalid page section dataset: ${issues.map((issue) => `${issue.sectionId}.${issue.field}`).join(", ")}`);
   }
 
-  return [...sections]
-    .filter((section) => section.enabled && section.status === "PUBLISHED")
+  return [...publicCandidates]
     .sort((a, b) => a.sortOrder - b.sortOrder)
     .map((section) => ({
       id: section.id,
