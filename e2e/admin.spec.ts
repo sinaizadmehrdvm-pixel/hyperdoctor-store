@@ -9,8 +9,10 @@ async function login(page: import("@playwright/test").Page) {
   await page.getByLabel("رمز عبور").fill(password);
   await page.getByRole("button", { name: "ورود" }).click();
   await expect(page).toHaveURL(/\/admin(\/|$)/);
+  await expect(page.getByRole("button", { name: /خروج/ })).toBeVisible();
   await page.goto("/admin/pages");
-  await expect(page).not.toHaveURL(/\/admin\/login/);
+  await expect(page).toHaveURL(/\/admin\/pages$/);
+  await expect(page.getByRole("button", { name: /خروج/ })).toBeVisible();
 }
 
 test("admin can create a page and publish a managed section", async ({ page }) => {
