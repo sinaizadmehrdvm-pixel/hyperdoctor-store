@@ -18,12 +18,12 @@ async function login(page: import("@playwright/test").Page) {
 test("admin can create a page and publish a managed section", async ({ page }) => {
   await login(page);
   await page.goto("/admin/pages/new");
-  await page.getByLabel("عنوان (فارسی)").fill("صفحه تست خودکار");
-  await page.getByLabel("عنوان (English)").fill("Automated Test Page");
-  await page.getByLabel("اسلاگ (آدرس صفحه)").fill("e2e-managed-page");
+  await page.getByLabel("عنوان (فارسی)").fill(`صفحه تست خودکار ${runKey}`);
+  await page.getByLabel("عنوان (English)").fill(`Automated Test Page ${runKey}`);
+  await page.getByLabel("اسلاگ (آدرس صفحه)").fill(runKey);
   await page.getByLabel("منتشر شده").check();
   await page.getByRole("button", { name: "ذخیره" }).click();
-  const row = page.getByRole("row").filter({ hasText: "صفحه تست خودکار" });
+  const row = page.getByRole("row").filter({ hasText: runKey });
   await expect(row).toBeVisible();
   await row.getByRole("link").click();
   await page.getByRole("button", { name: "افزودن سکشن" }).click();
@@ -33,7 +33,7 @@ test("admin can create a page and publish a managed section", async ({ page }) =
   await page.getByLabel("English body").last().fill("Test content");
   await page.getByLabel("وضعیت").last().selectOption("PUBLISHED");
   await page.getByRole("button", { name: "ذخیره سکشن" }).last().click();
-  await page.goto("/fa/e2e-managed-page");
+  await page.goto(`/fa/${runKey}`);
   await expect(page.getByRole("heading", { name: "سکشن تست" })).toBeVisible();
 });
 
