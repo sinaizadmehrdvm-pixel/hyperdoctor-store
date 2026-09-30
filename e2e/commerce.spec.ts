@@ -383,6 +383,7 @@ test("brand CRUD, product assignment and delete guard work end to end", async ({
   let brandRow = page.getByRole("row").filter({ hasText: brandName });
   await expect(brandRow).toBeVisible();
   const editHref = await brandRow.getByRole("link", { name: "ویرایش" }).getAttribute("href");
+  const brandId = editHref!.split("/").pop()!;
   await page.goto(editHref!);
   await page.getByLabel("نام برند (فارسی)").fill(editedBrandName);
   await page.getByRole("button", { name: "ذخیره" }).click();
@@ -400,9 +401,9 @@ test("brand CRUD, product assignment and delete guard work end to end", async ({
   await page.getByLabel("اسلاگ").fill(`brand-product-${runKey}`);
   await page.getByLabel("دسته‌بندی").selectOption({ label: categoryName });
   const brandSelect = page.getByLabel("برند", { exact: true });
-  const brandOption = brandSelect.locator("option").filter({ hasText: editedBrandName });
+  const brandOption = brandSelect.locator(`option[value="${brandId}"]`);
   await expect(brandOption).toHaveCount(1);
-  await brandSelect.selectOption(await brandOption.getAttribute("value") ?? "");
+  await brandSelect.selectOption(brandId);
   await page.getByLabel("کد کالا (SKU)").fill(`BRAND-${runKey}`);
   await page.getByLabel("قیمت (تومان)").fill("1000");
   await page.getByLabel("موجودی انبار").fill("1");
