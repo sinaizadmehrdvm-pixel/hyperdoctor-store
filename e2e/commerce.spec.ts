@@ -59,7 +59,7 @@ test("category and product lifecycle enforces safe pricing, stock, cart and uplo
   await page.getByRole("button", { name: "ذخیره" }).click();
   await expect(page).toHaveURL(/\/admin\/products$/);
 
-  const productRow = page.getByRole("row").filter({ hasText: sku });
+  const productRow = page.getByRole("row").filter({ hasText: "محصول تست قیمت امن" }).last();
   await expect(productRow).toBeVisible();
   const editHref = await productRow.getByRole("link").getAttribute("href");
   expect(editHref).toMatch(/^\/admin\/products\//);
