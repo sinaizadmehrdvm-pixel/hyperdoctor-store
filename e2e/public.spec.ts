@@ -18,11 +18,12 @@ test("English homepage switches direction and renders CMS content", async ({ pag
 
 test("contact page exposes approved production contact details", async ({ page }) => {
   await page.goto("/fa/contact");
-  await expect(page.getByText("04432257238")).toBeVisible();
-  await expect(page.getByText("04432254578")).toBeVisible();
-  await expect(page.getByText("09149483873")).toBeVisible();
-  await expect(page.getByText("hyperdoctor@gmail.com")).toBeVisible();
-  await expect(page.getByText("ارومیه خیام شمالی کوچه صناعی آذرسرا5 همکف")).toBeVisible();
+  const main = page.getByRole("main");
+  await expect(main.getByRole("link", { name: "04432257238" })).toBeVisible();
+  await expect(main.getByRole("link", { name: "04432254578" })).toBeVisible();
+  await expect(main.getByRole("link", { name: "09149483873" })).toBeVisible();
+  await expect(main.getByRole("link", { name: "hyperdoctor@gmail.com" })).toBeVisible();
+  await expect(main.getByText("ارومیه خیام شمالی کوچه صناعی آذرسرا5 همکف")).toBeVisible();
 });
 
 test("unauthenticated admin routes are protected", async ({ page }) => {

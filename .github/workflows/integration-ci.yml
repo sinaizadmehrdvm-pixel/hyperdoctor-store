@@ -16,6 +16,7 @@ jobs:
       DATABASE_URL: file:./ci.db
       AUTH_SECRET: integration-ci-only-secret-not-for-production
       AUTH_TRUST_HOST: "true"
+      AUTH_URL: http://127.0.0.1:3000
       NEXT_PUBLIC_SITE_URL: https://hyperdoctor.ir
       E2E_ADMIN_EMAIL: e2e-admin@hyperdoctor.test
       E2E_ADMIN_PASSWORD: HyperDoctor-E2E-CI-Only-2026!
