@@ -9,7 +9,7 @@ import { deleteProduct } from "./actions";
 export default async function AdminProductsPage() {
   const products = await prisma.product.findMany({
     orderBy: { createdAt: "desc" },
-    include: { images: true, category: true },
+    include: { images: true, category: true, _count: { select: { orderItems: true } } },
   });
 
   return (
@@ -72,7 +72,11 @@ export default async function AdminProductsPage() {
                     >
                       <Pencil className="h-4 w-4" aria-hidden="true" />
                     </Link>
-                    <DeleteButton action={deleteProduct.bind(null, p.id)} />
+                    <DeleteButton
+                      action={deleteProduct.bind(null, p.id)}
+                      disabled={p._count.orderItems > 0}
+                      disabledReason={p._count.orderItems > 0 ? "این محصول در سفارش‌های ثبت‌شده سابقه دارد و قابل حذف نیست." : undefined}
+                    />
                   </div>
                 </td>
               </tr>

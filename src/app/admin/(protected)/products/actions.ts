@@ -92,9 +92,19 @@ export async function upsertProduct(formData: FormData) {
 
 export async function deleteProduct(id: string) {
   await requireAdmin();
-  const product = await prisma.product.findUnique({ where: { id }, select: { id: true, slug: true } });
-  await prisma.product.delete({ where: { id } });
-  if (product) revalidateProduct(product);
+  const product = await prisma.product.findUnique({
+    where: { id },
+    select: { id: true, slug: true, _count: { select: { orderItems: true } } },
+  });
+  if (!product) return;
+  if (product._count.orderItems > 0) {
+    throw new Error("Cannot delete a product referenced by historical orders.");
+  }
+  await prisma.$transaction([
+    prisma.media.deleteMany({ where: { productId: id } }),
+    prisma.product.delete({ where: { id } }),
+  ]);
+  revalidateProduct(product);
 }
 
 export async function addProductMedia(formData: FormData) {
