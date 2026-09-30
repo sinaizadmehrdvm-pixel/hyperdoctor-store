@@ -60,6 +60,8 @@ export async function Footer() {
                 <span dir="ltr">{settings.contactPhone}</span>
               </li>
             ) : null}
+            {settings.contactPhone2 ? <li className="flex items-center gap-2.5"><Phone className="h-4 w-4 shrink-0" aria-hidden="true" /><span dir="ltr">{settings.contactPhone2}</span></li> : null}
+            {settings.respiratoryPhone ? <li className="flex items-center gap-2.5"><Phone className="h-4 w-4 shrink-0" aria-hidden="true" /><span dir="ltr">{settings.respiratoryPhone}</span></li> : null}
             {settings.contactEmail ? (
               <li className="flex items-center gap-2.5">
                 <Mail className="h-4 w-4 shrink-0" aria-hidden="true" />

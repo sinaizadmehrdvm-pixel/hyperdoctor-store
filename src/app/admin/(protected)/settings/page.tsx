@@ -28,7 +28,9 @@ export default async function AdminSettingsPage() {
         <section className="rounded-2xl border border-border bg-card p-5">
           <h2 className="mb-4 text-sm font-semibold text-foreground">اطلاعات تماس</h2>
           <div className="grid gap-4 sm:grid-cols-2">
-            <TextField label="تلفن تماس" name="contactPhone" defaultValue={settings.contactPhone} dir="ltr" />
+            <TextField label="تلفن دفتر ۱" name="contactPhone" defaultValue={settings.contactPhone} dir="ltr" />
+            <TextField label="تلفن دفتر ۲" name="contactPhone2" defaultValue={settings.contactPhone2} dir="ltr" />
+            <TextField label="کارشناس تنفسی" name="respiratoryPhone" defaultValue={settings.respiratoryPhone} dir="ltr" />
             <TextField label="ایمیل" name="contactEmail" defaultValue={settings.contactEmail} dir="ltr" />
           </div>
           <TextField label="آدرس" name="address" defaultValue={settings.address} className="mt-4" />

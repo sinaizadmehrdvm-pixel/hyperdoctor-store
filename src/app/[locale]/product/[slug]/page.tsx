@@ -50,15 +50,15 @@ export default async function ProductPage({
               {name}
             </h1>
             <div className="mt-4 flex items-baseline gap-2 tabular-nums">
-              <span className="text-3xl font-bold text-foreground">
-                {formatPrice(product.price, locale)}
-              </span>
-              <span className="text-sm text-muted">{c("currency")}</span>
-              {product.compareAtPrice ? (
-                <span className="text-sm text-muted line-through">
-                  {formatPrice(product.compareAtPrice, locale)}
-                </span>
-              ) : null}
+              {product.priceIsPublic ? (
+                <>
+                  <span className="text-3xl font-bold text-foreground">{formatPrice(product.price, locale)}</span>
+                  <span className="text-sm text-muted">{c("currency")}</span>
+                  {product.compareAtPrice ? <span className="text-sm text-muted line-through">{formatPrice(product.compareAtPrice, locale)}</span> : null}
+                </>
+              ) : (
+                <span className="text-xl font-bold text-primary">{locale === "fa" ? "استعلام قیمت" : "Contact for price"}</span>
+              )}
             </div>
 
             <p className="mt-2 text-sm font-medium text-foreground">
@@ -72,15 +72,9 @@ export default async function ProductPage({
             ) : null}
 
             <div className="mt-8">
-              <AddToCartButton
-                type="product"
-                id={product.id}
-                nameFa={product.nameFa}
-                nameEn={product.nameEn}
-                price={product.price}
-                image={image?.url}
-                disabled={product.stock <= 0}
-              />
+              {product.priceIsPublic ? (
+                <AddToCartButton type="product" id={product.id} nameFa={product.nameFa} nameEn={product.nameEn} price={product.price} image={image?.url} disabled={product.stock <= 0} />
+              ) : null}
             </div>
 
             {specEntries.length > 0 ? (

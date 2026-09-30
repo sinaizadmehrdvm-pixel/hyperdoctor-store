@@ -72,6 +72,8 @@ model Product {
   brand            String      @default("")
   sku              String      @unique
   price            Int
+  /// Prices are private by default; storefront and checkout gate on this flag.
+  priceIsPublic    Boolean     @default(false)
   compareAtPrice   Int?
   stock            Int         @default(0)
   specs            String      @default("{}") // JSON string: {key: {fa, en}}
@@ -222,11 +224,13 @@ model AdminUser {
 
 model SiteSetting {
   id              Int      @id @default(1)
-  holdingName     String   @default("Vetrix")
+  holdingName     String   @default("VITALIS Group")
   holdingLogoUrl  String   @default("")
   subBrandName    String   @default("Hyper Doctor")
   subBrandLogoUrl String   @default("")
   contactPhone    String   @default("")
+  contactPhone2   String   @default("")
+  respiratoryPhone String  @default("")
   contactEmail    String   @default("")
   address         String   @default("")
   instagramUrl    String   @default("")

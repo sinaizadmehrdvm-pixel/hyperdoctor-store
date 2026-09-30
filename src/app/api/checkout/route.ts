@@ -43,7 +43,7 @@ export async function POST(request: Request) {
   for (const line of body.lines) {
     if (line.type === "product") {
       const product = await prisma.product.findUnique({ where: { id: line.id } });
-      if (!product || !product.isPublished) {
+      if (!product || !product.isPublished || !product.priceIsPublic) {
         return NextResponse.json({ error: "Product unavailable" }, { status: 409 });
       }
       if (product.stock < line.quantity) {

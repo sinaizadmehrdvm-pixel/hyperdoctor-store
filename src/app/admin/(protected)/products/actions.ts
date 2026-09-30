@@ -44,6 +44,7 @@ export async function upsertProduct(formData: FormData) {
     brand: String(formData.get("brand") || ""),
     sku: String(formData.get("sku") || ""),
     price: Number(formData.get("price") || 0),
+    priceIsPublic: formData.get("priceIsPublic") === "on",
     compareAtPrice: formData.get("compareAtPrice")
       ? Number(formData.get("compareAtPrice"))
       : null,

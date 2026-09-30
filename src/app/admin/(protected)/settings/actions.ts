@@ -15,6 +15,8 @@ export async function updateSiteSettings(formData: FormData) {
     subBrandName: String(formData.get("subBrandName") || ""),
     subBrandLogoUrl: String(formData.get("subBrandLogoUrl") || ""),
     contactPhone: String(formData.get("contactPhone") || ""),
+    contactPhone2: String(formData.get("contactPhone2") || ""),
+    respiratoryPhone: String(formData.get("respiratoryPhone") || ""),
     contactEmail: String(formData.get("contactEmail") || ""),
     address: String(formData.get("address") || ""),
     instagramUrl: String(formData.get("instagramUrl") || ""),

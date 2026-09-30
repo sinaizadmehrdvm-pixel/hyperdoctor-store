@@ -17,6 +17,7 @@ type ProductFormValues = {
   brand?: string;
   sku?: string;
   price?: number;
+  priceIsPublic?: boolean;
   compareAtPrice?: number | null;
   stock?: number;
   specs?: string;
@@ -80,6 +81,7 @@ export async function ProductForm({ product }: { product?: ProductFormValues }) 
 
       <div className="flex gap-6">
         <CheckboxField label="منتشر شده (در سایت نمایش داده شود)" name="isPublished" defaultChecked={product?.isPublished} />
+        <CheckboxField label="قیمت عمومی و تأییدشده" name="priceIsPublic" defaultChecked={product?.priceIsPublic} />
         <CheckboxField label="محصول ویژه (در صفحه اصلی)" name="isFeatured" defaultChecked={product?.isFeatured} />
       </div>
 

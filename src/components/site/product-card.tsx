@@ -10,6 +10,7 @@ type ProductCardData = {
   nameFa: string;
   nameEn: string;
   price: number;
+  priceIsPublic: boolean;
   compareAtPrice: number | null;
   stock: number;
   images: { url: string; altFa: string; altEn: string }[];
@@ -50,15 +51,15 @@ export async function ProductCard({ product }: { product: ProductCardData }) {
       <div className="flex flex-1 flex-col gap-2 p-4">
         <h3 className="line-clamp-2 text-sm font-semibold text-foreground">{name}</h3>
         <div className="mt-auto flex items-baseline gap-2 tabular-nums">
-          <span className="text-base font-bold text-foreground">
-            {formatPrice(product.price, locale)}
-          </span>
-          <span className="text-xs text-muted">{c("currency")}</span>
-          {product.compareAtPrice ? (
-            <span className="text-xs text-muted line-through">
-              {formatPrice(product.compareAtPrice, locale)}
-            </span>
-          ) : null}
+          {product.priceIsPublic ? (
+            <>
+              <span className="text-base font-bold text-foreground">{formatPrice(product.price, locale)}</span>
+              <span className="text-xs text-muted">{c("currency")}</span>
+              {product.compareAtPrice ? <span className="text-xs text-muted line-through">{formatPrice(product.compareAtPrice, locale)}</span> : null}
+            </>
+          ) : (
+            <span className="text-sm font-bold text-primary">{locale === "fa" ? "استعلام قیمت" : "Contact for price"}</span>
+          )}
         </div>
       </div>
     </Link>
