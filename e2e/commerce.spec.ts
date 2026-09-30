@@ -36,20 +36,22 @@ test("category and product lifecycle enforces safe pricing, stock, cart and uplo
 
   // Create a dedicated category through the real admin UI.
   await page.goto("/admin/categories/new");
-  await page.getByLabel("نام (فارسی)").fill("دسته تست واقعی");
+  const categoryName = `دسته تست واقعی ${runKey}`;
+  const productName = `محصول تست قیمت امن ${runKey}`;
+  await page.getByLabel("نام (فارسی)").fill(categoryName);
   await page.getByLabel("نام (English)").fill("Real E2E Category");
   await page.getByLabel("اسلاگ (آدرس)").fill(categorySlug);
   await page.getByRole("button", { name: "ذخیره" }).click();
   await expect(page).toHaveURL(/\/admin\/categories$/);
-  const categoryRow = page.getByRole("row").filter({ hasText: "دسته تست واقعی" }).last();
+  const categoryRow = page.getByRole("row").filter({ hasText: categoryName });
   await expect(categoryRow).toBeVisible();
 
   // Create a published product with a deliberately private/unapproved price.
   await page.goto("/admin/products/new");
-  await page.getByLabel("نام (فارسی)").fill("محصول تست قیمت امن");
+  await page.getByLabel("نام (فارسی)").fill(productName);
   await page.getByLabel("نام (English)").fill("Safe Price E2E Product");
   await page.getByLabel("اسلاگ").fill(productSlug);
-  await page.getByLabel("دسته‌بندی").selectOption({ label: "دسته تست واقعی" });
+  await page.getByLabel("دسته‌بندی").selectOption({ label: categoryName });
   await page.getByLabel("برند").fill("E2E");
   await page.getByLabel("کد کالا (SKU)").fill(sku);
   await page.getByLabel("قیمت (تومان)").fill("125000");
@@ -59,7 +61,7 @@ test("category and product lifecycle enforces safe pricing, stock, cart and uplo
   await page.getByRole("button", { name: "ذخیره" }).click();
   await expect(page).toHaveURL(/\/admin\/products$/);
 
-  const productRow = page.getByRole("row").filter({ hasText: "محصول تست قیمت امن" }).last();
+  const productRow = page.getByRole("row").filter({ hasText: productName });
   await expect(productRow).toBeVisible();
   const editHref = await productRow.getByRole("link").getAttribute("href");
   expect(editHref).toMatch(/^\/admin\/products\//);
@@ -67,7 +69,7 @@ test("category and product lifecycle enforces safe pricing, stock, cart and uplo
 
   // Public product must fail closed: no public price and no add-to-cart control.
   await page.goto(`/fa/product/${productSlug}`);
-  await expect(page.getByRole("heading", { name: "محصول تست قیمت امن" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: productName, exact: true })).toBeVisible();
   await expect(page.getByText("استعلام قیمت")).toBeVisible();
   await expect(page.getByRole("button", { name: /سبد|cart/i })).toHaveCount(0);
 
@@ -94,7 +96,7 @@ test("category and product lifecycle enforces safe pricing, stock, cart and uplo
 
   // Cart quantity controls are real client-side state, not mocked.
   await page.goto("/fa/cart");
-  const cartItem = page.getByText("محصول تست قیمت امن").locator("..");
+  const cartItem = page.getByText(productName, { exact: true }).locator("..");
   await expect(cartItem).toBeVisible();
   await cartItem.getByRole("button", { name: "+" }).click();
   await expect(cartItem.getByText("2", { exact: true })).toBeVisible();
