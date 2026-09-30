@@ -10,7 +10,7 @@ export async function upsertBrand(formData: FormData){
   const id=String(formData.get("id")||"");
   const data={slug:slugify(String(formData.get("slug")||formData.get("nameEn"))),nameFa:String(formData.get("nameFa")||""),nameEn:String(formData.get("nameEn")||""),logoUrl:String(formData.get("logoUrl")||"")||null,websiteUrl:String(formData.get("websiteUrl")||""),descriptionFa:String(formData.get("descriptionFa")||""),descriptionEn:String(formData.get("descriptionEn")||""),order:Number(formData.get("order")||0)};
   if(id) await prisma.brand.update({where:{id},data}); else await prisma.brand.create({data});
-  revalidatePath("/admin/brands"); redirect("/admin/brands");
+  revalidatePath("/admin/brands"); revalidatePath("/admin/products/new"); revalidatePath("/admin/products", "layout"); redirect("/admin/brands");
 }
 export async function deleteBrand(id:string){
   await requireAdmin();
