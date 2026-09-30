@@ -9,8 +9,8 @@
     "lint": "eslint",
     "seed": "tsx prisma/seed.ts",
     "postinstall": "prisma generate",
-    "test:e2e": "npx --yes --package=@playwright/test@1.63.0 playwright test",
-    "test:e2e:install": "npx --yes --package=@playwright/test@1.63.0 playwright install --with-deps chromium"
+    "test:e2e": "playwright test",
+    "test:e2e:install": "playwright install --with-deps chromium"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

@@ -29,6 +29,7 @@ jobs:
       - run: npx prisma migrate deploy
       - run: npm run lint
       - run: npm run build
+      - run: npm install --no-save --package-lock=false @playwright/test@1.63.0
       - run: npm run test:e2e:install
       - run: npm run seed
         env:
