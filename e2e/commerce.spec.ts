@@ -399,7 +399,7 @@ test("brand CRUD, product assignment and delete guard work end to end", async ({
   await page.getByLabel("نام (English)").fill(`Brand Product ${runKey}`);
   await page.getByLabel("اسلاگ").fill(`brand-product-${runKey}`);
   await page.getByLabel("دسته‌بندی").selectOption({ label: categoryName });
-  await page.getByLabel("برند").selectOption({ label: editedBrandName });
+  await page.getByLabel("برند", { exact: true }).selectOption({ label: editedBrandName });
   await page.getByLabel("کد کالا (SKU)").fill(`BRAND-${runKey}`);
   await page.getByLabel("قیمت (تومان)").fill("1000");
   await page.getByLabel("موجودی انبار").fill("1");
@@ -414,8 +414,8 @@ test("brand CRUD, product assignment and delete guard work end to end", async ({
   const productRow = page.getByRole("row").filter({ hasText: productName });
   const productEditHref = await productRow.getByRole("link").getAttribute("href");
   await page.goto(productEditHref!);
-  await expect(page.getByLabel("برند")).toHaveValue(/.+/);
-  await page.getByLabel("برند").selectOption("");
+  await expect(page.getByLabel("برند", { exact: true })).toHaveValue(/.+/);
+  await page.getByLabel("برند", { exact: true }).selectOption("");
   await page.getByRole("button", { name: "ذخیره" }).click();
 
   await page.goto("/admin/brands");
