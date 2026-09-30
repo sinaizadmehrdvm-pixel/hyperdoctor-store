@@ -3,24 +3,27 @@ import { Link } from "@/i18n/navigation";
 import { Container } from "@/components/ui/container";
 import { ProductCard } from "@/components/site/product-card";
 import { SortSelect } from "@/components/site/shop-filters";
-import { getCategories, getProducts, type ProductSort } from "@/lib/queries";
+import { getBrands, getCategories, getProducts, type ProductSort } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 
 export async function ShopContent({
   categorySlug,
   sort,
   search,
+  brandSlug,
 }: {
   categorySlug?: string;
   sort?: ProductSort;
   search?: string;
+  brandSlug?: string;
 }) {
   const locale = await getLocale();
   const t = await getTranslations("shop");
 
-  const [categories, products] = await Promise.all([
+  const [categories, brands, products] = await Promise.all([
     getCategories(),
-    getProducts({ categorySlug, sort, search }),
+    getBrands(),
+    getProducts({ categorySlug, sort, search, brandSlug }),
   ]);
 
   return (
@@ -63,6 +66,7 @@ export async function ShopContent({
                 </Link>
               ))}
             </nav>
+            {brands.length ? <><h2 className="mb-3 mt-7 text-sm font-semibold text-muted">برند</h2><nav className="flex flex-row flex-wrap gap-2 lg:flex-col"><Link href="/shop" className={cn("min-h-10 flex items-center rounded-lg px-3 text-sm font-medium", !brandSlug ? "bg-primary/10 text-primary" : "text-foreground hover:bg-muted-bg")}>همه برندها</Link>{brands.map((brand)=><Link key={brand.id} href={`/shop?brand=${brand.slug}`} className={cn("min-h-10 flex items-center rounded-lg px-3 text-sm font-medium", brandSlug===brand.slug ? "bg-primary/10 text-primary" : "text-foreground hover:bg-muted-bg")}>{locale === "fa" ? brand.nameFa : brand.nameEn}<span className="ms-2 text-xs text-muted tabular-nums">{brand._count.products}</span></Link>)}</nav></> : null}
           </aside>
 
           <div>

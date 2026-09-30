@@ -14,6 +14,7 @@ type ProductCardData = {
   compareAtPrice: number | null;
   stock: number;
   images: { url: string; altFa: string; altEn: string }[];
+  brandRecord?: { nameFa: string; nameEn: string } | null;
 };
 
 export async function ProductCard({ product }: { product: ProductCardData }) {
@@ -49,6 +50,7 @@ export async function ProductCard({ product }: { product: ProductCardData }) {
         ) : null}
       </div>
       <div className="flex flex-1 flex-col gap-2 p-4">
+        {product.brandRecord ? <span className="text-xs font-medium text-muted">{locale === "fa" ? product.brandRecord.nameFa : product.brandRecord.nameEn}</span> : null}
         <h3 className="line-clamp-2 text-sm font-semibold text-foreground">{name}</h3>
         <div className="mt-auto flex items-baseline gap-2 tabular-nums">
           {product.priceIsPublic ? (

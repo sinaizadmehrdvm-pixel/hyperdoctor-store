@@ -16,18 +16,24 @@ export function getCategoryBySlug(slug: string) {
   return prisma.category.findUnique({ where: { slug } });
 }
 
+export function getBrands() {
+  return prisma.brand.findMany({ orderBy: [{ order: "asc" }, { nameEn: "asc" }], include: { _count: { select: { products: true } } } });
+}
+
 export type ProductSort = "newest" | "price-asc" | "price-desc";
 
 export function getProducts(opts: {
   categorySlug?: string;
   sort?: ProductSort;
   search?: string;
+  brandSlug?: string;
 } = {}) {
-  const { categorySlug, sort = "newest", search } = opts;
+  const { categorySlug, sort = "newest", search, brandSlug } = opts;
   return prisma.product.findMany({
     where: {
       isPublished: true,
       category: categorySlug ? { slug: categorySlug } : undefined,
+      brandRecord: brandSlug ? { slug: brandSlug } : undefined,
       ...(search
         ? {
             OR: [
@@ -37,7 +43,7 @@ export function getProducts(opts: {
           }
         : {}),
     },
-    include: { images: publicImageInclude, category: true },
+    include: { images: publicImageInclude, category: true, brandRecord: true },
     orderBy:
       sort === "price-asc"
         ? { price: "asc" }
@@ -59,7 +65,7 @@ export function getFeaturedProducts(take = 4) {
 export async function getProductBySlug(slug: string) {
   return prisma.product.findFirst({
     where: { slug, isPublished: true },
-    include: { images: publicImageInclude, category: true },
+    include: { images: publicImageInclude, category: true, brandRecord: true },
   });
 }
 
