@@ -118,3 +118,81 @@ test("category and product lifecycle enforces safe pricing, stock, cart and uplo
   await cartItem.getByRole("button", { name: /حذف/ }).click();
   await expect(page.getByText(/سبد.*خالی|خالی است/)).toBeVisible();
 });
+
+
+test("dashboard cards are navigable and checkout rejects invalid payloads", async ({ page, request }) => {
+  await login(page);
+  await page.goto("/admin");
+  const productsCard = page.getByRole("link").filter({ hasText: "محصولات" }).first();
+  await expect(productsCard).toBeVisible();
+  await productsCard.click();
+  await expect(page).toHaveURL(/\/admin\/products$/);
+
+  const invalid = await request.post("/api/checkout", { data: {} });
+  expect(invalid.status()).toBe(400);
+
+  const invalidQuantity = await request.post("/api/checkout", {
+    data: {
+      locale: "fa",
+      customerName: "کاربر تست",
+      phone: "09123456789",
+      address: "آدرس تست معتبر برای سفارش",
+      city: "ارومیه",
+      lines: [{ type: "product", id: "missing-product", quantity: 51 }],
+    },
+  });
+  expect(invalidQuantity.status()).toBe(400);
+});
+
+test("unpublished products stay private and approved price fails closed again", async ({ page }, testInfo) => {
+  const runKey = `privacy-${testInfo.workerIndex}-${Date.now()}`;
+  const categoryName = `دسته حریم ${runKey}`;
+  const productName = `محصول خصوصی ${runKey}`;
+  const productSlug = `private-${runKey}`;
+  await login(page);
+
+  await page.goto("/admin/categories/new");
+  await page.getByLabel("نام (فارسی)").fill(categoryName);
+  await page.getByLabel("نام (English)").fill(`Privacy ${runKey}`);
+  await page.getByLabel("اسلاگ (آدرس)").fill(`privacy-cat-${runKey}`);
+  await page.getByRole("button", { name: "ذخیره" }).click();
+
+  await page.goto("/admin/products/new");
+  await page.getByLabel("نام (فارسی)").fill(productName);
+  await page.getByLabel("نام (English)").fill(`Private ${runKey}`);
+  await page.getByLabel("اسلاگ").fill(productSlug);
+  await page.getByLabel("دسته‌بندی").selectOption({ label: categoryName });
+  await page.getByLabel("کد کالا (SKU)").fill(`PRIVATE-${runKey}`);
+  await page.getByLabel("قیمت (تومان)").fill("99000");
+  await page.getByLabel("موجودی انبار").fill("2");
+  await page.getByLabel("قیمت عمومی و تأییدشده").check();
+  await page.getByRole("button", { name: "ذخیره" }).click();
+
+  await page.goto(`/fa/product/${productSlug}`);
+  await expect(page.getByText(/404|یافت نشد|not found/i)).toBeVisible();
+
+  await page.goto("/admin/products");
+  const row = page.getByRole("row").filter({ hasText: productName });
+  const editHref = await row.getByRole("link").getAttribute("href");
+  await page.goto(editHref!);
+  await page.getByLabel("منتشر شده (در سایت نمایش داده شود)").check();
+  await page.getByRole("button", { name: "ذخیره" }).click();
+  await page.goto(`/fa/product/${productSlug}`);
+  await expect(page.getByRole("heading", { name: productName, exact: true })).toBeVisible();
+  await expect(page.getByRole("button").filter({ hasText: /سبد/ }).first()).toBeVisible();
+
+  await page.goto(editHref!);
+  await page.getByLabel("قیمت عمومی و تأییدشده").uncheck();
+  await page.getByRole("button", { name: "ذخیره" }).click();
+  await page.goto(`/fa/product/${productSlug}`);
+  await expect(page.getByText("استعلام قیمت")).toBeVisible();
+  await expect(page.getByRole("button", { name: /سبد|cart/i })).toHaveCount(0);
+});
+
+test("Persian shop remains RTL and usable on a mobile viewport", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/fa/shop");
+  await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+  await expect(page.locator("body")).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBeTruthy();
+});
