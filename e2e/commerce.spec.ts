@@ -52,7 +52,7 @@ test("category and product lifecycle enforces safe pricing, stock, cart and uplo
   await page.getByLabel("نام (English)").fill("Safe Price E2E Product");
   await page.getByLabel("اسلاگ").fill(productSlug);
   await page.getByLabel("دسته‌بندی").selectOption({ label: categoryName });
-  await page.getByLabel("برند").fill("E2E");
+  await expect(page.getByLabel("برند")).toHaveValue("");
   await page.getByLabel("کد کالا (SKU)").fill(sku);
   await page.getByLabel("قیمت (تومان)").fill("125000");
   await page.getByLabel("موجودی انبار").fill("3");
