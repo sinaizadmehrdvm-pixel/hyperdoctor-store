@@ -42,9 +42,14 @@ test("admin can reorder homepage sections", async ({ page }) => {
   await page.goto("/admin/pages");
   const homeRow = page.getByRole("row").filter({ hasText: "/home" });
   await homeRow.getByRole("link").click();
-  await expect(page.locator("article").first()).toContainText("هیرو");
-  await page.locator("article").nth(1).getByRole("button", { name: /بالا/ }).click();
-  await expect(page.locator("article").first()).not.toContainText("هیرو");
-  await page.locator("article").nth(1).getByRole("button", { name: /بالا/ }).click();
-  await expect(page.locator("article").first()).toContainText("هیرو");
+  const sections = page.locator("article");
+  await expect(sections.first()).toContainText("هیرو");
+  const secondType = (await sections.nth(1).locator("span").nth(1).textContent())?.trim();
+  expect(secondType).toBeTruthy();
+
+  await sections.nth(1).getByRole("button", { name: /بالا/ }).click();
+  await expect(sections.first().locator("span").nth(1)).toHaveText(secondType!);
+
+  await sections.first().getByRole("button", { name: /پایین/ }).click();
+  await expect(sections.first()).toContainText("هیرو");
 });
