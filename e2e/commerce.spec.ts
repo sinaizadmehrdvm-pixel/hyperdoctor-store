@@ -41,7 +41,8 @@ test("category and product lifecycle enforces safe pricing, stock, cart and uplo
   await page.getByLabel("اسلاگ (آدرس)").fill(categorySlug);
   await page.getByRole("button", { name: "ذخیره" }).click();
   await expect(page).toHaveURL(/\/admin\/categories$/);
-  const categoryRow = page.getByRole("row").filter({ hasText: categorySlug });\n  await expect(categoryRow).toBeVisible();
+  const categoryRow = page.getByRole("row").filter({ hasText: categorySlug });
+  await expect(categoryRow).toBeVisible();
 
   // Create a published product with a deliberately private/unapproved price.
   await page.goto("/admin/products/new");
