@@ -27,6 +27,8 @@ type ProductFormValues = {
   images?: { url: string }[];
 };
 
+export const dynamic = "force-dynamic";
+
 export async function ProductForm({ product }: { product?: ProductFormValues }) {
   const [categories, brands] = await Promise.all([prisma.category.findMany({ orderBy: { order: "asc" } }), prisma.brand.findMany({ orderBy: [{ order: "asc" }, { nameEn: "asc" }] })]);
 
