@@ -418,8 +418,10 @@ test("brand CRUD, product assignment and delete guard work end to end", async ({
   const productRow = page.getByRole("row").filter({ hasText: productName });
   const productEditHref = await productRow.getByRole("link").getAttribute("href");
   await page.goto(productEditHref!);
-  await expect(page.getByLabel("برند", { exact: true })).toHaveValue(/.+/);
-  await page.getByLabel("برند", { exact: true }).selectOption("");
+  const editBrandSelect = page.getByRole("combobox", { name: "برند", exact: true });
+  await expect(editBrandSelect).toHaveValue(brandId);
+  await editBrandSelect.selectOption("");
+  await expect(editBrandSelect).toHaveValue("");
   await page.getByRole("button", { name: "ذخیره" }).click();
 
   await page.goto("/admin/brands");
