@@ -9,8 +9,8 @@
     "lint": "eslint",
     "seed": "tsx prisma/seed.ts",
     "postinstall": "prisma generate",
-    "test:e2e": "playwright test",
-    "test:e2e:install": "playwright install --with-deps chromium"
+    "test:e2e": "npx --yes --package=@playwright/test@1.63.0 playwright test",
+    "test:e2e:install": "npx --yes --package=@playwright/test@1.63.0 playwright install --with-deps chromium"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -48,7 +48,6 @@
     "eslint-config-next": "16.2.11",
     "tailwindcss": "^4",
     "tsx": "^4.23.1",
-    "typescript": "^5",
-    "@playwright/test": "^1.55.0"
+    "typescript": "^5"
   }
 }

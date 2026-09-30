@@ -29,7 +29,7 @@ jobs:
       - run: npx prisma migrate deploy
       - run: npm run lint
       - run: npm run build
-      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e:install
       - run: npm run seed
         env:
           ADMIN_EMAIL: ${{ env.E2E_ADMIN_EMAIL }}
