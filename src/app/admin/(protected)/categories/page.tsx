@@ -50,7 +50,10 @@ export default async function AdminCategoriesPage() {
                     >
                       <Pencil className="h-4 w-4" aria-hidden="true" />
                     </Link>
-                    <DeleteButton action={deleteCategory.bind(null, cat.id)} />
+                    <DeleteButton
+                      action={deleteCategory.bind(null, cat.id)}
+                      disabled={cat._count.products > 0}
+                      disabledReason={cat._count.products > 0 ? "ابتدا محصولات این دسته را منتقل یا حذف کنید." : undefined}\n                    />
                   </div>
                 </td>
               </tr>

@@ -45,6 +45,14 @@ export async function upsertCategory(formData: FormData) {
 
 export async function deleteCategory(id: string) {
   await requireAdmin();
+  const category = await prisma.category.findUnique({
+    where: { id },
+    select: { _count: { select: { products: true, children: true } } },
+  });
+  if (!category) return;
+  if (category._count.products > 0 || category._count.children > 0) {
+    throw new Error("Category must be empty before deletion.");
+  }
   await prisma.category.delete({ where: { id } });
   revalidatePath("/admin/categories");
   revalidatePath("/", "layout");
