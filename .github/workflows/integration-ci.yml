@@ -20,6 +20,7 @@ jobs:
       NEXT_PUBLIC_SITE_URL: https://hyperdoctor.ir
       E2E_ADMIN_EMAIL: e2e-admin@hyperdoctor.test
       E2E_ADMIN_PASSWORD: HyperDoctor-E2E-CI-Only-2026!
+      ALLOW_LOCAL_UPLOADS: "true"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
