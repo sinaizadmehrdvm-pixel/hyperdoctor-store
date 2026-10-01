@@ -559,7 +559,7 @@ test("category hierarchy protects parents until child categories are removed", a
   await page.getByLabel("اسلاگ (آدرس)").fill(`parent-${runKey}`);
   await page.getByRole("button", { name: "ذخیره" }).click();
 
-  const parentRow = page.getByRole("row").filter({ hasText: parentName });
+  const parentRow = page.getByRole("row").filter({ has: page.getByRole("cell", { name: parentName, exact: true }) });
   const parentEditHref = await parentRow.getByRole("link").getAttribute("href");
 
   await page.goto("/admin/categories/new");
@@ -569,7 +569,7 @@ test("category hierarchy protects parents until child categories are removed", a
   await page.getByLabel("دسته والد").selectOption({ label: parentName });
   await page.getByRole("button", { name: "ذخیره" }).click();
 
-  const guardedParentRow = page.getByRole("row").filter({ hasText: parentName });
+  const guardedParentRow = page.getByRole("row").filter({ has: page.getByRole("cell", { name: parentName, exact: true }) });
   await expect(guardedParentRow).toContainText("0 / 1");
   await expect(guardedParentRow.getByRole("button", { name: "حذف" })).toBeDisabled();
   await expect(guardedParentRow.getByRole("button", { name: "حذف" })).toHaveAttribute("title", /زیردسته/);
@@ -581,7 +581,7 @@ test("category hierarchy protects parents until child categories are removed", a
   await childRow.getByRole("button", { name: "حذف" }).click();
   await expect(page.getByRole("row").filter({ hasText: childName })).toHaveCount(0);
 
-  const releasedParentRow = page.getByRole("row").filter({ hasText: parentName });
+  const releasedParentRow = page.getByRole("row").filter({ has: page.getByRole("cell", { name: parentName, exact: true }) });
   await expect(releasedParentRow).toContainText("0 / 0");
   await expect(releasedParentRow.getByRole("button", { name: "حذف" })).toBeEnabled();
 
