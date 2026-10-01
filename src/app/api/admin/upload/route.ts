@@ -84,7 +84,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ url: persistentUrl, mime: detected.mime, storage: "supabase" });
     }
 
-    if (process.env.NODE_ENV === "production") {
+    const allowLocalUpload = process.env.ALLOW_LOCAL_UPLOADS === "true";
+    if (process.env.NODE_ENV === "production" && !allowLocalUpload) {
       console.error("Persistent media storage is not configured in production");
       return NextResponse.json({ error: "Media storage is not configured" }, { status: 503 });
     }
