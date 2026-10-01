@@ -545,3 +545,46 @@ test("ordered products are deletion-protected while unreferenced product media i
   await page.goto(disposable.href);
   await expect(page.getByText(/یافت نشد|not found|404/i)).toBeVisible();
 });
+
+
+test("category hierarchy protects parents until child categories are removed", async ({ page }, testInfo) => {
+  const runKey = `hierarchy-${testInfo.workerIndex}-${Date.now()}`;
+  const parentName = `دسته والد ${runKey}`;
+  const childName = `زیردسته ${runKey}`;
+  await login(page);
+
+  await page.goto("/admin/categories/new");
+  await page.getByLabel("نام (فارسی)").fill(parentName);
+  await page.getByLabel("نام (English)").fill(`Parent ${runKey}`);
+  await page.getByLabel("اسلاگ (آدرس)").fill(`parent-${runKey}`);
+  await page.getByRole("button", { name: "ذخیره" }).click();
+
+  const parentRow = page.getByRole("row").filter({ hasText: parentName });
+  const parentEditHref = await parentRow.getByRole("link").getAttribute("href");
+
+  await page.goto("/admin/categories/new");
+  await page.getByLabel("نام (فارسی)").fill(childName);
+  await page.getByLabel("نام (English)").fill(`Child ${runKey}`);
+  await page.getByLabel("اسلاگ (آدرس)").fill(`child-${runKey}`);
+  await page.getByLabel("دسته والد").selectOption({ label: parentName });
+  await page.getByRole("button", { name: "ذخیره" }).click();
+
+  const guardedParentRow = page.getByRole("row").filter({ hasText: parentName });
+  await expect(guardedParentRow).toContainText("0 / 1");
+  await expect(guardedParentRow.getByRole("button", { name: "حذف" })).toBeDisabled();
+  await expect(guardedParentRow.getByRole("button", { name: "حذف" })).toHaveAttribute("title", /زیردسته/);
+
+  const childRow = page.getByRole("row").filter({ hasText: childName });
+  await expect(childRow).toContainText(parentName);
+  await expect(childRow.getByRole("button", { name: "حذف" })).toBeEnabled();
+  page.once("dialog", dialog => dialog.accept());
+  await childRow.getByRole("button", { name: "حذف" }).click();
+  await expect(page.getByRole("row").filter({ hasText: childName })).toHaveCount(0);
+
+  const releasedParentRow = page.getByRole("row").filter({ hasText: parentName });
+  await expect(releasedParentRow).toContainText("0 / 0");
+  await expect(releasedParentRow.getByRole("button", { name: "حذف" })).toBeEnabled();
+
+  await page.goto(parentEditHref!);
+  await expect(page.getByLabel("دسته والد")).toHaveValue("");
+});
