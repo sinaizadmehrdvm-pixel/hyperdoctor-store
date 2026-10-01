@@ -22,7 +22,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm install --package-lock-only
+      - run: npm install --package-lock-only --ignore-scripts
       - name: Commit synchronized package lock
         run: |
           if git diff --quiet -- package-lock.json; then
