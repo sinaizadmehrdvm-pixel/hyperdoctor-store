@@ -34,6 +34,8 @@ test("admin can create a page and publish a managed section", async ({ page }, t
   await page.getByLabel("English body").last().fill("Test content");
   await page.getByLabel("وضعیت").last().selectOption("PUBLISHED");
   await page.getByRole("button", { name: "ذخیره سکشن" }).last().click();
+  await expect(page.getByLabel("عنوان فارسی").last()).toHaveValue("سکشن تست");
+  await expect(page.getByLabel("وضعیت").last()).toHaveValue("PUBLISHED");
   await page.goto(`/fa/${runKey}`);
   await expect(page.getByRole("heading", { name: "سکشن تست" })).toBeVisible();
 });
