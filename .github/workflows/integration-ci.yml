@@ -12,8 +12,22 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: hyperdoctor_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d hyperdoctor_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     env:
-      DATABASE_URL: file:./ci.db
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/hyperdoctor_ci
       AUTH_SECRET: integration-ci-only-secret-not-for-production
       AUTH_TRUST_HOST: "true"
       AUTH_URL: http://127.0.0.1:3000
@@ -27,8 +41,8 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
-      - run: npx prisma migrate deploy
+      - run: npm install
+      - run: npx prisma db push --skip-generate
       - run: npm run lint
       - run: npm run build
       - run: npm install --no-save --package-lock=false @playwright/test@1.63.0
