@@ -46,7 +46,7 @@ async function uploadToSupabase(buffer: Buffer, filename: string, mime: SafeImag
         "Cache-Control": "public, max-age=31536000, immutable",
         "x-upsert": "false",
       },
-      body: buffer,
+      body: new Uint8Array(buffer),
     },
   );
 
