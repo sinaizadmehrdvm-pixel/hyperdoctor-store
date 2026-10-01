@@ -42,7 +42,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm install
-      - run: npx prisma db push --skip-generate
+      - run: npx prisma db push
       - run: npm run lint
       - run: npm run build
       - run: npm install --no-save --package-lock=false @playwright/test@1.63.0
