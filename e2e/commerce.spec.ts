@@ -478,3 +478,70 @@ test("public brand filter shows only published matching products and accurate co
   await expect(page.getByText(hiddenName)).toHaveCount(0);
   await expect(page.getByText(brandName).last()).toBeVisible();
 });
+
+
+test("ordered products are deletion-protected while unreferenced product media is cleaned", async ({ page }, testInfo) => {
+  const runKey = `delete-safety-${testInfo.workerIndex}-${Date.now()}`;
+  const categoryName = `دسته حذف امن ${runKey}`;
+  const orderedName = `محصول سفارشی ${runKey}`;
+  const disposableName = `محصول قابل حذف ${runKey}`;
+  const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=", "base64");
+  await login(page);
+
+  await page.goto("/admin/categories/new");
+  await page.getByLabel("نام (فارسی)").fill(categoryName);
+  await page.getByLabel("نام (English)").fill(`Delete Safety ${runKey}`);
+  await page.getByLabel("اسلاگ (آدرس)").fill(`delete-safety-${runKey}`);
+  await page.getByRole("button", { name: "ذخیره" }).click();
+
+  const createProduct = async (name: string, slug: string) => {
+    await page.goto("/admin/products/new");
+    await page.getByLabel("نام (فارسی)").fill(name);
+    await page.getByLabel("نام (English)").fill(name);
+    await page.getByLabel("اسلاگ").fill(slug);
+    await page.getByLabel("دسته‌بندی").selectOption({ label: categoryName });
+    await page.getByLabel("کد کالا (SKU)").fill(`SKU-${slug}`);
+    await page.getByLabel("قیمت (تومان)").fill("15000");
+    await page.getByLabel("موجودی انبار").fill("5");
+    await page.getByLabel("قیمت عمومی و تأییدشده").check();
+    await page.getByLabel("منتشر شده (در سایت نمایش داده شود)").check();
+    await page.getByRole("button", { name: "ذخیره" }).click();
+    const row = page.getByRole("row").filter({ hasText: name });
+    const href = await row.getByRole("link").getAttribute("href");
+    return { row, href: href!, id: href!.split("/").pop()! };
+  };
+
+  const ordered = await createProduct(orderedName, `ordered-${runKey}`);
+  const checkout = await page.request.post("/api/checkout", {
+    data: {
+      locale: "fa",
+      customerName: "کاربر تست حذف امن",
+      phone: "09123456789",
+      address: "آدرس تست معتبر سفارش حذف امن",
+      city: "ارومیه",
+      lines: [{ type: "product", id: ordered.id, quantity: 1 }],
+    },
+  });
+  expect([200, 502]).toContain(checkout.status());
+
+  await page.goto("/admin/products");
+  const orderedRow = page.getByRole("row").filter({ hasText: orderedName });
+  await expect(orderedRow.getByRole("button", { name: "حذف" })).toBeDisabled();
+  await expect(orderedRow.getByRole("button", { name: "حذف" })).toHaveAttribute("title", /سفارش/);
+
+  const disposable = await createProduct(disposableName, `disposable-${runKey}`);
+  await page.goto(disposable.href);
+  const gallery = page.getByRole("heading", { name: "گالری محصول" }).locator("..").locator("..");
+  const fileInput = gallery.locator('input[type="file"]').first();
+  await fileInput.setInputFiles({ name: "delete-cleanup.png", mimeType: "image/png", buffer: png });
+  await expect(gallery.locator('input[name="altFa"]')).toHaveCount(1);
+
+  await page.goto("/admin/products");
+  const disposableRow = page.getByRole("row").filter({ hasText: disposableName });
+  await expect(disposableRow.getByRole("button", { name: "حذف" })).toBeEnabled();
+  page.once("dialog", dialog => dialog.accept());
+  await disposableRow.getByRole("button", { name: "حذف" }).click();
+  await expect(page.getByRole("row").filter({ hasText: disposableName })).toHaveCount(0);
+  await page.goto(disposable.href);
+  await expect(page.getByText(/یافت نشد|not found|404/i)).toBeVisible();
+});
