@@ -15,6 +15,14 @@ export async function upsertCategory(formData: FormData) {
   await requireAdmin();
 
   const id = String(formData.get("id") || "");
+  const parentId = String(formData.get("parentId") || "") || null;
+  if (id && parentId === id) throw new Error("Category cannot be its own parent.");
+  if (parentId) {
+    const parent = await prisma.category.findUnique({ where: { id: parentId }, select: { id: true, parentId: true } });
+    if (!parent) throw new Error("Parent category not found.");
+    if (id && parent.parentId === id) throw new Error("Circular category hierarchy is not allowed.");
+  }
+
   const data = {
     vertical: String(formData.get("vertical")) as
       | "MEDICAL_EQUIPMENT"
@@ -30,6 +38,7 @@ export async function upsertCategory(formData: FormData) {
     descriptionEn: String(formData.get("descriptionEn") || ""),
     image: String(formData.get("image") || "") || null,
     order: Number(formData.get("order") || 0),
+    parentId,
   };
 
   if (id) {

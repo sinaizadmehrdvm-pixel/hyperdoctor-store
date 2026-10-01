@@ -8,7 +8,7 @@ import { VERTICAL_OPTIONS } from "@/lib/verticals";
 export default async function AdminCategoriesPage() {
   const categories = await prisma.category.findMany({
     orderBy: { order: "asc" },
-    include: { _count: { select: { products: true } } },
+    include: { parent: { select: { nameFa: true } }, _count: { select: { products: true, children: true } } },
   });
 
   return (
@@ -30,7 +30,8 @@ export default async function AdminCategoriesPage() {
             <tr className="border-b border-border text-start text-xs text-muted">
               <th className="px-4 py-3 text-start">نام</th>
               <th className="px-4 py-3 text-start">دسته</th>
-              <th className="px-4 py-3 text-start">تعداد محصول</th>
+              <th className="px-4 py-3 text-start">والد</th>
+              <th className="px-4 py-3 text-start">محصول / زیردسته</th>
               <th className="px-4 py-3 text-start"></th>
             </tr>
           </thead>
@@ -41,7 +42,8 @@ export default async function AdminCategoriesPage() {
                 <td className="px-4 py-3 text-muted">
                   {VERTICAL_OPTIONS.find((v) => v.value === cat.vertical)?.label}
                 </td>
-                <td className="px-4 py-3 tabular-nums text-muted">{cat._count.products}</td>
+                <td className="px-4 py-3 text-muted">{cat.parent?.nameFa ?? "—"}</td>
+                <td className="px-4 py-3 tabular-nums text-muted">{cat._count.products} / {cat._count.children}</td>
                 <td className="px-4 py-3">
                   <div className="flex justify-end gap-1">
                     <Link
@@ -52,8 +54,8 @@ export default async function AdminCategoriesPage() {
                     </Link>
                     <DeleteButton
                       action={deleteCategory.bind(null, cat.id)}
-                      disabled={cat._count.products > 0}
-                      disabledReason={cat._count.products > 0 ? "ابتدا محصولات این دسته را منتقل یا حذف کنید." : undefined}
+                      disabled={cat._count.products > 0 || cat._count.children > 0}
+                      disabledReason={cat._count.products > 0 ? "ابتدا محصولات این دسته را منتقل یا حذف کنید." : cat._count.children > 0 ? "ابتدا زیردسته‌های این دسته را منتقل یا حذف کنید." : undefined}
                     />
                   </div>
                 </td>
@@ -61,7 +63,7 @@ export default async function AdminCategoriesPage() {
             ))}
             {categories.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-4 py-10 text-center text-muted">
+                <td colSpan={5} className="px-4 py-10 text-center text-muted">
                   هنوز دسته‌بندی‌ای ثبت نشده است.
                 </td>
               </tr>

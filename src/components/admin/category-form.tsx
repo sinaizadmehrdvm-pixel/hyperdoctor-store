@@ -13,9 +13,12 @@ type CategoryFormValues = {
   descriptionEn?: string | null;
   image?: string | null;
   order?: number;
+  parentId?: string | null;
 };
 
-export function CategoryForm({ category }: { category?: CategoryFormValues }) {
+type ParentCategoryOption = { id: string; nameFa: string };
+
+export function CategoryForm({ category, parentCategories = [] }: { category?: CategoryFormValues; parentCategories?: ParentCategoryOption[] }) {
   return (
     <form action={upsertCategory} className="max-w-2xl space-y-5">
       {category?.id ? <input type="hidden" name="id" value={category.id} /> : null}
@@ -54,6 +57,13 @@ export function CategoryForm({ category }: { category?: CategoryFormValues }) {
           dir="ltr"
         />
       </div>
+
+      <SelectField
+        label="دسته والد"
+        name="parentId"
+        defaultValue={category?.parentId ?? ""}
+        options={[{ value: "", label: "بدون والد (دسته اصلی)" }, ...parentCategories.map((item) => ({ value: item.id, label: item.nameFa }))]}
+      />
 
       <ImageUploadField label="تصویر دسته‌بندی" name="image" defaultValue={category?.image} />
 
