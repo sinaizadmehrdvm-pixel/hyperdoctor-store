@@ -29,6 +29,36 @@ function detectImageType(buffer: Buffer): SafeImageType | null {
   return null;
 }
 
+async function uploadToSupabase(buffer: Buffer, filename: string, mime: SafeImageType["mime"]) {
+  const supabaseUrl = process.env.SUPABASE_URL?.replace(/\/$/, "");
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !serviceRoleKey) return null;
+
+  const objectPath = `admin/${new Date().toISOString().slice(0, 10)}/${filename}`;
+  const response = await fetch(
+    `${supabaseUrl}/storage/v1/object/site-media/${objectPath}`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${serviceRoleKey}`,
+        apikey: serviceRoleKey,
+        "Content-Type": mime,
+        "Cache-Control": "public, max-age=31536000, immutable",
+        "x-upsert": "false",
+      },
+      body: buffer,
+    },
+  );
+
+  if (!response.ok) {
+    const detail = await response.text();
+    console.error("Supabase Storage upload failed", response.status, detail.slice(0, 500));
+    throw new Error("Persistent media upload failed");
+  }
+
+  return `${supabaseUrl}/storage/v1/object/public/site-media/${objectPath}`;
+}
+
 export async function POST(request: Request) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -47,9 +77,23 @@ export async function POST(request: Request) {
   }
 
   const filename = `${randomUUID()}.${detected.extension}`;
-  const uploadsDir = path.join(process.cwd(), "public", "uploads");
-  await mkdir(uploadsDir, { recursive: true });
-  await writeFile(path.join(uploadsDir, filename), buffer, { flag: "wx" });
 
-  return NextResponse.json({ url: `/uploads/${filename}`, mime: detected.mime });
+  try {
+    const persistentUrl = await uploadToSupabase(buffer, filename, detected.mime);
+    if (persistentUrl) {
+      return NextResponse.json({ url: persistentUrl, mime: detected.mime, storage: "supabase" });
+    }
+
+    if (process.env.NODE_ENV === "production") {
+      console.error("Persistent media storage is not configured in production");
+      return NextResponse.json({ error: "Media storage is not configured" }, { status: 503 });
+    }
+
+    const uploadsDir = path.join(process.cwd(), "public", "uploads");
+    await mkdir(uploadsDir, { recursive: true });
+    await writeFile(path.join(uploadsDir, filename), buffer, { flag: "wx" });
+    return NextResponse.json({ url: `/uploads/${filename}`, mime: detected.mime, storage: "local" });
+  } catch {
+    return NextResponse.json({ error: "Persistent media upload failed" }, { status: 502 });
+  }
 }
