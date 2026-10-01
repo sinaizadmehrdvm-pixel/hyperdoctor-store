@@ -140,13 +140,28 @@ export async function updateProductMedia(formData: FormData) {
   const media = await prisma.media.findUnique({ where: { id }, include: { product: { select: { id: true, slug: true } } } });
   if (!media?.product) throw new Error("Product media not found.");
 
-  await prisma.media.update({
-    where: { id },
-    data: {
-      altFa: String(formData.get("altFa") || ""),
-      altEn: String(formData.get("altEn") || ""),
-      isPublished: formData.get("isPublished") === "on",
-    },
+  const isPublished = formData.get("isPublished") === "on";
+  await prisma.$transaction(async (tx) => {
+    await tx.media.update({
+      where: { id },
+      data: {
+        altFa: String(formData.get("altFa") || ""),
+        altEn: String(formData.get("altEn") || ""),
+        isPublished,
+        isPrimary: media.isPrimary && !isPublished ? false : media.isPrimary,
+      },
+    });
+    if (media.isPrimary && !isPublished) {
+      const fallback = await tx.media.findFirst({
+        where: { productId: media.productId!, id: { not: id }, isPublished: true },
+        orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+        select: { id: true },
+      });
+      if (fallback) await tx.media.update({ where: { id: fallback.id }, data: { isPrimary: true } });
+    } else if (isPublished) {
+      const primary = await tx.media.findFirst({ where: { productId: media.productId!, isPrimary: true, isPublished: true }, select: { id: true } });
+      if (!primary) await tx.media.update({ where: { id }, data: { isPrimary: true } });
+    }
   });
   revalidateProduct(media.product);
 }
@@ -155,6 +170,7 @@ export async function setPrimaryProductMedia(id: string) {
   await requireAdmin();
   const media = await prisma.media.findUnique({ where: { id }, include: { product: { select: { id: true, slug: true } } } });
   if (!media?.productId || !media.product) return;
+  if (!media.isPublished) throw new Error("Only published media can be the primary product image.");
 
   await prisma.$transaction([
     prisma.media.updateMany({ where: { productId: media.productId }, data: { isPrimary: false } }),
@@ -191,11 +207,15 @@ export async function deleteProductMedia(id: string) {
 
   await prisma.$transaction(async (tx) => {
     await tx.media.delete({ where: { id } });
-    const remaining = await tx.media.findMany({ where: { productId: media.productId! }, orderBy: { sortOrder: "asc" } });
+    const remaining = await tx.media.findMany({ where: { productId: media.productId! }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] });
+    const fallbackPrimaryId = media.isPrimary ? remaining.find((item) => item.isPublished)?.id ?? null : null;
     for (let index = 0; index < remaining.length; index += 1) {
       await tx.media.update({
         where: { id: remaining[index].id },
-        data: { sortOrder: index, isPrimary: media.isPrimary ? index === 0 : remaining[index].isPrimary },
+        data: {
+          sortOrder: index,
+          isPrimary: media.isPrimary ? remaining[index].id === fallbackPrimaryId : remaining[index].isPrimary,
+        },
       });
     }
   });
